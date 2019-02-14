@@ -102,3 +102,7 @@ venv.bak/
 
 # mypy
 .mypy_cache/
+
+# Microsoft Office Excel files
+*.xls
+*.xlsx
