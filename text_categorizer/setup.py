@@ -14,5 +14,6 @@ setup(name='Text Categorizer',
       install_requires=[
           'pandas',
           'xlrd',
+          'nltk',
       ],
       zip_safe=False)
