@@ -5,10 +5,12 @@ import text_categorizer.parameters as parameters
 
 from os.path import isfile
 from pandas import read_excel
+from profilehooks import profile
 from sys import argv
 from text_categorizer.preprocessing import preprocess
 from text_categorizer.ui import verify_python_version
 
+@profile
 def main():
     if len(argv) != 2:
         print("Usage: python3 text_categorizer <Excel file>")

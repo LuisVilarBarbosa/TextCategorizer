@@ -15,5 +15,6 @@ setup(name='Text Categorizer',
           'pandas',
           'xlrd',
           'nltk',
+          'profilehooks',
       ],
       zip_safe=False)
