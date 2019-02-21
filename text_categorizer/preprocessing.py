@@ -24,7 +24,8 @@ def filter(tokenized_array):
     from nltk.corpus import stopwords
     stop_words = set()
     for language in parameters.NLTK_STOP_WORDS_PACKAGES:
-        stop_words.union(set(stopwords.words(language)))
+        stop_words = stop_words.union(set(stopwords.words(language)))
+    # 'stop_words' contains text in lower case. That's not the case in 'tokenized_array'.
     filtered_array = []
     for array in tokenized_array:
         new_array = []
