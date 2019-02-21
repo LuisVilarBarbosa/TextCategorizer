@@ -16,5 +16,6 @@ setup(name='Text Categorizer',
           'xlrd',
           'nltk',
           'profilehooks',
+          'numpy',
       ],
       zip_safe=False)
