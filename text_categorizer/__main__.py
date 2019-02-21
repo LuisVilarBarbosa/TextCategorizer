@@ -1,6 +1,8 @@
 #!/usr/bin/python3
 # coding=utf-8
 
+import multiprocessing
+import numpy
 import text_categorizer.parameters as parameters
 
 from os.path import isfile
@@ -22,8 +24,11 @@ def main():
     else:
         print("Loading Excel file.")
         data_frame = read_excel(excel_file)
-        print("Preprocessing data.")
-        preprocess(data_frame[parameters.EXCEL_COLUMN_WITH_TEXT_DATA])
+        numProcesses = multiprocessing.cpu_count()
+        with multiprocessing.Pool(processes=numProcesses) as pool:
+            print("Preprocessing data.")
+            data = data_frame[parameters.EXCEL_COLUMN_WITH_TEXT_DATA]
+            pool.map(preprocess, numpy.array_split(data, numProcesses))
 
 if __name__ == "__main__":
     main()
