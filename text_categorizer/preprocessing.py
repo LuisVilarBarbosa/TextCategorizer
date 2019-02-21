@@ -6,7 +6,9 @@ import text_categorizer.parameters as parameters
 def preprocess(text_array):
     tokenized_array = tokenize(text_array)
     filtered_array = filter(tokenized_array)
-    return filtered_array
+    lemmatized_array = lemmatize(filtered_array)
+    stemmed_array = stem(lemmatized_array)
+    return stemmed_array
 
 def tokenize(text_array):
     from nltk.tokenize import MWETokenizer
@@ -31,3 +33,27 @@ def filter(tokenized_array):
                 new_array.append(word)
         filtered_array.append(new_array)
     return filtered_array
+
+def lemmatize(filtered_array):
+    from nltk import download
+    download('wordnet')
+    from nltk.stem import WordNetLemmatizer
+    lemmatizer = WordNetLemmatizer()
+    lemmatized_array = []
+    for array in filtered_array:
+        new_array = []
+        for word in array:
+            new_array.append(lemmatizer.lemmatize(word))
+        lemmatized_array.append(new_array)
+    return lemmatized_array
+
+def stem(lemmatized_array):
+    from nltk.stem.cistem import Cistem
+    stemmer = Cistem()
+    stemmed_array = []
+    for array in lemmatized_array:
+        new_array = []
+        for word in array:
+            new_array.append(stemmer.stem(word)) # It also changes the characters to lowercase.
+        stemmed_array.append(new_array)
+    return stemmed_array
