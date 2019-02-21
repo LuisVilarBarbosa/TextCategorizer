@@ -1,0 +1,9 @@
+version: '3.3'
+
+services:
+  text_categorizer:
+    build: .
+    volumes:
+      - .:/usr/src/app
+    environment:
+      EXCEL_FILE: 'example_excel_file.xlsx'
