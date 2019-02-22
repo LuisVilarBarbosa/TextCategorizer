@@ -7,3 +7,4 @@ services:
       - .:/usr/src/app
     environment:
       EXCEL_FILE: 'example_excel_file.xlsx'
+      NUMBER_OF_PROCESSES: 0

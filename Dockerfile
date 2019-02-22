@@ -6,4 +6,4 @@ COPY text_categorizer/ /usr/src/app/text_categorizer/
 
 RUN python3 /usr/src/app/text_categorizer/setup.py install
 
-CMD python3 text_categorizer ${EXCEL_FILE}
+CMD python3 text_categorizer ${EXCEL_FILE} ${NUMBER_OF_PROCESSES}
