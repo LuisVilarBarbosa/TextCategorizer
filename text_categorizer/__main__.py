@@ -3,15 +3,15 @@
 
 import multiprocessing
 import numpy
-import text_categorizer.parameters as parameters
+import parameters
 
 from os.path import isfile
 from pandas import read_excel
 from profilehooks import profile
 from sys import argv
-from text_categorizer.classifiers import random_forest_classifier
-from text_categorizer.preprocessing import preprocess
-from text_categorizer.ui import verify_python_version
+from classifiers import random_forest_classifier
+from preprocessing import preprocess
+from ui import verify_python_version
 
 @profile
 def main():

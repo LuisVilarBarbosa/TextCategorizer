@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 # coding=utf-8
 
-import text_categorizer.parameters as parameters
+import parameters
 
 def preprocess(text_array_1d):
     tokenized_array = tokenize(text_array_1d)

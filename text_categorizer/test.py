@@ -2,9 +2,9 @@
 # coding=utf-8
 
 import unittest
-import text_categorizer.classifiers as classifiers
-import text_categorizer.functions as functions
-import text_categorizer.preprocessing as preprocessing
+import classifiers
+import functions
+import preprocessing
 
 class TestMethods(unittest.TestCase):
     text_array_1d = [
@@ -74,6 +74,6 @@ class TestMethods(unittest.TestCase):
         self.assertEqual(list(data_frame[column_name]), expected_column)
 
 if __name__ == '__main__':
-    from text_categorizer.ui import verify_python_version
+    from ui import verify_python_version
     verify_python_version()
     unittest.main()
