@@ -60,6 +60,18 @@ class TestMethods(unittest.TestCase):
     def test_random_forest_classifier(self):
         # Improve test.
         classifiers.random_forest_classifier()
+    
+    def test_append_to_data_frame(self):
+        from functions import append_to_data_frame
+        from pandas import DataFrame
+        data_frame = DataFrame()
+        column_name = "test_append_to_data_frame"
+        data_frame = append_to_data_frame(self.text_array_2d, data_frame, column_name)
+        expected_column = [
+            "Them,also,them,appear,is,saying,is,god,bring,,face,given.",
+            "In,,winged,tree,gathering,saw,fifth,grass,,itself,great,and."
+        ]
+        self.assertEqual(list(data_frame[column_name]), expected_column)
 
 if __name__ == '__main__':
     from text_categorizer.ui import verify_python_version
