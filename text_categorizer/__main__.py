@@ -9,6 +9,7 @@ from os.path import isfile
 from pandas import read_excel
 from profilehooks import profile
 from sys import argv
+from text_categorizer.classifiers import random_forest_classifier
 from text_categorizer.preprocessing import preprocess
 from text_categorizer.ui import verify_python_version
 
@@ -35,6 +36,7 @@ def main():
             print("Preprocessing data.")
             data = data_frame[parameters.EXCEL_COLUMN_WITH_TEXT_DATA]
             pool.map(preprocess, numpy.array_split(data, numProcesses))
+            random_forest_classifier()
 
 if __name__ == "__main__":
     main()

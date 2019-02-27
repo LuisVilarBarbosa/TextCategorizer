@@ -2,6 +2,7 @@
 # coding=utf-8
 
 import unittest
+import text_categorizer.classifiers as classifiers
 import text_categorizer.functions as functions
 import text_categorizer.preprocessing as preprocessing
 
@@ -55,6 +56,10 @@ class TestMethods(unittest.TestCase):
             ["in,", "winged", "tree", "gathering", "saw", "fifth", "grass,", "itself", "grea", "and."]
         ]
         self.assertEqual(preprocessing.stem(self.text_array_2d), stemmed_array)
+
+    def test_random_forest_classifier(self):
+        # Improve test.
+        classifiers.random_forest_classifier()
 
 if __name__ == '__main__':
     from text_categorizer.ui import verify_python_version
