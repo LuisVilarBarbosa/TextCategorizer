@@ -18,5 +18,6 @@ setup(name='Text Categorizer',
           'profilehooks',
           'numpy',
           'sklearn',
+          'stanfordnlp',
       ],
       zip_safe=False)

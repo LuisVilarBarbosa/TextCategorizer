@@ -1,60 +1,63 @@
 #!/usr/bin/python3
 # coding=utf-8
 
+import stanfordnlp
 import parameters
 
-def preprocess(text_array_1d):
-    tokenized_array = tokenize(text_array_1d)
-    filtered_array = filter(tokenized_array)
-    lemmatized_array = lemmatize(filtered_array)
-    stemmed_array = stem(lemmatized_array)
-    return stemmed_array
+def preprocess(str_list):
+    docs = generate_documents(str_list)
+    tokenized_docs = tokenize(docs)
+    lemmatized_docs = lemmatize(tokenized_docs)
+    filtered_docs = filter(lemmatized_docs)
+    return filtered_docs
 
-def tokenize(text_array_1d):
-    from nltk.tokenize import MWETokenizer
-    tokenizer = MWETokenizer([])
-    tokenized_array = []
-    for text_elem in text_array_1d:
-        tokenized_array.append(tokenizer.tokenize(text_elem.split()))
-    return tokenized_array
+def generate_documents(str_list):
+    docs = []
+    for text in str_list:
+        docs.append(stanfordnlp.Document(text))
+    return docs
 
-def filter(text_array_2d):
+def stanfordnlp_download():
+    from os.path import isdir
+    from os import listdir
+    found = False
+    if isdir(parameters.STANFORDNLP_RESOURCES_DIR):
+        files = listdir(parameters.STANFORDNLP_RESOURCES_DIR)
+        filename_start = ''.join([parameters.STANFORDNLP_LANGUAGE_PACKAGE, "_"])
+        for file in files:
+            if file.startswith(filename_start):
+                found = True
+                break
+    if not found:
+        stanfordnlp.download(parameters.STANFORDNLP_LANGUAGE_PACKAGE, resource_dir=parameters.STANFORDNLP_RESOURCES_DIR, confirm_if_exists=True, force=False)
+
+def tokenize(docs):
+    stanfordnlp_download()
+    nlp = stanfordnlp.Pipeline(processors='tokenize,mwt', lang=parameters.STANFORDNLP_LANGUAGE_PACKAGE, models_dir=parameters.STANFORDNLP_RESOURCES_DIR, use_gpu=parameters.STANFORDNLP_USE_GPU)
+    tokenized_docs = []
+    for doc in docs:
+        tokenized_docs.append(nlp(doc))
+    return tokenized_docs
+
+def lemmatize(docs):
+    stanfordnlp_download()
+    nlp = stanfordnlp.Pipeline(processors='pos,lemma', lang=parameters.STANFORDNLP_LANGUAGE_PACKAGE, models_dir=parameters.STANFORDNLP_RESOURCES_DIR, use_gpu=parameters.STANFORDNLP_USE_GPU)
+    lemmatized_docs = []
+    for doc in docs:
+        lemmatized_docs.append(nlp(doc))  # The lemma assigned by nlp() is in lowercase.
+    return lemmatized_docs
+
+def filter(docs):
     from nltk import download
-    download('stopwords', quiet=True)
+    download(info_or_id='stopwords', quiet=True)
     from nltk.corpus import stopwords
     stop_words = set()
     for language in parameters.NLTK_STOP_WORDS_PACKAGES:
         stop_words = stop_words.union(set(stopwords.words(language)))
-    # 'stop_words' contains text in lower case. That's not the case in 'text_array_2d'.
-    filtered_array = []
-    for text_array_1d in text_array_2d:
-        new_text_array_1d = []
-        for word in text_array_1d:
-            if not word in stop_words:
-                new_text_array_1d.append(word)
-        filtered_array.append(new_text_array_1d)
-    return filtered_array
-
-def lemmatize(text_array_2d):
-    from nltk import download
-    download('wordnet', quiet=True)
-    from nltk.stem import WordNetLemmatizer
-    lemmatizer = WordNetLemmatizer()
-    lemmatized_array = []
-    for text_array_1d in text_array_2d:
-        new_text_array_1d = []
-        for word in text_array_1d:
-            new_text_array_1d.append(lemmatizer.lemmatize(word))
-        lemmatized_array.append(new_text_array_1d)
-    return lemmatized_array
-
-def stem(text_array_2d):
-    from nltk.stem.cistem import Cistem
-    stemmer = Cistem()
-    stemmed_array = []
-    for text_array_1d in text_array_2d:
-        new_text_array_1d = []
-        for word in text_array_1d:
-            new_text_array_1d.append(stemmer.stem(word)) # It also changes the characters to lowercase.
-        stemmed_array.append(new_text_array_1d)
-    return stemmed_array
+    filtered_docs = docs.copy()
+    for doc in filtered_docs:
+        for sentence in doc.sentences:
+            for word in sentence.words:
+                if word.lemma in stop_words:  # 'word.lemma' is in lowercase.
+                    sentence.words.remove(word)
+    return filtered_docs
