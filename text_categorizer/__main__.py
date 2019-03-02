@@ -2,7 +2,6 @@
 # coding=utf-8
 
 import multiprocessing
-import numpy
 import parameters
 
 from os.path import isfile
@@ -35,7 +34,7 @@ def main():
         with multiprocessing.Pool(processes=numProcesses) as pool:
             print("Preprocessing data.")
             data = data_frame[parameters.EXCEL_COLUMN_WITH_TEXT_DATA]
-            pool.map(preprocess, numpy.array_split(data, numProcesses))
+            preprocess(data)
             random_forest_classifier()
 
 if __name__ == "__main__":
