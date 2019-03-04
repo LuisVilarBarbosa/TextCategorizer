@@ -3,6 +3,7 @@
 
 import multiprocessing
 import parameters
+import pickle_manager
 
 from os.path import isfile
 from pandas import read_excel
@@ -32,12 +33,18 @@ def main():
         if numProcesses == 0:
             numProcesses = multiprocessing.cpu_count()
         with multiprocessing.Pool(processes=numProcesses) as pool:
-            print("Preprocessing data.")
             texts = data_frame[parameters.EXCEL_COLUMN_WITH_TEXT_DATA]
             classifications = data_frame[parameters.EXCEL_COLUMN_WITH_CLASSIFICATION_DATA]
             texts = parameters.initial_code_to_run_on_text_data(texts)
             classifications = parameters.initial_code_to_run_on_classification_data(classifications)
-            docs = preprocess(texts)
+            if parameters.PREPROCESS_DATA:
+                print("Preprocessing data.")
+                docs = preprocess(texts)
+                print("Storing preprocessed data.")
+                pickle_manager.dump(obj=docs, filename=parameters.PREPROCESSED_DATA_FILE)
+            else:
+                print("Loading preprocessed data.")
+                docs = pickle_manager.load(filename=parameters.PREPROCESSED_DATA_FILE)
             print("Running classifier.")
             accuracy = random_forest_classifier(docs, classifications)
             print("Accuracy:", accuracy)

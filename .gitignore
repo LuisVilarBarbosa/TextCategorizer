@@ -112,3 +112,6 @@ stanfordnlp_resources/
 
 # Visual Studio Code files
 .vscode/
+
+# pickle files
+*.pkl
