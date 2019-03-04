@@ -99,7 +99,15 @@ class TestMethods(unittest.TestCase):
 
     def test_random_forest_classifier(self):
         # Improve test.
-        classifiers.random_forest_classifier()
+        from pandas.core.series import Series
+        classification = Series(data=["I", "II"])
+        classifiers.random_forest_classifier(self.docs, classification)
+
+    def test_generate_corpus(self):
+        pass
+
+    def test_create_classification(self):
+        pass
 
     def test_append_to_data_frame(self):
         from functions import append_to_data_frame

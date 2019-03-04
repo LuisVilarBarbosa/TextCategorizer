@@ -33,9 +33,14 @@ def main():
             numProcesses = multiprocessing.cpu_count()
         with multiprocessing.Pool(processes=numProcesses) as pool:
             print("Preprocessing data.")
-            data = data_frame[parameters.EXCEL_COLUMN_WITH_TEXT_DATA]
-            preprocess(data)
-            random_forest_classifier()
+            texts = data_frame[parameters.EXCEL_COLUMN_WITH_TEXT_DATA]
+            classifications = data_frame[parameters.EXCEL_COLUMN_WITH_CLASSIFICATION_DATA]
+            texts = parameters.initial_code_to_run_on_text_data(texts)
+            classifications = parameters.initial_code_to_run_on_classification_data(classifications)
+            docs = preprocess(texts)
+            print("Running classifier.")
+            accuracy = random_forest_classifier(docs, classifications)
+            print("Accuracy:", accuracy)
 
 if __name__ == "__main__":
     main()
