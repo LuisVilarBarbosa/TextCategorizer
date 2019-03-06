@@ -4,6 +4,7 @@
 import stanfordnlp
 import unittest
 import classifiers
+import feature_extraction
 import functions
 import pickle_manager
 import preprocessing
@@ -13,14 +14,14 @@ class TestMethods(unittest.TestCase):
         "Them also them appear is saying is god bring, face given.",
         "In, winged tree gathering saw fifth grass, itself great and."
     ]
-    docs = preprocessing.generate_documents(texts)
+    preprocessed_docs = preprocessing.preprocess(texts)
     expected_tokens = [
         ["Them", "also", "them", "appear", "is", "saying", "is", "god", "bring", ",", "face", "given", "."],
         ["In", ",", "winged", "tree", "gathering", "saw", "fifth", "grass", ",", "itself", "great", "and", "."]
     ]
     expected_lemmas = [
-        ["also", "appear", "say", "god", "bring", ",", "face", "give", "."],
-        [",", "wing", "tree", "gather", "see", "fifth", "grass", ",", "great", "."]
+        ["they", "also", "they", "appear", "be", "say", "be", "god", "bring", ",", "face", "give", "."],
+        ["in", ",", "wing", "tree", "gather", "see", "fifth", "grass", ",", "itself", "great", "and", "."]
     ]
 
     def test_get_python_version(self):
@@ -59,7 +60,8 @@ class TestMethods(unittest.TestCase):
         pass
 
     def test_stanfordnlp_process(self):
-        processed_docs = preprocessing.stanfordnlp_process(self.docs)
+        docs = preprocessing.generate_documents(self.texts)
+        processed_docs = preprocessing.stanfordnlp_process(docs)
         generated_tokens = []
         generated_lemmas = []
         for doc in processed_docs:
@@ -73,15 +75,10 @@ class TestMethods(unittest.TestCase):
             generated_tokens.append(doc_tokens)
             generated_lemmas.append(doc_lemmas)
         self.assertEqual(generated_tokens, self.expected_tokens)
-        expected_lemmas = [
-            ["they", "also", "they", "appear", "be", "say", "be", "god", "bring", ",", "face", "give", "."],
-            ["in", ",", "wing", "tree", "gather", "see", "fifth", "grass", ",", "itself", "great", "and", "."]
-        ]
-        self.assertEqual(generated_lemmas, expected_lemmas)        
+        self.assertEqual(generated_lemmas, self.expected_lemmas)        
 
     def test_filter(self):
-        processed_docs = preprocessing.stanfordnlp_process(self.docs)
-        filtered_docs = preprocessing.filter(processed_docs)
+        filtered_docs = feature_extraction.filter(self.preprocessed_docs)
         filtered_lemmas = []
         for doc in filtered_docs:
             doc_lemmas = []
@@ -89,18 +86,26 @@ class TestMethods(unittest.TestCase):
                 for word in sentence.words:
                     doc_lemmas.append(word.lemma)
             filtered_lemmas.append(doc_lemmas)
-        self.assertEqual(filtered_lemmas, self.expected_lemmas)
+        expected_lemmas = [
+            ["also", "appear", "say", "god", "bring", ",", "face", "give", "."],
+            [",", "wing", "tree", "gather", "see", "fifth", "grass", ",", "great", "."]
+        ]
+        self.assertEqual(filtered_lemmas, expected_lemmas)
 
     def test_random_forest_classifier(self):
         # Improve test.
         from pandas.core.series import Series
         classification = Series(data=["I", "II"])
-        classifiers.random_forest_classifier(self.docs, classification)
+        X, y = feature_extraction.generate_X_y(self.preprocessed_docs, classification)
+        classifiers.random_forest_classifier(X, y)
 
     def test_generate_corpus(self):
         pass
 
     def test_create_classification(self):
+        pass
+    
+    def test_generate_X_y(self):
         pass
 
     def test_append_to_data_frame(self):

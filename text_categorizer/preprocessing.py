@@ -9,8 +9,7 @@ from tqdm import tqdm
 def preprocess(str_list):
     docs = generate_documents(str_list)
     preprocessed_docs = stanfordnlp_process(docs)
-    filtered_docs = filter(preprocessed_docs)
-    return filtered_docs
+    return preprocessed_docs
 
 def generate_documents(str_list):
     docs = []
@@ -39,18 +38,3 @@ def stanfordnlp_process(docs):
     for doc in tqdm(iterable=docs, desc="Preprocessing", unit="doc"):
         processed_docs.append(nlp(doc))  # The lemma assigned by nlp() is in lowercase.
     return processed_docs
-
-def filter(docs):
-    from nltk import download
-    download(info_or_id='stopwords', quiet=True)
-    from nltk.corpus import stopwords
-    stop_words = set()
-    for language in parameters.NLTK_STOP_WORDS_PACKAGES:
-        stop_words = stop_words.union(set(stopwords.words(language)))
-    filtered_docs = docs.copy()
-    for doc in filtered_docs:
-        for sentence in doc.sentences:
-            for word in sentence.words:
-                if word.lemma in stop_words:  # 'word.lemma' is in lowercase.
-                    sentence.words.remove(word)
-    return filtered_docs

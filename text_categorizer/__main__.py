@@ -10,6 +10,7 @@ from pandas import read_excel
 from profilehooks import profile
 from sys import argv
 from classifiers import random_forest_classifier
+from feature_extraction import generate_X_y
 from preprocessing import preprocess
 from ui import verify_python_version
 
@@ -45,8 +46,10 @@ def main():
             else:
                 print("Loading preprocessed data.")
                 docs = pickle_manager.load(filename=parameters.PREPROCESSED_DATA_FILE)
+            print("Extracting features.")
+            X, y = generate_X_y(docs, classifications)
             print("Running classifier.")
-            accuracy = random_forest_classifier(docs, classifications)
+            accuracy = random_forest_classifier(X, y)
             print("Accuracy:", accuracy)
 
 if __name__ == "__main__":
