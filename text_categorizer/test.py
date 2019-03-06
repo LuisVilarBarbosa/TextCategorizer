@@ -125,23 +125,13 @@ class TestMethods(unittest.TestCase):
     def test_pickle_manager(self):
         from tempfile import mkstemp
         from os import close, unlink
-        fd1, file_path1 = mkstemp()
-        pickle_manager.dump(obj=self.docs, filename=file_path1)
-        loaded_docs = pickle_manager.load(filename=file_path1)
-        self.assertGreater(len(loaded_docs), 0)
-        self.assertEqual(len(self.docs), len(loaded_docs))
-        for i in range(len(loaded_docs)):
-            self.assertEqual(self.docs[i].sentences, loaded_docs[i].sentences)
-            self.assertEqual(self.docs[i].text, loaded_docs[i].text)
-        close(fd1)
-        unlink(file_path1)
-        fd2, file_path2 = mkstemp()
-        pickle_manager.dump(obj=self.expected_tokens, filename=file_path2)
-        loaded_tokens = pickle_manager.load(filename=file_path2)
+        fd, file_path = mkstemp()
+        pickle_manager.dump(obj=self.expected_tokens, filename=file_path)
+        loaded_tokens = pickle_manager.load(filename=file_path)
         self.assertGreater(len(loaded_tokens), 0)
         self.assertEqual(self.expected_tokens, loaded_tokens)
-        close(fd2)
-        unlink(file_path2)
+        close(fd)
+        unlink(file_path)
 
 if __name__ == '__main__':
     from ui import verify_python_version
