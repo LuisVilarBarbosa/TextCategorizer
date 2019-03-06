@@ -6,9 +6,8 @@ import parameters
 
 def preprocess(str_list):
     docs = generate_documents(str_list)
-    tokenized_docs = tokenize(docs)
-    lemmatized_docs = lemmatize(tokenized_docs)
-    filtered_docs = filter(lemmatized_docs)
+    preprocessed_docs = stanfordnlp_process(docs)
+    filtered_docs = filter(preprocessed_docs)
     return filtered_docs
 
 def generate_documents(str_list):
@@ -31,21 +30,13 @@ def stanfordnlp_download():
     if not found:
         stanfordnlp.download(parameters.STANFORDNLP_LANGUAGE_PACKAGE, resource_dir=parameters.STANFORDNLP_RESOURCES_DIR, confirm_if_exists=True, force=False)
 
-def tokenize(docs):
+def stanfordnlp_process(docs):
     stanfordnlp_download()
-    nlp = stanfordnlp.Pipeline(processors='tokenize,mwt', lang=parameters.STANFORDNLP_LANGUAGE_PACKAGE, models_dir=parameters.STANFORDNLP_RESOURCES_DIR, use_gpu=parameters.STANFORDNLP_USE_GPU)
-    tokenized_docs = []
+    nlp = stanfordnlp.Pipeline(processors='tokenize,mwt,pos,lemma', lang=parameters.STANFORDNLP_LANGUAGE_PACKAGE, models_dir=parameters.STANFORDNLP_RESOURCES_DIR, use_gpu=parameters.STANFORDNLP_USE_GPU)
+    processed_docs = []
     for doc in docs:
-        tokenized_docs.append(nlp(doc))
-    return tokenized_docs
-
-def lemmatize(docs):
-    stanfordnlp_download()
-    nlp = stanfordnlp.Pipeline(processors='pos,lemma', lang=parameters.STANFORDNLP_LANGUAGE_PACKAGE, models_dir=parameters.STANFORDNLP_RESOURCES_DIR, use_gpu=parameters.STANFORDNLP_USE_GPU)
-    lemmatized_docs = []
-    for doc in docs:
-        lemmatized_docs.append(nlp(doc))  # The lemma assigned by nlp() is in lowercase.
-    return lemmatized_docs
+        processed_docs.append(nlp(doc))  # The lemma assigned by nlp() is in lowercase.
+    return processed_docs
 
 def filter(docs):
     from nltk import download

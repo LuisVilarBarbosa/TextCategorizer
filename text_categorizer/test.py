@@ -58,37 +58,30 @@ class TestMethods(unittest.TestCase):
     def test_stanfordnlp_download(self):
         pass
 
-    def test_tokenize(self):
-        tokenized_docs = preprocessing.tokenize(self.docs)
+    def test_stanfordnlp_process(self):
+        processed_docs = preprocessing.stanfordnlp_process(self.docs)
         generated_tokens = []
-        for doc in tokenized_docs:
+        generated_lemmas = []
+        for doc in processed_docs:
             doc_tokens = []
+            doc_lemmas = []
             for sentence in doc.sentences:
                 for token in sentence.tokens:
                     doc_tokens.append(token.text)
+                for word in sentence.words:
+                    doc_lemmas.append(word.lemma)
             generated_tokens.append(doc_tokens)
+            generated_lemmas.append(doc_lemmas)
         self.assertEqual(generated_tokens, self.expected_tokens)
-
-    def test_lemmatize(self):
         expected_lemmas = [
             ["they", "also", "they", "appear", "be", "say", "be", "god", "bring", ",", "face", "give", "."],
             ["in", ",", "wing", "tree", "gather", "see", "fifth", "grass", ",", "itself", "great", "and", "."]
         ]
-        tokenized_docs = preprocessing.tokenize(self.docs)
-        lemmatized_docs = preprocessing.lemmatize(tokenized_docs)
-        generated_lemmas = []
-        for doc in lemmatized_docs:
-            doc_lemmas = []
-            for sentence in doc.sentences:
-                for word in sentence.words:
-                    doc_lemmas.append(word.lemma)
-            generated_lemmas.append(doc_lemmas)
-        self.assertEqual(generated_lemmas, expected_lemmas)
+        self.assertEqual(generated_lemmas, expected_lemmas)        
 
     def test_filter(self):
-        tokenized_docs = preprocessing.tokenize(self.docs)
-        lemmatized_docs = preprocessing.lemmatize(tokenized_docs)
-        filtered_docs = preprocessing.filter(lemmatized_docs)
+        processed_docs = preprocessing.stanfordnlp_process(self.docs)
+        filtered_docs = preprocessing.filter(processed_docs)
         filtered_lemmas = []
         for doc in filtered_docs:
             doc_lemmas = []
