@@ -4,6 +4,8 @@
 import stanfordnlp
 import parameters
 
+from tqdm import tqdm
+
 def preprocess(str_list):
     docs = generate_documents(str_list)
     preprocessed_docs = stanfordnlp_process(docs)
@@ -34,7 +36,7 @@ def stanfordnlp_process(docs):
     stanfordnlp_download()
     nlp = stanfordnlp.Pipeline(processors='tokenize,mwt,pos,lemma', lang=parameters.STANFORDNLP_LANGUAGE_PACKAGE, models_dir=parameters.STANFORDNLP_RESOURCES_DIR, use_gpu=parameters.STANFORDNLP_USE_GPU)
     processed_docs = []
-    for doc in docs:
+    for doc in tqdm(iterable=docs, desc="Preprocessing", unit="doc"):
         processed_docs.append(nlp(doc))  # The lemma assigned by nlp() is in lowercase.
     return processed_docs
 
