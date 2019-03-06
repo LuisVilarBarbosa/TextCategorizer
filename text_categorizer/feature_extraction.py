@@ -22,9 +22,11 @@ def filter(docs):
     filtered_docs = docs.copy()
     for doc in filtered_docs:
         for sentence in doc.sentences:
+            new_words = []
             for word in sentence.words:
-                if word.lemma in stop_words:  # 'word.lemma' is in lowercase.
-                    sentence.words.remove(word)
+                if word.upos != 'PUNCT' and not word.lemma in stop_words:  # 'word.lemma' is in lowercase.
+                    new_words.append(word)
+            sentence.words = new_words
     return filtered_docs
 
 def generate_corpus(docs):
@@ -33,8 +35,7 @@ def generate_corpus(docs):
         text = ""
         for sentence in doc.sentences:
             for word in sentence.words:
-                if word.lemma != None:  # TODO: remove punctuation on preprocessing and remove this 'if' statement
-                    text = ' '.join([text, word.lemma])
+                text = ' '.join([text, word.lemma])
         texts.append(text)
     return texts
 

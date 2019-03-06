@@ -87,8 +87,8 @@ class TestMethods(unittest.TestCase):
                     doc_lemmas.append(word.lemma)
             filtered_lemmas.append(doc_lemmas)
         expected_lemmas = [
-            ["also", "appear", "say", "god", "bring", ",", "face", "give", "."],
-            [",", "wing", "tree", "gather", "see", "fifth", "grass", ",", "great", "."]
+            ["also", "appear", "say", "god", "bring", "face", "give"],
+            ["wing", "tree", "gather", "see", "fifth", "grass", "great"]
         ]
         self.assertEqual(filtered_lemmas, expected_lemmas)
 
