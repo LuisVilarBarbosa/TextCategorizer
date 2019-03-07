@@ -14,3 +14,11 @@ def append_to_data_frame(array_2d, data_frame, column_name):
         new_column.append(','.join([elem for elem in array_1d]))
     new_data_frame.insert(loc=idx, column=column_name, value=new_column, allow_duplicates=False)
     return new_data_frame
+
+def data_frame_to_document_list(data_frame):
+    from Document import Document
+    documents = []
+    for i in range(len(data_frame)):
+        d = Document(data_frame=data_frame, index=i)
+        documents.append(d)
+    return documents

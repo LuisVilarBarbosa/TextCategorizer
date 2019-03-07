@@ -19,5 +19,7 @@ setup(name='Text Categorizer',
           'numpy',
           'sklearn',
           'stanfordnlp',
+          'conllu',
+          'jsonpickle',
       ],
       zip_safe=False)
