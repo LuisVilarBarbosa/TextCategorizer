@@ -21,5 +21,6 @@ setup(name='Text Categorizer',
           'stanfordnlp',
           'conllu',
           'jsonpickle',
+          'pynput',
       ],
       zip_safe=False)
