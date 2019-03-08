@@ -32,7 +32,7 @@ def stanfordnlp_process(docs):
     nlp = stanfordnlp.Pipeline(processors='tokenize,mwt,pos,lemma,depparse', lang=parameters.STANFORDNLP_LANGUAGE_PACKAGE, models_dir=parameters.STANFORDNLP_RESOURCES_DIR, use_gpu=parameters.STANFORDNLP_USE_GPU)
     processed_docs = docs.copy()
     with Listener(on_press=on_press) as listener:
-        print("Press Esc to stop the preprocessing phase.")
+        print("Press Esc to stop the preprocessing phase. (The preprocessed documents will be stored.)")
         for doc in tqdm(iterable=processed_docs, desc="Preprocessing", unit="doc"):
             if doc.analyzed_sentences is None:
                 text = doc.fields[parameters.EXCEL_COLUMN_WITH_TEXT_DATA]

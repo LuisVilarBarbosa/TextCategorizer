@@ -28,7 +28,7 @@ PREPROCESSED_DATA_FILE = 'preprocessed_data.json'
 # data stored in 'PREPROCESSED_DATA_FILE'.
 # 'False' indicates that the preprocessing phase should be skipped and the preprocessed
 # data loaded from 'PREPROCESSED_DATA_FILE'.
-PREPROCESS_DATA = True # TODO: An exception is thrown if 'False' and the file does not exist.
+PREPROCESS_DATA = True
 
 def initial_code_to_run_on_data_frame(data_frame):
     return data_frame
