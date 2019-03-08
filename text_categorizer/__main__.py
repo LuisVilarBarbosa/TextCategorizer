@@ -26,20 +26,25 @@ def main():
         numProcesses = multiprocessing.cpu_count()
     with multiprocessing.Pool(processes=numProcesses) as pool:
         if parameters.PREPROCESS_DATA:
-            if not isfile(parameters.EXCEL_FILE):
-                print("The indicated Excel file does not exist.")
+            if not isfile(parameters.EXCEL_FILE) and not isfile(parameters.PREPROCESSED_DATA_FILE):
+                print("Please, provide a valid Excel file or a valid preprocessed data file.")
                 quit()
-            print("Loading Excel file.")
-            data_frame = read_excel(parameters.EXCEL_FILE)
-            print("Executing initial_code_to_run_on_data_frame().")
-            data_frame = parameters.initial_code_to_run_on_data_frame(data_frame)
-            print("Creating documents.")
-            docs = data_frame_to_document_list(data_frame)
+            if not isfile(parameters.PREPROCESSED_DATA_FILE) and isfile(parameters.EXCEL_FILE):
+                print("Loading Excel file.")
+                data_frame = read_excel(parameters.EXCEL_FILE)
+                print("Executing initial_code_to_run_on_data_frame().")
+                data_frame = parameters.initial_code_to_run_on_data_frame(data_frame)
+                print("Creating documents.")
+                docs = data_frame_to_document_list(data_frame)
+            else:
+                print("Loading preprocessed documents.")
+                docs = jsonpickle_manager.load(filename=parameters.PREPROCESSED_DATA_FILE)
             print("Preprocessing documents.")
             docs = preprocess(docs)
-            print("Storing preprocessed documents.")
-            jsonpickle_manager.dump(obj=docs, filename=parameters.PREPROCESSED_DATA_FILE)
         else:
+            if not isfile(parameters.PREPROCESSED_DATA_FILE):
+                print("The indicated preprocessed data file does not exist.")
+                quit()
             print("Loading preprocessed documents.")
             docs = jsonpickle_manager.load(filename=parameters.PREPROCESSED_DATA_FILE)
         print("Extracting features.")

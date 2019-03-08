@@ -30,5 +30,7 @@ PREPROCESSED_DATA_FILE = 'preprocessed_data.json'
 # data loaded from 'PREPROCESSED_DATA_FILE'.
 PREPROCESS_DATA = True # TODO: An exception is thrown if 'False' and the file does not exist.
 
+PREPROCESSED_DATA_FILE_UPDATE_INTERVAL = 60
+
 def initial_code_to_run_on_data_frame(data_frame):
     return data_frame
