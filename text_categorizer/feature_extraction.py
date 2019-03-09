@@ -22,12 +22,15 @@ def filter(docs):
         stop_words = stop_words.union(set(stopwords.words(language)))
     filtered_docs = docs.copy()
     for doc in filtered_docs:
-        for sentence in doc.analyzed_sentences:
-            new_words = []
-            for word in sentence:
-                if word['upostag'] != 'PUNCT' and not word['lemma'] in stop_words:  # 'word['lemma']' is in lowercase.
-                    new_words.append(word)
-            sentence = new_words
+        if doc.analyzed_sentences is None:
+            filtered_docs.remove(doc)
+        else:
+            for sentence in doc.analyzed_sentences:
+                new_words = []
+                for word in sentence:
+                    if word['upostag'] != 'PUNCT' and not word['lemma'] in stop_words:  # 'word['lemma']' is in lowercase.
+                        new_words.append(word)
+                sentence = new_words
     return filtered_docs
 
 def generate_corpus(docs):

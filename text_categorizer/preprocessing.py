@@ -33,12 +33,18 @@ def stanfordnlp_process(docs):
     processed_docs = docs.copy()
     with Listener(on_press=on_press) as listener:
         print("Press Esc to stop the preprocessing phase. (The preprocessed documents will be stored.)")
+        i = 0
         for doc in tqdm(iterable=processed_docs, desc="Preprocessing", unit="doc"):
+            i = i + 1
             if doc.analyzed_sentences is None:
                 text = doc.fields[parameters.EXCEL_COLUMN_WITH_TEXT_DATA]
-                stanfordnlp_doc = stanfordnlp.Document(text)
-                stanfordnlp_doc_updated = nlp(stanfordnlp_doc)
-                doc.update_stanfordnlp_document(stanfordnlp_doc_updated)
+                try:
+                    stanfordnlp_doc = stanfordnlp.Document(text)
+                    stanfordnlp_doc_updated = nlp(stanfordnlp_doc)
+                    doc.update_stanfordnlp_document(stanfordnlp_doc_updated)
+                except AssertionError:
+                    print()
+                    print("Warning: Ignoring document number %s due to error on StanfordNLP." % i)
             if _stop:
                 dump_documents(processed_docs)
                 exit(0)
