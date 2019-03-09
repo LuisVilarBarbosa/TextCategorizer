@@ -21,7 +21,7 @@ STANFORDNLP_USE_GPU = False
 
 STANFORDNLP_RESOURCES_DIR = './stanfordnlp_resources'
 
-PREPROCESSED_DATA_FILE = 'preprocessed_data.json'
+PREPROCESSED_DATA_FOLDER = './preprocessed_data'
 
 # This boolean indicates whether the preprocessing phase should be performed or not.
 # 'True' indicates that the preprocessing phase must be performed and the preprocessed

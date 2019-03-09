@@ -6,6 +6,7 @@ import parameters
 
 from pynput.keyboard import Key, Listener
 from tqdm import tqdm
+from jsonpickle_manager import dump_document
 
 def preprocess(docs):
     return stanfordnlp_process(docs)
@@ -32,7 +33,8 @@ def stanfordnlp_process(docs):
     nlp = stanfordnlp.Pipeline(processors='tokenize,mwt,pos,lemma,depparse', lang=parameters.STANFORDNLP_LANGUAGE_PACKAGE, models_dir=parameters.STANFORDNLP_RESOURCES_DIR, use_gpu=parameters.STANFORDNLP_USE_GPU)
     processed_docs = docs.copy()
     with Listener(on_press=on_press) as listener:
-        print("Press Esc to stop the preprocessing phase. (The preprocessed documents will be stored.)")
+        print("Each preprocessed document is being stored as soon as it is ready.")
+        print("Press Esc to stop the preprocessing phase.")
         i = 0
         for doc in tqdm(iterable=processed_docs, desc="Preprocessing", unit="doc"):
             i = i + 1
@@ -42,20 +44,14 @@ def stanfordnlp_process(docs):
                     stanfordnlp_doc = stanfordnlp.Document(text)
                     stanfordnlp_doc_updated = nlp(stanfordnlp_doc)
                     doc.update_stanfordnlp_document(stanfordnlp_doc_updated)
+                    dump_document(doc, i)
                 except AssertionError:
                     print()
                     print("Warning: Ignoring document number %s due to error on StanfordNLP." % i)
             if _stop:
-                dump_documents(processed_docs)
                 exit(0)
         listener.stop()
-        dump_documents(processed_docs)
         return processed_docs
-
-def dump_documents(docs):
-    from jsonpickle_manager import dump
-    print("Storing preprocessed documents.")
-    dump(obj=docs, filename=parameters.PREPROCESSED_DATA_FILE)
 
 def on_press(key):
     if key == Key.esc:
