@@ -45,9 +45,9 @@ def stanfordnlp_process(docs):
                     stanfordnlp_doc_updated = nlp(stanfordnlp_doc)
                     doc.update_stanfordnlp_document(stanfordnlp_doc_updated)
                     dump_document(doc, i)
-                except AssertionError:
+                except Exception as e:
                     print()
-                    print("Warning: Ignoring document number %s due to error on StanfordNLP." % i)
+                    print("Warning - Ignoring document number %s due to the following exception: %s" % (i, str(e)))
             if _stop:
                 exit(0)
         listener.stop()
