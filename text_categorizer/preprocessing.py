@@ -6,7 +6,7 @@ import parameters
 
 from pynput.keyboard import Key, Listener
 from tqdm import tqdm
-from jsonpickle_manager import dump_document
+from pickle_manager import dump_document
 
 def preprocess(docs):
     return stanfordnlp_process(docs)

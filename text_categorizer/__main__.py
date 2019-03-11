@@ -2,7 +2,7 @@
 # coding=utf-8
 
 import multiprocessing
-import jsonpickle_manager
+import pickle_manager
 import parameters
 
 from os.path import isfile, isdir
@@ -37,10 +37,10 @@ def main():
                 print("Creating documents.")
                 docs = data_frame_to_document_list(data_frame)
                 print("Storing generated documents.")
-                jsonpickle_manager.dump_all_documents(docs)
+                pickle_manager.dump_all_documents(docs)
             else:
                 print("Loading preprocessed documents.")
-                docs = jsonpickle_manager.load_all_documents()
+                docs = pickle_manager.load_all_documents()
             print("Preprocessing documents.")
             docs = preprocess(docs)
         else:
@@ -48,7 +48,7 @@ def main():
                 print("The indicated preprocessed data folder does not exist.")
                 quit()
             print("Loading preprocessed documents.")
-            docs = jsonpickle_manager.load_all_documents()
+            docs = pickle_manager.load_all_documents()
         print("Extracting features.")
         X, y = generate_X_y(docs)
         print("Running classifier.")

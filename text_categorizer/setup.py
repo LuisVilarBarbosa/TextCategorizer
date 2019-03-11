@@ -20,7 +20,6 @@ setup(name='Text Categorizer',
           'sklearn',
           'stanfordnlp==0.1.2',
           'conllu==1.2.3',
-          'jsonpickle==1.1',
           'pynput==1.4',
       ],
       zip_safe=False)
