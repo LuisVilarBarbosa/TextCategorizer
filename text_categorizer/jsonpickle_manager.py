@@ -4,6 +4,7 @@
 import json
 import jsonpickle
 import os
+import re
 import parameters
 
 from tqdm import tqdm
@@ -31,7 +32,8 @@ def dump_document(doc, index):
 def load_all_documents():
     folder_path = parameters.PREPROCESSED_DATA_FOLDER
     names = os.listdir(folder_path)
-    names = sorted(names)
+    pattern = re.compile(r'.*-(\d+).*') # TODO: fix (There is no match if the name does not contains "-".)
+    names.sort(key=lambda n: int(pattern.match(n).group(1)))
     docs = []
     for name in tqdm(iterable=names, desc="Loading documents", unit="doc"):
         path = os.path.join(parameters.PREPROCESSED_DATA_FOLDER, name)
