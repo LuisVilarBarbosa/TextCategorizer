@@ -6,6 +6,7 @@ import jsonpickle
 import os
 import parameters
 
+from tqdm import tqdm
 from Document import Document
 
 def dump(obj, path):
@@ -32,7 +33,7 @@ def load_all_documents():
     names = os.listdir(folder_path)
     names = sorted(names)
     docs = []
-    for name in names:
+    for name in tqdm(iterable=names, desc="Loading documents", unit="doc"):
         path = os.path.join(parameters.PREPROCESSED_DATA_FOLDER, name)
         try:
             doc = load(path)
@@ -45,6 +46,6 @@ def load_all_documents():
 
 def dump_all_documents(docs):
     i = 0
-    for doc in docs:
+    for doc in tqdm(iterable=docs, desc="Storing documents", unit="doc"):
         i = i + 1
         dump_document(doc=doc, index=i)
