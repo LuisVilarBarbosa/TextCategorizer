@@ -38,19 +38,14 @@ def main():
                 docs = data_frame_to_document_list(data_frame)
                 print("Storing generated documents.")
                 pickle_manager.dump_all_documents(docs)
-            else:
-                print("Loading preprocessed documents.")
-                docs = pickle_manager.load_all_documents()
             print("Preprocessing documents.")
-            docs = preprocess(docs)
+            preprocess()
         else:
             if not isdir(parameters.PREPROCESSED_DATA_FOLDER):
                 print("The indicated preprocessed data folder does not exist.")
                 quit()
-            print("Loading preprocessed documents.")
-            docs = pickle_manager.load_all_documents()
         print("Extracting features.")
-        X, y = generate_X_y(docs)
+        X, y = generate_X_y()
         print("Running classifier.")
         accuracy = random_forest_classifier(X, y)
         print("Accuracy:", accuracy)

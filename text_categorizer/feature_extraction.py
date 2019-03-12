@@ -3,13 +3,22 @@
 
 import numpy as np
 import parameters
+import pickle_manager
 
 from sklearn.feature_extraction.text import TfidfVectorizer
 
-def generate_X_y(docs):
-    filtered_docs = filter(docs)
-    corpus = generate_corpus(filtered_docs)
-    classifications = generate_classifications_list(filtered_docs)
+def generate_X_y():
+    filtered_docs = []
+    corpus = []
+    classifications = []
+    for path in pickle_manager.files_paths():
+        docs = pickle_manager.load_documents(path)
+        filtered_docs = np.append(filtered_docs, filter(docs))
+        corpus = np.append(corpus, generate_corpus(filtered_docs))
+        classifications = np.append(classifications, generate_classifications_list(filtered_docs))
+    filtered_docs = filtered_docs.flatten()
+    corpus = corpus.flatten()
+    classifications = classifications.flatten()
     X, y = create_classification(corpus, classifications)
     return X, y
 
