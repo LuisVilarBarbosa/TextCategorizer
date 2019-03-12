@@ -6,11 +6,14 @@ import pandas
 import stanfordnlp
 import parameters
 
+_excel_start_row = 2
+
 class Document:
     def __init__(self, data_frame, index, stanfordnlp_document=None):
         assert type(data_frame) is pandas.DataFrame
         assert type(index) is int
         assert type(stanfordnlp_document) in [stanfordnlp.Document, type(None)]
+        self.index = index + _excel_start_row
         self.fields = dict()
         columns = data_frame.columns
         for i in range(len(columns)):

@@ -21,10 +21,10 @@ def load(path):
     input_file.close()
     return data
 
-def dump_document(doc, index):
+def dump_document(doc):
     if not os.path.isdir(parameters.PREPROCESSED_DATA_FOLDER):
         os.makedirs(parameters.PREPROCESSED_DATA_FOLDER)
-    path = os.path.join(parameters.PREPROCESSED_DATA_FOLDER, ''.join(["doc-", str(index), ".pkl"]))
+    path = os.path.join(parameters.PREPROCESSED_DATA_FOLDER, ''.join(["doc-", str(doc.index), ".pkl"]))
     dump(obj=doc, path=path)
 
 def load_all_documents():
@@ -41,7 +41,5 @@ def load_all_documents():
     return docs
 
 def dump_all_documents(docs):
-    i = 0
     for doc in tqdm(iterable=docs, desc="Storing documents", unit="doc"):
-        i = i + 1
-        dump_document(doc=doc, index=i)
+        dump_document(doc=doc)
