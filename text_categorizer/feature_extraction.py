@@ -30,9 +30,11 @@ def filter(docs):
     for language in parameters.NLTK_STOP_WORDS_PACKAGES:
         stop_words = stop_words.union(set(stopwords.words(language)))
     filtered_docs = docs.copy()
+    num_ignored = 0
     for doc in filtered_docs:
         if doc.analyzed_sentences is None:
             filtered_docs.remove(doc)
+            num_ignored = num_ignored + 1
         else:
             for sentence in doc.analyzed_sentences:
                 new_words = []
@@ -40,6 +42,7 @@ def filter(docs):
                     if word['upostag'] != 'PUNCT' and not word['lemma'] in stop_words:  # 'word['lemma']' is in lowercase.
                         new_words.append(word)
                 sentence = new_words
+    print("Warning - %s document(s) ignored." % num_ignored)
     return filtered_docs
 
 def generate_corpus(docs):
