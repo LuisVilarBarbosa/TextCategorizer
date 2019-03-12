@@ -11,11 +11,15 @@ def generate_X_y():
     filtered_docs = []
     corpus = []
     classifications = []
+    num_ignored = 0
     for path in pickle_manager.files_paths():
         docs = pickle_manager.load_documents(path)
-        filtered_docs = np.append(filtered_docs, filter(docs))
+        filtered_ds, n_ignored = filter(docs)
+        filtered_docs = np.append(filtered_docs, filtered_ds)
+        num_ignored = num_ignored + n_ignored
         corpus = np.append(corpus, generate_corpus(filtered_docs))
         classifications = np.append(classifications, generate_classifications_list(filtered_docs))
+    print("Warning - %s document(s) ignored." % num_ignored)
     filtered_docs = filtered_docs.flatten()
     corpus = corpus.flatten()
     classifications = classifications.flatten()
@@ -42,8 +46,7 @@ def filter(docs):
                     if word['upostag'] != 'PUNCT' and not word['lemma'] in stop_words:  # 'word['lemma']' is in lowercase.
                         new_words.append(word)
                 sentence = new_words
-    print("Warning - %s document(s) ignored." % num_ignored)
-    return filtered_docs
+    return filtered_docs, num_ignored
 
 def generate_corpus(docs):
     texts = []
