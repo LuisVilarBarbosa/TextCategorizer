@@ -17,10 +17,9 @@ def generate_X_y():
         filtered_ds, n_ignored = filter(docs)
         filtered_docs = np.append(filtered_docs, filtered_ds)
         num_ignored = num_ignored + n_ignored
-        corpus = np.append(corpus, generate_corpus(filtered_docs))
-        classifications = np.append(classifications, generate_classifications_list(filtered_docs))
+        corpus = np.append(corpus, generate_corpus(filtered_ds))
+        classifications = np.append(classifications, generate_classifications_list(filtered_ds))
     print("Warning - %s document(s) ignored." % num_ignored)
-    filtered_docs = filtered_docs.flatten()
     corpus = corpus.flatten()
     classifications = classifications.flatten()
     X, y = create_classification(corpus, classifications)
