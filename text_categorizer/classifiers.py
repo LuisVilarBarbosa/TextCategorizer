@@ -136,3 +136,11 @@ def ClassifierMixin(X, y):
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42, shuffle=True, stratify=y)
     clf = ClassifierMixin()
     return clf.score(X_train, y_train)
+
+class Pipeline():
+    def __init__(self, classifiers):
+        self.classifiers = classifiers
+    
+    def start(self, X, y):
+        for f in self.classifiers:
+            print("- %s: %s" % (f.__name__, f(X, y)))

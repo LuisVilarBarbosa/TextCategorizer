@@ -48,19 +48,23 @@ def main():
         X, y = generate_X_y()
         print("Running classifiers.")
         print("Accuracies:")
-        print("- RandomForestClassifier: %s" % classifiers.RandomForestClassifier(X, y))
-        print("- BernoulliNB: %s" % classifiers.BernoulliNB(X, y))
-        print("- GaussianNB: %s" % classifiers.GaussianNB(X, y))
-        print("- MultinomialNB: %s" % classifiers.MultinomialNB(X, y))
-        print("- ComplementNB: %s" % classifiers.ComplementNB(X, y))
-        print("- KNeighborsClassifier: %s" % classifiers.KNeighborsClassifier(X, y))
-        #print("- BernoulliRBM: %s" % classifiers.BernoulliRBM(X, y))
-        print("- MLPClassifier: %s" % classifiers.MLPClassifier(X, y))
-        print("- LinearSVC: %s" % classifiers.LinearSVC(X, y))
-        #print("- NuSVC: %s" % classifiers.NuSVC(X, y))
-        print("- DecisionTreeClassifier: %s" % classifiers.DecisionTreeClassifier(X, y))
-        print("- ExtraTreeClassifier: %s" % classifiers.ExtraTreeClassifier(X, y))
-        #print("- ClassifierMixin: %s" % classifiers.ClassifierMixin(X, y))
+        clfs = [
+            classifiers.RandomForestClassifier,
+            classifiers.BernoulliNB,
+            classifiers.GaussianNB,
+            classifiers.MultinomialNB,
+            classifiers.ComplementNB,
+            classifiers.KNeighborsClassifier,
+            #classifiers.BernoulliRBM,
+            classifiers.MLPClassifier,
+            classifiers.LinearSVC,
+            #classifiers.NuSVC,
+            classifiers.DecisionTreeClassifier,
+            classifiers.ExtraTreeClassifier,
+            #classifiers.ClassifierMixin,
+        ]
+        p = classifiers.Pipeline(clfs)
+        p.start(X, y)
 
 if __name__ == "__main__":
     main()
