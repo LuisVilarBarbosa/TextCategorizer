@@ -142,5 +142,8 @@ class Pipeline():
         self.classifiers = classifiers
     
     def start(self, X, y):
+        from time import time
         for f in self.classifiers:
-            print("- %s: %s" % (f.__name__, f(X, y)))
+            t1 = time()
+            accuracy = f(X, y)
+            print("- %s: %s | %ss" % (f.__name__, accuracy, (time() - t1)))
