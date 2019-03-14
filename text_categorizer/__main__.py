@@ -40,6 +40,8 @@ def main():
                 pickle_manager.dump_all_documents(docs)
             print("Preprocessing documents.")
             preprocess()
+            print("Checking generated data.")
+            pickle_manager.check_data()
         else:
             if not isdir(parameters.PREPROCESSED_DATA_FOLDER):
                 print("The indicated preprocessed data folder does not exist.")
