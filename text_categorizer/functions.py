@@ -19,6 +19,6 @@ def data_frame_to_document_list(data_frame):
     from Document import Document
     documents = []
     for i in range(len(data_frame)):
-        d = Document(data_frame=data_frame, index=i)
+        d = Document.from_data_frame(data_frame=data_frame, index=i)
         documents.append(d)
     return documents

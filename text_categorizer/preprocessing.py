@@ -35,30 +35,30 @@ def stanfordnlp_process():
         print("Press Esc to stop the preprocessing phase. (The preprocessed documents will be stored.)")
         tq = tqdm(desc="Preprocessing", total=pickle_manager.get_total_docs(), unit="doc")
         num_ignored = 0
-        for path in pickle_manager.files_paths():
-            docs = pickle_manager.load_documents(path)
-            changed = False
-            for doc in docs:
-                if doc.analyzed_sentences is None:
+        for filename in pickle_manager.filenames():
+            docs = pickle_manager.load_documents(filename)            
+            pda = pickle_manager.PickleDumpAppend(filename)
+            for d in docs:
+                if not _stop and d.analyzed_sentences is None:
+                    doc = d.copy()
                     text = doc.fields[parameters.EXCEL_COLUMN_WITH_TEXT_DATA]
                     try:
                         stanfordnlp_doc = stanfordnlp.Document(text)
                         stanfordnlp_doc_updated = nlp(stanfordnlp_doc)
                         doc.update_stanfordnlp_document(stanfordnlp_doc_updated)
-                        changed = True
                     except Exception as e:
                         print()
                         print("Warning - Ignoring document number %s due to the following exception: %s" %  (doc.index, str(e)))
                         num_ignored = num_ignored + 1
+                    pda.dump_append(doc)
+                else:
+                    pda.dump_append(d)
                 tq.update(1)
-                if _stop:
-                    if changed:
-                        pickle_manager.dump_documents(docs, path)
-                    exit(0)
-            if changed:
-                pickle_manager.dump_documents(docs, path)
+            pda.close()
         listener.stop()
         print("Warning - %s document(s) ignored." % num_ignored)
+        if _stop:
+            exit(0)
 
 def on_press(key):
     if key == Key.esc:

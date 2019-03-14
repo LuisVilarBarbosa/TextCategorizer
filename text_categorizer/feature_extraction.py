@@ -8,12 +8,12 @@ import pickle_manager
 from sklearn.feature_extraction.text import TfidfVectorizer
 
 def generate_X_y():
-    filtered_docs = []
-    corpus = []
-    classifications = []
+    filtered_docs = np.array([])
+    corpus = np.array([])
+    classifications = np.array([])
     num_ignored = 0
-    for path in pickle_manager.files_paths():
-        docs = pickle_manager.load_documents(path)
+    for filename in pickle_manager.filenames():
+        docs = pickle_manager.load_documents(filename)
         filtered_ds, n_ignored = filter(docs)
         filtered_docs = np.append(filtered_docs, filtered_ds)
         num_ignored = num_ignored + n_ignored
