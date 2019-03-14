@@ -143,7 +143,8 @@ class Pipeline():
     
     def start(self, X, y):
         from time import time
+        from logger import logger
         for f in self.classifiers:
             t1 = time()
             accuracy = f(X, y)
-            print("- %s: %s | %ss" % (f.__name__, accuracy, (time() - t1)))
+            logger.info("%s: %s | %ss" % (f.__name__, accuracy, (time() - t1)))

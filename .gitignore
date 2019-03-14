@@ -115,3 +115,7 @@ stanfordnlp_resources/
 
 # pickle files
 *.pkl
+
+# Log files
+log.txt
+
