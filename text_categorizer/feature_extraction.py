@@ -21,6 +21,8 @@ def generate_X_y():
             corpus.append(generate_corpus(lemmas))
             classifications.append(get_classification(doc))
     print("Warning - %s document(s) ignored." % num_ignored)
+    print("Removing incompatible data.")
+    remove_incompatible_data(corpus, classifications)
     print("Creating classification.")
     X, y = create_classification(corpus, classifications)
     return X, y
@@ -57,3 +59,14 @@ def create_classification(corpus, classifications):
     #print(vectorizer.get_feature_names())
     #print(X.shape)
     return X, y
+
+def remove_incompatible_data(corpus, classifications):
+    from collections import Counter
+    quantities = Counter(classifications)
+    for k, v in quantities.items():
+        if v <= 1:
+            print("Warning - Ignoring documents with the classification '%s' because the classification only occurs %d time(s)." % (k, v))
+            for _ in range(v):
+                index = classifications.index(k)
+                corpus.pop(index)
+                classifications.pop(index)
