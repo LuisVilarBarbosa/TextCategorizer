@@ -146,5 +146,8 @@ class Pipeline():
         from logger import logger
         for f in self.classifiers:
             t1 = time()
-            accuracy = f(X, y)
-            logger.info("%s: %s | %ss" % (f.__name__, accuracy, (time() - t1)))
+            try:
+                out = f(X, y)
+            except MemoryError:
+                out = MemoryError.__name__
+            logger.info("%s: %s | %ss" % (f.__name__, out, (time() - t1)))
