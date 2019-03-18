@@ -6,7 +6,7 @@ import classifiers
 import pickle_manager
 import parameters
 
-from os.path import isfile, isdir
+from os.path import isfile
 from pandas import read_excel
 from profilehooks import profile
 from sys import argv
@@ -26,10 +26,10 @@ def main():
         numProcesses = multiprocessing.cpu_count()
     with multiprocessing.Pool(processes=numProcesses) as pool:
         if parameters.PREPROCESS_DATA:
-            if not isfile(parameters.EXCEL_FILE) and not isdir(parameters.PREPROCESSED_DATA_FOLDER):
-                print("Please, provide a valid Excel file or a valid preprocessed data folder.")
+            if not isfile(parameters.EXCEL_FILE) and not isfile(parameters.PREPROCESSED_DATA_FILE):
+                print("Please, provide a valid Excel file or a valid preprocessed data file.")
                 quit()
-            if not isdir(parameters.PREPROCESSED_DATA_FOLDER) and isfile(parameters.EXCEL_FILE):
+            if not isfile(parameters.PREPROCESSED_DATA_FILE) and isfile(parameters.EXCEL_FILE):
                 print("Loading Excel file.")
                 data_frame = read_excel(parameters.EXCEL_FILE)
                 print("Executing initial_code_to_run_on_data_frame().")
@@ -37,14 +37,14 @@ def main():
                 print("Creating documents.")
                 docs = data_frame_to_document_list(data_frame)
                 print("Storing generated documents.")
-                pickle_manager.dump_all_documents(docs)
+                pickle_manager.dump_documents(docs)
             print("Preprocessing documents.")
             preprocess()
             print("Checking generated data.")
             pickle_manager.check_data()
         else:
-            if not isdir(parameters.PREPROCESSED_DATA_FOLDER):
-                print("The indicated preprocessed data folder does not exist.")
+            if not isfile(parameters.PREPROCESSED_DATA_FILE):
+                print("The indicated preprocessed data file does not exist.")
                 quit()
         print("Extracting features.")
         X, y = generate_X_y()

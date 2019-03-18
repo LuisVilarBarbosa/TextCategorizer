@@ -32,28 +32,22 @@ def stanfordnlp_process():
     stanfordnlp_download()
     nlp = stanfordnlp.Pipeline(processors='tokenize,mwt,pos,lemma,depparse', lang=parameters.STANFORDNLP_LANGUAGE_PACKAGE, models_dir=parameters.STANFORDNLP_RESOURCES_DIR, use_gpu=parameters.STANFORDNLP_USE_GPU)
     keyboard_listener = configure_keyboard_listener()
-    tq = tqdm(desc="Preprocessing", total=pickle_manager.get_total_docs(), unit="doc")
+    docs = pickle_manager.get_documents()
     num_ignored = 0
-    for filename in pickle_manager.filenames():
-        docs = pickle_manager.load_documents(filename)
-        pda = pickle_manager.PickleDumpAppend(filename)
-        for d in docs:
-            if not _stop and d.analyzed_sentences is None:
-                doc = d.copy()
-                text = doc.fields[parameters.EXCEL_COLUMN_WITH_TEXT_DATA]
-                try:
-                    stanfordnlp_doc = stanfordnlp.Document(text)
-                    stanfordnlp_doc_updated = nlp(stanfordnlp_doc)
-                    doc.update_stanfordnlp_document(stanfordnlp_doc_updated)
-                except Exception as e:
-                    print()
-                    print("Warning - Ignoring document number %s due to the following exception: %s" %  (doc.index, str(e)))
-                    num_ignored = num_ignored + 1
-                pda.dump_append(doc)
-            else:
-                pda.dump_append(d)
-            tq.update(1)
-        pda.close()
+    pda = pickle_manager.PickleDumpAppend(total=pickle_manager.get_total_docs(), filename=parameters.PREPROCESSED_DATA_FILE)
+    for doc in tqdm(iterable=docs, desc="Preprocessing", total=pickle_manager.get_total_docs(), unit="doc"):
+        if not _stop and doc.analyzed_sentences is None:
+            text = doc.fields[parameters.EXCEL_COLUMN_WITH_TEXT_DATA]
+            try:
+                stanfordnlp_doc = stanfordnlp.Document(text)
+                stanfordnlp_doc_updated = nlp(stanfordnlp_doc)
+                doc.update(stanfordnlp_doc_updated)
+            except Exception as e:
+                print()
+                print("Warning - Ignoring document number %s due to the following exception: %s" %  (doc.index, str(e)))
+                num_ignored = num_ignored + 1
+        pda.dump_append(doc)
+    pda.close()
     if keyboard_listener is not None:
         keyboard_listener.stop()
     print("Warning - %s document(s) ignored." % num_ignored)
