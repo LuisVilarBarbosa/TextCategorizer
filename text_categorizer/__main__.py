@@ -64,6 +64,7 @@ def main():
             classifiers.DecisionTreeClassifier,
             classifiers.ExtraTreeClassifier,
             #classifiers.ClassifierMixin,
+            classifiers.DummyClassifier,
         ]
         p = classifiers.Pipeline(clfs)
         p.start(X, y)

@@ -137,6 +137,14 @@ def ClassifierMixin(X, y):
     clf = ClassifierMixin()
     return clf.score(X_train, y_train)
 
+def DummyClassifier(X, y):
+    from sklearn.dummy import DummyClassifier
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42, shuffle=True, stratify=y)
+    clf = DummyClassifier(strategy='stratified', random_state=None, constant=None)
+    clf.fit(X_train, y_train)
+    y_predict = clf.predict(X_test)
+    return accuracy_score(y_test, y_predict, normalize=True)
+
 class Pipeline():
     def __init__(self, classifiers):
         self.classifiers = classifiers
