@@ -70,3 +70,14 @@ def remove_incompatible_data(corpus, classifications):
                 index = classifications.index(k)
                 corpus.pop(index)
                 classifications.pop(index)
+
+def LatentDirichletAllocation(X, y):
+    from sklearn.decomposition import LatentDirichletAllocation
+    lda = LatentDirichletAllocation(n_components=10, doc_topic_prior=None,
+                topic_word_prior=None, learning_method='batch', learning_decay=0.7,
+                learning_offset=10.0, max_iter=10, batch_size=128, evaluate_every=-1,
+                total_samples=1000000.0, perp_tol=0.1, mean_change_tol=0.001,
+                max_doc_update_iter=100, n_jobs=None, verbose=0, random_state=None,
+                n_topics=None)
+    X = lda.fit_transform(X, y)
+    return X, y
