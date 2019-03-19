@@ -3,8 +3,8 @@
 
 import multiprocessing
 import classifiers
+import importlib.util
 import pickle_manager
-import parameters
 
 from os.path import isfile
 from pandas import read_excel
@@ -12,28 +12,34 @@ from profilehooks import profile
 from sys import argv
 from feature_extraction import generate_X_y
 from functions import data_frame_to_document_list
+from Parameters import Parameters
 from preprocessing import preprocess
 from ui import verify_python_version
 
 @profile
 def main():
-    if len(argv) != 1:
-        print("Usage: python3 text_categorizer")
+    if len(argv) != 2:
+        print("Usage: python3 text_categorizer <configuration file>")
         quit()
     verify_python_version()
-    numProcesses = int(parameters.NUMBER_OF_PROCESSES)
+    config_filename = argv[1]
+    Parameters.load_configuration(config_filename)
+    numProcesses = Parameters.NUMBER_OF_PROCESSES
     if numProcesses == 0:
         numProcesses = multiprocessing.cpu_count()
     with multiprocessing.Pool(processes=numProcesses) as pool:
-        if parameters.PREPROCESS_DATA:
-            if not isfile(parameters.EXCEL_FILE) and not isfile(parameters.PREPROCESSED_DATA_FILE):
+        if Parameters.PREPROCESS_DATA:
+            if not isfile(Parameters.EXCEL_FILE) and not isfile(Parameters.PREPROCESSED_DATA_FILE):
                 print("Please, provide a valid Excel file or a valid preprocessed data file.")
                 quit()
-            if not isfile(parameters.PREPROCESSED_DATA_FILE) and isfile(parameters.EXCEL_FILE):
+            if not isfile(Parameters.PREPROCESSED_DATA_FILE) and isfile(Parameters.EXCEL_FILE):
                 print("Loading Excel file.")
-                data_frame = read_excel(parameters.EXCEL_FILE)
+                data_frame = read_excel(Parameters.EXCEL_FILE)
                 print("Executing initial_code_to_run_on_data_frame().")
-                data_frame = parameters.initial_code_to_run_on_data_frame(data_frame)
+                spec = importlib.util.spec_from_file_location("excel_filtration_code", Parameters.EXCEL_FILTRATION_CODE)
+                excel_filtration_code = importlib.util.module_from_spec(spec)
+                spec.loader.exec_module(excel_filtration_code)
+                data_frame = excel_filtration_code.initial_code_to_run_on_data_frame(data_frame)
                 print("Creating documents.")
                 docs = data_frame_to_document_list(data_frame)
                 print("Storing generated documents.")
@@ -43,7 +49,7 @@ def main():
             print("Checking generated data.")
             pickle_manager.check_data()
         else:
-            if not isfile(parameters.PREPROCESSED_DATA_FILE):
+            if not isfile(Parameters.PREPROCESSED_DATA_FILE):
                 print("The indicated preprocessed data file does not exist.")
                 quit()
         print("Extracting features.")

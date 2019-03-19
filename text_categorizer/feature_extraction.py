@@ -2,11 +2,11 @@
 # coding=utf-8
 
 import numpy as np
-import parameters
 import pickle_manager
 
 from sklearn.feature_extraction.text import TfidfVectorizer
 from tqdm import tqdm
+from Parameters import Parameters
 
 def generate_X_y():
     docs = pickle_manager.get_documents()
@@ -37,15 +37,13 @@ def generate_corpus(lemmas):
     return ' '.join(lemmas)
 
 def get_classification(doc):
-    return doc.fields[parameters.EXCEL_COLUMN_WITH_CLASSIFICATION_DATA]
+    return doc.fields[Parameters.EXCEL_COLUMN_WITH_CLASSIFICATION_DATA]
 
 def create_classification(corpus, classifications):
     from nltk import download
     download(info_or_id='stopwords', quiet=True)
     from nltk.corpus import stopwords
-    stop_words = set()
-    for language in parameters.NLTK_STOP_WORDS_PACKAGES:
-        stop_words = stop_words.union(set(stopwords.words(language)))
+    stop_words = set(stopwords.words(Parameters.NLTK_STOP_WORDS_PACKAGE))
     # The code below is based on https://scikit-learn.org/stable/modules/generated/sklearn.feature_extraction.text.TfidfVectorizer.html (accessed on 2019-02-27).
     vectorizer = TfidfVectorizer(input='content', encoding='utf-8',
                 decode_error='strict', strip_accents=None, lowercase=True,

@@ -3,7 +3,7 @@
 
 def verify_python_version():
     from functions import get_python_version
-    version_number = int(get_python_version())
-    if version_number < 3:
-        print("Please use Python3 or higher.")
+    version_array = get_python_version()
+    if version_array < [3,5]:
+        print("Please use Python3.5 or higher.")
         quit()

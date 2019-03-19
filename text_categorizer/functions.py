@@ -3,8 +3,8 @@
 
 def get_python_version():
     from sys import version
-    version_number = int(version[:version.find(".")])
-    return version_number
+    version_array = [int(n) for n in version[:version.find(" ")].split(".")]
+    return version_array
 
 def append_to_data_frame(array_2d, data_frame, column_name):
     new_data_frame = data_frame.copy()

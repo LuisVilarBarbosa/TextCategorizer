@@ -2,11 +2,11 @@
 # coding=utf-8
 
 import stanfordnlp
-import parameters
 import pickle_manager
 
 from tqdm import tqdm
 from KeyboardListener import KeyboardListener
+from Parameters import Parameters
 
 def preprocess():
     return stanfordnlp_process()
@@ -15,29 +15,29 @@ def stanfordnlp_download():
     from os.path import isdir
     from os import listdir
     found = False
-    if isdir(parameters.STANFORDNLP_RESOURCES_DIR):
-        files = listdir(parameters.STANFORDNLP_RESOURCES_DIR)
-        filename_start = ''.join([parameters.STANFORDNLP_LANGUAGE_PACKAGE, "_"])
+    if isdir(Parameters.STANFORDNLP_RESOURCES_DIR):
+        files = listdir(Parameters.STANFORDNLP_RESOURCES_DIR)
+        filename_start = ''.join([Parameters.STANFORDNLP_LANGUAGE_PACKAGE, "_"])
         for file in files:
             if file.startswith(filename_start):
                 found = True
                 break
     if not found:
-        stanfordnlp.download(parameters.STANFORDNLP_LANGUAGE_PACKAGE, resource_dir=parameters.STANFORDNLP_RESOURCES_DIR, confirm_if_exists=True, force=False)
+        stanfordnlp.download(Parameters.STANFORDNLP_LANGUAGE_PACKAGE, resource_dir=Parameters.STANFORDNLP_RESOURCES_DIR, confirm_if_exists=True, force=False)
 
 _stop = False
 
 def stanfordnlp_process():
     global _stop
     stanfordnlp_download()
-    nlp = stanfordnlp.Pipeline(processors='tokenize,mwt,pos,lemma,depparse', lang=parameters.STANFORDNLP_LANGUAGE_PACKAGE, models_dir=parameters.STANFORDNLP_RESOURCES_DIR, use_gpu=parameters.STANFORDNLP_USE_GPU)
+    nlp = stanfordnlp.Pipeline(processors='tokenize,mwt,pos,lemma,depparse', lang=Parameters.STANFORDNLP_LANGUAGE_PACKAGE, models_dir=Parameters.STANFORDNLP_RESOURCES_DIR, use_gpu=Parameters.STANFORDNLP_USE_GPU)
     keyboard_listener = configure_keyboard_listener()
     docs = pickle_manager.get_documents()
     num_ignored = 0
-    pda = pickle_manager.PickleDumpAppend(total=pickle_manager.get_total_docs(), filename=parameters.PREPROCESSED_DATA_FILE)
+    pda = pickle_manager.PickleDumpAppend(total=pickle_manager.get_total_docs(), filename=Parameters.PREPROCESSED_DATA_FILE)
     for doc in tqdm(iterable=docs, desc="Preprocessing", total=pickle_manager.get_total_docs(), unit="doc"):
         if not _stop and doc.analyzed_sentences is None:
-            text = doc.fields[parameters.EXCEL_COLUMN_WITH_TEXT_DATA]
+            text = doc.fields[Parameters.EXCEL_COLUMN_WITH_TEXT_DATA]
             try:
                 stanfordnlp_doc = stanfordnlp.Document(text)
                 stanfordnlp_doc_updated = nlp(stanfordnlp_doc)

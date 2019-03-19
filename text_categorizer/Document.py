@@ -4,7 +4,8 @@
 import conllu
 import pandas
 import stanfordnlp
-import parameters
+
+from Parameters import Parameters
 
 _excel_start_row = 2
 
@@ -27,7 +28,7 @@ class Document:
 
     def update(self, stanfordnlp_document):
         assert type(stanfordnlp_document) is stanfordnlp.Document
-        assert self.fields[parameters.EXCEL_COLUMN_WITH_TEXT_DATA] == stanfordnlp_document.text
+        assert self.fields[Parameters.EXCEL_COLUMN_WITH_TEXT_DATA] == stanfordnlp_document.text
         if stanfordnlp_document.conll_file is not None:
             conll = stanfordnlp_document.conll_file.conll_as_string()
             self.analyzed_sentences = conllu.parse(conll)

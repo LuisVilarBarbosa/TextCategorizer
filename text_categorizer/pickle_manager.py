@@ -3,7 +3,8 @@
 
 import pickle
 import os
-import parameters
+
+from Parameters import Parameters
 
 _pickle_protocol = 2
 
@@ -19,7 +20,7 @@ def load(path):
     return data
 
 def get_documents():
-    input_file = open(parameters.PREPROCESSED_DATA_FILE, 'rb')
+    input_file = open(Parameters.PREPROCESSED_DATA_FILE, 'rb')
     _total = pickle.load(input_file)
     while True:
         try:
@@ -29,9 +30,9 @@ def get_documents():
             break
 
 def dump_documents(docs):
-    if os.path.exists(parameters.PREPROCESSED_DATA_FILE):
-        raise Exception("The file '%s' should not exist." % parameters.PREPROCESSED_DATA_FILE)
-    pda = PickleDumpAppend(total=len(docs), filename=parameters.PREPROCESSED_DATA_FILE)
+    if os.path.exists(Parameters.PREPROCESSED_DATA_FILE):
+        raise Exception("The file '%s' should not exist." % Parameters.PREPROCESSED_DATA_FILE)
+    pda = PickleDumpAppend(total=len(docs), filename=Parameters.PREPROCESSED_DATA_FILE)
     for doc in docs:
         pda.dump_append(doc)
     pda.close()
@@ -57,7 +58,7 @@ def _generate_file():
     return filename
 
 def get_total_docs():
-    input_file = open(parameters.PREPROCESSED_DATA_FILE, 'rb')
+    input_file = open(Parameters.PREPROCESSED_DATA_FILE, 'rb')
     total = pickle.load(input_file)
     input_file.close()
     return total
