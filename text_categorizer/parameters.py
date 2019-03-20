@@ -24,7 +24,6 @@ class Parameters:
         Parameters.EXCEL_COLUMN_WITH_TEXT_DATA = config.get("Preprocessing", "Excel column with text data")
         Parameters.EXCEL_COLUMN_WITH_CLASSIFICATION_DATA = config.get("Preprocessing", "Excel column with classification data")
         Parameters.NLTK_STOP_WORDS_PACKAGE = config.get("Feature extraction", "NLTK stop words package")
-        Parameters.NUMBER_OF_PROCESSES = config.getint("General", "Number of processes")
         Parameters.STANFORDNLP_LANGUAGE_PACKAGE = config.get("Preprocessing", "StanfordNLP language package")
         Parameters.STANFORDNLP_USE_GPU = config.get("Preprocessing", "StanfordNLP use GPU")
         Parameters.STANFORDNLP_RESOURCES_DIR = config.get("Preprocessing", "StanfordNLP resources directory")
