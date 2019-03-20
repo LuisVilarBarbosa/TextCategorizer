@@ -44,7 +44,7 @@ def stanfordnlp_process():
                 doc.update(stanfordnlp_doc_updated)
             except Exception as e:
                 print()
-                print("Warning - Ignoring document number %s due to the following exception: %s" %  (doc.index, str(e)))
+                print("Warning - Ignoring document number %s due to the following exception: %s" %  (doc.index, e.__repr__()))
                 num_ignored = num_ignored + 1
         pda.dump_append(doc)
     pda.close()
