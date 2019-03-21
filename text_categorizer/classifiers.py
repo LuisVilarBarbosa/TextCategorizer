@@ -14,12 +14,13 @@ def RandomForestClassifier(X, y):
                 min_impurity_split=None, bootstrap=True, oob_score=False, n_jobs=None,
                 random_state=None, verbose=0, warm_start=False, class_weight=None)
     clf.fit(X_train, y_train)
-    #print(clf.feature_importances_)
+    #from logger import logger
+    #logger.debug(clf.feature_importances_)
     y_predict = clf.predict_proba(X_test)
     # The code below is based on https://stackabuse.com/text-classification-with-python-and-scikit-learn/ (accessed on 2019-02-26).
     #from sklearn.metrics import confusion_matrix, classification_report
-    #print(confusion_matrix(y_test, y_predict))  
-    #print(classification_report(y_test, y_predict))
+    #logger.debug(confusion_matrix(y_test, y_predict))  
+    #logger.debug(classification_report(y_test, y_predict))
     # The code below is based on https://ehackz.com/2018/03/23/python-scikit-learn-random-forest-classifier-tutorial/ (accessed on 2019-02-25).
     return my_accuracy_score(y_test, y_predict)
 

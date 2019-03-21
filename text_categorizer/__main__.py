@@ -11,6 +11,7 @@ from profilehooks import profile
 from sys import argv
 from feature_extraction import generate_X_y
 from functions import data_frame_to_document_list
+from logger import logger
 from Parameters import Parameters
 from preprocessing import preprocess
 from ui import verify_python_version
@@ -20,37 +21,38 @@ def main():
     if len(argv) != 2:
         print("Usage: python3 text_categorizer <configuration file>")
         quit()
+    logger.debug("Starting execution.")
     verify_python_version()
     config_filename = argv[1]
     Parameters.load_configuration(config_filename)
     if Parameters.PREPROCESS_DATA:
         if not isfile(Parameters.EXCEL_FILE) and not isfile(Parameters.PREPROCESSED_DATA_FILE):
-            print("Please, provide a valid Excel file or a valid preprocessed data file.")
+            logger.error("Please, provide a valid Excel file or a valid preprocessed data file.")
             quit()
         if not isfile(Parameters.PREPROCESSED_DATA_FILE) and isfile(Parameters.EXCEL_FILE):
-            print("Loading Excel file.")
+            logger.info("Loading Excel file.")
             data_frame = read_excel(Parameters.EXCEL_FILE)
-            print("Executing initial_code_to_run_on_data_frame().")
+            logger.info("Executing initial_code_to_run_on_data_frame().")
             spec = importlib.util.spec_from_file_location("excel_filtration_code", Parameters.EXCEL_FILTRATION_CODE)
             excel_filtration_code = importlib.util.module_from_spec(spec)
             spec.loader.exec_module(excel_filtration_code)
             data_frame = excel_filtration_code.initial_code_to_run_on_data_frame(data_frame)
-            print("Creating documents.")
+            logger.info("Creating documents.")
             docs = data_frame_to_document_list(data_frame)
-            print("Storing generated documents.")
+            logger.info("Storing generated documents.")
             pickle_manager.dump_documents(docs)
-        print("Preprocessing documents.")
+        logger.info("Preprocessing documents.")
         preprocess()
-        print("Checking generated data.")
+        logger.info("Checking generated data.")
         pickle_manager.check_data()
     else:
         if not isfile(Parameters.PREPROCESSED_DATA_FILE):
-            print("The indicated preprocessed data file does not exist.")
+            logger.error("The indicated preprocessed data file does not exist.")
             quit()
-    print("Extracting features.")
+    logger.info("Extracting features.")
     X, y = generate_X_y()
-    print("Running classifiers.")
-    print("Accuracies:")
+    logger.info("Running classifiers.")
+    logger.info("Accuracies:")
     clfs = [
         classifiers.RandomForestClassifier,
         classifiers.BernoulliNB,
@@ -69,6 +71,7 @@ def main():
     ]
     p = classifiers.Pipeline(clfs)
     p.start(X, y)
+    logger.debug("Execution completed.")
 
 if __name__ == "__main__":
     main()

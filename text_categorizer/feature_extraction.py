@@ -6,6 +6,7 @@ import pickle_manager
 
 from sklearn.feature_extraction.text import TfidfVectorizer
 from tqdm import tqdm
+from logger import logger
 from Parameters import Parameters
 
 def generate_X_y():
@@ -20,10 +21,10 @@ def generate_X_y():
             lemmas = my_filter(doc)
             corpus.append(generate_corpus(lemmas))
             classifications.append(get_classification(doc))
-    print("Warning - %s document(s) ignored." % num_ignored)
-    print("Removing incompatible data.")
+    logger.warning("%s document(s) ignored." % num_ignored)
+    logger.info("Removing incompatible data.")
     remove_incompatible_data(corpus, classifications)
-    print("Creating classification.")
+    logger.info("Creating classification.")
     X, y = create_classification(corpus, classifications)
     return X, y
 
@@ -54,8 +55,8 @@ def create_classification(corpus, classifications):
                 use_idf=True, smooth_idf=True, sublinear_tf=False)
     X = vectorizer.fit_transform(corpus)
     y = classifications
-    #print(vectorizer.get_feature_names())
-    #print(X.shape)
+    #logger.debug(vectorizer.get_feature_names())
+    #logger.debug(X.shape)
     return X, y
 
 def remove_incompatible_data(corpus, classifications):
@@ -63,7 +64,7 @@ def remove_incompatible_data(corpus, classifications):
     quantities = Counter(classifications)
     for k, v in quantities.items():
         if v <= 1:
-            print("Warning - Ignoring documents with the classification '%s' because the classification only occurs %d time(s)." % (k, v))
+            logger.warning("Ignoring documents with the classification '%s' because the classification only occurs %d time(s)." % (k, v))
             for _ in range(v):
                 index = classifications.index(k)
                 corpus.pop(index)
