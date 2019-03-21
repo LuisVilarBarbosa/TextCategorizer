@@ -7,7 +7,7 @@ import pickle_manager
 
 from os.path import isfile
 from pandas import read_excel
-from profilehooks import profile
+#from profilehooks import profile
 from sys import argv
 from feature_extraction import generate_X_y
 from functions import data_frame_to_document_list
@@ -16,7 +16,7 @@ from Parameters import Parameters
 from preprocessing import preprocess
 from ui import verify_python_version
 
-@profile
+#@profile
 def main():
     if len(argv) != 2:
         print("Usage: python3 text_categorizer <configuration file>")
