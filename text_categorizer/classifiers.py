@@ -1,7 +1,6 @@
 #!/usr/bin/python3
 # coding=utf-8
 
-from sklearn.metrics import accuracy_score
 from sklearn.model_selection import train_test_split
 
 def RandomForestClassifier(X, y):
@@ -16,45 +15,45 @@ def RandomForestClassifier(X, y):
                 random_state=None, verbose=0, warm_start=False, class_weight=None)
     clf.fit(X_train, y_train)
     #print(clf.feature_importances_)
-    y_predict = clf.predict(X_test)
+    y_predict = clf.predict_proba(X_test)
     # The code below is based on https://stackabuse.com/text-classification-with-python-and-scikit-learn/ (accessed on 2019-02-26).
     #from sklearn.metrics import confusion_matrix, classification_report
     #print(confusion_matrix(y_test, y_predict))  
     #print(classification_report(y_test, y_predict))
     # The code below is based on https://ehackz.com/2018/03/23/python-scikit-learn-random-forest-classifier-tutorial/ (accessed on 2019-02-25).
-    return accuracy_score(y_test, y_predict, normalize=True)
+    return my_accuracy_score(y_test, y_predict)
 
 def BernoulliNB(X, y):
     from sklearn.naive_bayes import BernoulliNB
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42, shuffle=True, stratify=y)
     clf = BernoulliNB(alpha=1.0, binarize=0.0, fit_prior=True, class_prior=None)
     clf.fit(X_train, y_train)
-    y_predict = clf.predict(X_test)
-    return accuracy_score(y_test, y_predict, normalize=True)
+    y_predict = clf.predict_proba(X_test)
+    return my_accuracy_score(y_test, y_predict)
 
 def GaussianNB(X, y):
     from sklearn.naive_bayes import GaussianNB
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42, shuffle=True, stratify=y)
     clf = GaussianNB(priors=None, var_smoothing=1e-09)
     clf.fit(X_train.toarray(), y_train)
-    y_predict = clf.predict(X_test.toarray())
-    return accuracy_score(y_test, y_predict, normalize=True)
+    y_predict = clf.predict_proba(X_test.toarray())
+    return my_accuracy_score(y_test, y_predict)
 
 def MultinomialNB(X, y):
     from sklearn.naive_bayes import MultinomialNB
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42, shuffle=True, stratify=y)
     clf = MultinomialNB(alpha=1.0, fit_prior=True, class_prior=None)
     clf.fit(X_train, y_train)
-    y_predict = clf.predict(X_test)
-    return accuracy_score(y_test, y_predict, normalize=True)
+    y_predict = clf.predict_proba(X_test)
+    return my_accuracy_score(y_test, y_predict)
 
 def ComplementNB(X, y):
     from sklearn.naive_bayes import ComplementNB
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42, shuffle=True, stratify=y)
     clf = ComplementNB(alpha=1.0, fit_prior=True, class_prior=None, norm=False)
     clf.fit(X_train, y_train)
-    y_predict = clf.predict(X_test)
-    return accuracy_score(y_test, y_predict, normalize=True)
+    y_predict = clf.predict_proba(X_test)
+    return my_accuracy_score(y_test, y_predict)
 
 def KNeighborsClassifier(X, y):
     from sklearn.neighbors import KNeighborsClassifier
@@ -62,8 +61,8 @@ def KNeighborsClassifier(X, y):
     clf = KNeighborsClassifier(n_neighbors=5, weights='uniform', algorithm='auto',
                 leaf_size=30, p=2, metric='minkowski', metric_params=None, n_jobs=None)
     clf.fit(X_train, y_train)
-    y_predict = clf.predict(X_test)
-    return accuracy_score(y_test, y_predict, normalize=True)
+    y_predict = clf.predict_proba(X_test)
+    return my_accuracy_score(y_test, y_predict)
 
 def BernoulliRBM(X, y):
     from sklearn.neural_network import BernoulliRBM
@@ -84,8 +83,8 @@ def MLPClassifier(X, y):
                 validation_fraction=0.1, beta_1=0.9, beta_2=0.999, epsilon=1e-08,
                 n_iter_no_change=10)
     clf.fit(X_train, y_train)
-    y_predict = clf.predict(X_test)
-    return accuracy_score(y_test, y_predict, normalize=True)
+    y_predict = clf.predict_proba(X_test)
+    return my_accuracy_score(y_test, y_predict)
 
 def LinearSVC(X, y):
     from sklearn.svm import LinearSVC
@@ -95,7 +94,7 @@ def LinearSVC(X, y):
                 class_weight=None, verbose=0, random_state=None, max_iter=1000)
     clf.fit(X_train, y_train)
     y_predict = clf.predict(X_test)
-    return accuracy_score(y_test, y_predict, normalize=True)
+    return my_accuracy_score(y_test, y_predict)
 
 def NuSVC(X, y):
     from sklearn.svm import NuSVC
@@ -105,8 +104,8 @@ def NuSVC(X, y):
                 class_weight=None, verbose=False, max_iter=-1,
                 decision_function_shape='ovr', random_state=None)
     clf.fit(X_train, y_train)
-    y_predict = clf.predict(X_test)
-    return accuracy_score(y_test, y_predict, normalize=True)
+    y_predict = clf.predict_proba(X_test)
+    return my_accuracy_score(y_test, y_predict)
 
 def DecisionTreeClassifier(X, y):
     from sklearn.tree import DecisionTreeClassifier
@@ -117,8 +116,8 @@ def DecisionTreeClassifier(X, y):
                 min_impurity_decrease=0.0, min_impurity_split=None, class_weight=None,
                 presort=False)
     clf.fit(X_train, y_train)
-    y_predict = clf.predict(X_test)
-    return accuracy_score(y_test, y_predict, normalize=True)
+    y_predict = clf.predict_proba(X_test)
+    return my_accuracy_score(y_test, y_predict)
 
 def ExtraTreeClassifier(X, y):
     from sklearn.tree import ExtraTreeClassifier
@@ -128,8 +127,8 @@ def ExtraTreeClassifier(X, y):
                 max_features='auto', random_state=None, max_leaf_nodes=None,
                 min_impurity_decrease=0.0, min_impurity_split=None, class_weight=None)
     clf.fit(X_train, y_train)
-    y_predict = clf.predict(X_test)
-    return accuracy_score(y_test, y_predict, normalize=True)
+    y_predict = clf.predict_proba(X_test)
+    return my_accuracy_score(y_test, y_predict)
 
 def ClassifierMixin(X, y):
     from sklearn.base import ClassifierMixin
@@ -142,8 +141,8 @@ def DummyClassifier(X, y):
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42, shuffle=True, stratify=y)
     clf = DummyClassifier(strategy='stratified', random_state=None, constant=None)
     clf.fit(X_train, y_train)
-    y_predict = clf.predict(X_test)
-    return accuracy_score(y_test, y_predict, normalize=True)
+    y_predict = clf.predict_proba(X_test)
+    return my_accuracy_score(y_test, y_predict)
 
 class Pipeline():
     def __init__(self, classifiers):
@@ -159,3 +158,26 @@ class Pipeline():
             except MemoryError:
                 out = MemoryError.__name__
             logger.info("%s: %s | %ss" % (f.__name__, out, (time() - t1)))
+
+def my_accuracy_score(y_test, y_predict):
+    from numpy import argsort, flip
+    from sklearn.metrics import accuracy_score
+    normalize = True
+    if y_predict.ndim == 1:
+        return accuracy_score(y_test, y_predict, normalize=normalize)
+    assert y_predict.ndim == 2
+    sorted_classifications = sorted(set(y_test))
+    accepted_probs = 1
+    y_pred = []
+    for i in range(len(y_predict)):
+        idxs_of_sorted_higher2lower = flip(argsort(y_predict[i]))
+        ok = False
+        for j in range(accepted_probs):
+            index = idxs_of_sorted_higher2lower[j]
+            classification = sorted_classifications[index]
+            if y_test[i] == classification:
+                y_pred.append(classification)
+                ok = True
+        if not ok:
+            y_pred.append(classification)
+    return accuracy_score(y_test, y_pred, normalize=normalize)
