@@ -65,14 +65,6 @@ def KNeighborsClassifier(X, y):
     y_predict = clf.predict_proba(X_test)
     return my_accuracy_score(y, y_test, y_predict)
 
-def BernoulliRBM(X, y):
-    from sklearn.neural_network import BernoulliRBM
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42, shuffle=True, stratify=y)
-    clf = BernoulliRBM(n_components=256, learning_rate=0.1, batch_size=10, n_iter=10,
-                verbose=0, random_state=None)
-    clf.fit(X_train, y_train)
-    return clf.score_samples(X_test)
-
 def MLPClassifier(X, y):
     from sklearn.neural_network import MLPClassifier
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42, shuffle=True, stratify=y)
@@ -97,17 +89,6 @@ def LinearSVC(X, y):
     y_predict = clf.predict(X_test)
     return my_accuracy_score(y, y_test, y_predict)
 
-def NuSVC(X, y):
-    from sklearn.svm import NuSVC
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42, shuffle=True, stratify=y)
-    clf = NuSVC(nu=0.5, kernel='rbf', degree=3, gamma='auto_deprecated', coef0=0.0,
-                shrinking=True, probability=False, tol=0.001, cache_size=200,
-                class_weight=None, verbose=False, max_iter=-1,
-                decision_function_shape='ovr', random_state=None)
-    clf.fit(X_train, y_train)
-    y_predict = clf.predict_proba(X_test)
-    return my_accuracy_score(y, y_test, y_predict)
-
 def DecisionTreeClassifier(X, y):
     from sklearn.tree import DecisionTreeClassifier
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42, shuffle=True, stratify=y)
@@ -130,12 +111,6 @@ def ExtraTreeClassifier(X, y):
     clf.fit(X_train, y_train)
     y_predict = clf.predict_proba(X_test)
     return my_accuracy_score(y, y_test, y_predict)
-
-def ClassifierMixin(X, y):
-    from sklearn.base import ClassifierMixin
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42, shuffle=True, stratify=y)
-    clf = ClassifierMixin()
-    return clf.score(X_train, y_train)
 
 def DummyClassifier(X, y):
     from sklearn.dummy import DummyClassifier

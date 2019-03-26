@@ -60,13 +60,10 @@ def main():
         classifiers.MultinomialNB,
         classifiers.ComplementNB,
         classifiers.KNeighborsClassifier,
-        #classifiers.BernoulliRBM,
         classifiers.MLPClassifier,
         classifiers.LinearSVC,
-        #classifiers.NuSVC,
         classifiers.DecisionTreeClassifier,
         classifiers.ExtraTreeClassifier,
-        #classifiers.ClassifierMixin,
         classifiers.DummyClassifier,
     ]
     p = classifiers.Pipeline(clfs)
