@@ -4,7 +4,7 @@
 import numpy as np
 import pickle_manager
 
-from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer, HashingVectorizer
 from tqdm import tqdm
 from logger import logger
 from Parameters import Parameters
@@ -45,14 +45,7 @@ def create_classification(corpus, classifications):
     download(info_or_id='stopwords', quiet=True)
     from nltk.corpus import stopwords
     stop_words = set(stopwords.words(Parameters.NLTK_STOP_WORDS_PACKAGE))
-    # The code below is based on https://scikit-learn.org/stable/modules/generated/sklearn.feature_extraction.text.TfidfVectorizer.html (accessed on 2019-02-27).
-    vectorizer = TfidfVectorizer(input='content', encoding='utf-8',
-                decode_error='strict', strip_accents=None, lowercase=True,
-                preprocessor=None, tokenizer=None, analyzer='word',
-                stop_words=stop_words, token_pattern=r'\S+',
-                ngram_range=(1,1), max_df=1.0, min_df=1, max_features=None,
-                vocabulary=None, binary=False, dtype=np.float64, norm='l2',
-                use_idf=True, smooth_idf=True, sublinear_tf=False)
+    vectorizer = get_vectorizer(Parameters.VECTORIZER, stop_words=stop_words, check_vectorizer=False)
     X = vectorizer.fit_transform(corpus)
     y = classifications
     #logger.debug(vectorizer.get_feature_names())
@@ -80,3 +73,35 @@ def LatentDirichletAllocation(X, y):
                 n_topics=None)
     X = lda.fit_transform(X, y)
     return X, y
+
+def get_vectorizer(vectorizer, stop_words=[], check_vectorizer=False):
+    if check_vectorizer:
+        assert vectorizer in [TfidfVectorizer.__name__, CountVectorizer.__name__, HashingVectorizer.__name__]
+        return
+    token_pattern = r'\S+'
+    if vectorizer == TfidfVectorizer.__name__:
+        v = TfidfVectorizer(input='content', encoding='utf-8',
+                decode_error='strict', strip_accents=None, lowercase=True,
+                preprocessor=None, tokenizer=None, analyzer='word',
+                stop_words=stop_words, token_pattern=token_pattern,
+                ngram_range=(1,1), max_df=1.0, min_df=1, max_features=None,
+                vocabulary=None, binary=False, dtype=np.float64, norm='l2',
+                use_idf=True, smooth_idf=True, sublinear_tf=False)
+    elif vectorizer == CountVectorizer.__name__:
+        v = CountVectorizer(input='content', encoding='utf-8',
+                decode_error='strict', strip_accents=None, lowercase=True,
+                preprocessor=None, tokenizer=None, stop_words=stop_words,
+                token_pattern=token_pattern, ngram_range=(1, 1),
+                analyzer='word', max_df=1.0, min_df=1, max_features=None,
+                vocabulary=None, binary=False, dtype=np.int64)
+    elif vectorizer == HashingVectorizer.__name__:
+        v = HashingVectorizer(input='content', encoding='utf-8',
+                decode_error='strict', strip_accents=None, lowercase=True,
+                preprocessor=None, tokenizer=None, stop_words=stop_words,
+                token_pattern=token_pattern, ngram_range=(1, 1),
+                analyzer='word', n_features=1048576, binary=False,
+                norm='l2', alternate_sign=True, non_negative=False,
+                dtype=np.float64)
+    else:
+        raise "Invalid vectorizer."
+    return v

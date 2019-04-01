@@ -2,10 +2,8 @@ FROM continuumio/miniconda3:4.5.12
 
 WORKDIR /usr/src/app
 
-COPY text_categorizer/setup.py /usr/src/app/text_categorizer/setup.py
+COPY text_categorizer/environment.yml /usr/src/app/text_categorizer/environment.yml
 
-RUN conda install pytorch torchvision cudatoolkit=10.0 -c pytorch
+RUN conda env create --file /usr/src/app/text_categorizer/environment.yml
 
-RUN python3 /usr/src/app/text_categorizer/setup.py install
-
-CMD python3 /usr/src/app/text_categorizer/__main__.py
+CMD /bin/bash -c "source activate text-categorizer && python3 /usr/src/app/text_categorizer $CONFIG_FILE"

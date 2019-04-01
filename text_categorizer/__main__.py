@@ -56,15 +56,18 @@ def main():
     clfs = [
         classifiers.RandomForestClassifier,
         classifiers.BernoulliNB,
-        classifiers.GaussianNB,
         classifiers.MultinomialNB,
         classifiers.ComplementNB,
         classifiers.KNeighborsClassifier,
         classifiers.MLPClassifier,
-        classifiers.LinearSVC,
+        classifiers.SVC,
         classifiers.DecisionTreeClassifier,
         classifiers.ExtraTreeClassifier,
         classifiers.DummyClassifier,
+        classifiers.SGDClassifier,
+        classifiers.BaggingClassifier,
+        classifiers.RFE,
+        classifiers.RFECV,
     ]
     p = classifiers.Pipeline(clfs)
     p.start(X, y)

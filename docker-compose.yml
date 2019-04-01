@@ -1,7 +1,9 @@
-version: '3.3'
+version: '2.0'
 
 services:
   text_categorizer:
     build: .
     volumes:
       - .:/usr/src/app
+    environment:
+      - CONFIG_FILE=config.ini

@@ -2,72 +2,42 @@
 # coding=utf-8
 
 from sklearn.model_selection import train_test_split
+from Parameters import Parameters
 
-def RandomForestClassifier(X, y):
+def RandomForestClassifier():
     from sklearn.ensemble import RandomForestClassifier
-    # The code below is based on https://ehackz.com/2018/03/23/python-scikit-learn-random-forest-classifier-tutorial/ (accessed on 2019-02-26).
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42, shuffle=True, stratify=y)
-    # The code below is based on https://www.kdnuggets.com/2017/12/general-approach-preprocessing-text-data.html (accessed on 2019-02-25).
     clf = RandomForestClassifier(n_estimators=100, criterion='gini', max_depth=None,
                 min_samples_split=2, min_samples_leaf=1, min_weight_fraction_leaf=0.0,
                 max_features='auto', max_leaf_nodes=None, min_impurity_decrease=0.0,
-                min_impurity_split=None, bootstrap=True, oob_score=False, n_jobs=None,
-                random_state=None, verbose=0, warm_start=False, class_weight=None)
-    clf.fit(X_train, y_train)
-    #from logger import logger
-    #logger.debug(clf.feature_importances_)
-    y_predict = clf.predict_proba(X_test)
-    # The code below is based on https://stackabuse.com/text-classification-with-python-and-scikit-learn/ (accessed on 2019-02-26).
-    #from sklearn.metrics import confusion_matrix, classification_report
-    #logger.debug(confusion_matrix(y_test, y_predict))  
-    #logger.debug(classification_report(y_test, y_predict))
-    # The code below is based on https://ehackz.com/2018/03/23/python-scikit-learn-random-forest-classifier-tutorial/ (accessed on 2019-02-25).
-    return my_accuracy_score(y, y_test, y_predict)
+                min_impurity_split=None, bootstrap=True, oob_score=False,
+                n_jobs=Parameters.NUMBER_OF_JOBS, random_state=None, verbose=0,
+                warm_start=False, class_weight=None)
+    return clf
 
-def BernoulliNB(X, y):
+def BernoulliNB():
     from sklearn.naive_bayes import BernoulliNB
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42, shuffle=True, stratify=y)
     clf = BernoulliNB(alpha=1.0, binarize=0.0, fit_prior=True, class_prior=None)
-    clf.fit(X_train, y_train)
-    y_predict = clf.predict_proba(X_test)
-    return my_accuracy_score(y, y_test, y_predict)
+    return clf
 
-def GaussianNB(X, y):
-    from sklearn.naive_bayes import GaussianNB
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42, shuffle=True, stratify=y)
-    clf = GaussianNB(priors=None, var_smoothing=1e-09)
-    clf.fit(X_train.toarray(), y_train)
-    y_predict = clf.predict_proba(X_test.toarray())
-    return my_accuracy_score(y, y_test, y_predict)
-
-def MultinomialNB(X, y):
+def MultinomialNB():
     from sklearn.naive_bayes import MultinomialNB
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42, shuffle=True, stratify=y)
     clf = MultinomialNB(alpha=1.0, fit_prior=True, class_prior=None)
-    clf.fit(X_train, y_train)
-    y_predict = clf.predict_proba(X_test)
-    return my_accuracy_score(y, y_test, y_predict)
+    return clf
 
-def ComplementNB(X, y):
+def ComplementNB():
     from sklearn.naive_bayes import ComplementNB
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42, shuffle=True, stratify=y)
     clf = ComplementNB(alpha=1.0, fit_prior=True, class_prior=None, norm=False)
-    clf.fit(X_train, y_train)
-    y_predict = clf.predict_proba(X_test)
-    return my_accuracy_score(y, y_test, y_predict)
+    return clf
 
-def KNeighborsClassifier(X, y):
+def KNeighborsClassifier():
     from sklearn.neighbors import KNeighborsClassifier
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42, shuffle=True, stratify=y)
     clf = KNeighborsClassifier(n_neighbors=5, weights='uniform', algorithm='auto',
-                leaf_size=30, p=2, metric='minkowski', metric_params=None, n_jobs=None)
-    clf.fit(X_train, y_train)
-    y_predict = clf.predict_proba(X_test)
-    return my_accuracy_score(y, y_test, y_predict)
+                leaf_size=30, p=2, metric='minkowski', metric_params=None,
+                n_jobs=Parameters.NUMBER_OF_JOBS)
+    return clf
 
-def MLPClassifier(X, y):
+def MLPClassifier():
     from sklearn.neural_network import MLPClassifier
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42, shuffle=True, stratify=y)
     clf = MLPClassifier(hidden_layer_sizes=(100, ), activation='relu', solver='adam',
                 alpha=0.0001, batch_size='auto', learning_rate='constant',
                 learning_rate_init=0.001, power_t=0.5, max_iter=300, shuffle=True, # Predefined max_iter: 200
@@ -75,65 +45,102 @@ def MLPClassifier(X, y):
                 momentum=0.9, nesterovs_momentum=True, early_stopping=False,
                 validation_fraction=0.1, beta_1=0.9, beta_2=0.999, epsilon=1e-08,
                 n_iter_no_change=10)
-    clf.fit(X_train, y_train)
-    y_predict = clf.predict_proba(X_test)
-    return my_accuracy_score(y, y_test, y_predict)
+    return clf
 
-def LinearSVC(X, y):
-    from sklearn.svm import LinearSVC
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42, shuffle=True, stratify=y)
-    clf = LinearSVC(penalty='l2', loss='squared_hinge', dual=True, tol=0.0001, C=1.0,
-                multi_class='ovr', fit_intercept=True, intercept_scaling=1,
-                class_weight=None, verbose=0, random_state=None, max_iter=1000)
-    clf.fit(X_train, y_train)
-    y_predict = clf.predict(X_test)
-    return my_accuracy_score(y, y_test, y_predict)
+def SVC():
+    from sklearn.svm import SVC
+    clf = SVC(C=1.0, kernel='linear', degree=3, gamma='scale', coef0=0.0,
+                shrinking=True, probability=True, tol=0.0001, cache_size=200,
+                class_weight=None, verbose=False, max_iter=-1,
+                decision_function_shape='ovr', random_state=None)
+    return clf
 
-def DecisionTreeClassifier(X, y):
+def DecisionTreeClassifier():
     from sklearn.tree import DecisionTreeClassifier
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42, shuffle=True, stratify=y)
     clf = DecisionTreeClassifier(criterion='gini', splitter='best', max_depth=None,
                 min_samples_split=2, min_samples_leaf=1, min_weight_fraction_leaf=0.0,
                 max_features=None, random_state=None, max_leaf_nodes=None,
                 min_impurity_decrease=0.0, min_impurity_split=None, class_weight=None,
                 presort=False)
-    clf.fit(X_train, y_train)
-    y_predict = clf.predict_proba(X_test)
-    return my_accuracy_score(y, y_test, y_predict)
+    return clf
 
-def ExtraTreeClassifier(X, y):
+def ExtraTreeClassifier():
     from sklearn.tree import ExtraTreeClassifier
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42, shuffle=True, stratify=y)
     clf = ExtraTreeClassifier(criterion='gini', splitter='random', max_depth=None,
                 min_samples_split=2, min_samples_leaf=1, min_weight_fraction_leaf=0.0,
                 max_features='auto', random_state=None, max_leaf_nodes=None,
                 min_impurity_decrease=0.0, min_impurity_split=None, class_weight=None)
-    clf.fit(X_train, y_train)
-    y_predict = clf.predict_proba(X_test)
-    return my_accuracy_score(y, y_test, y_predict)
+    return clf
 
-def DummyClassifier(X, y):
+def DummyClassifier():
     from sklearn.dummy import DummyClassifier
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42, shuffle=True, stratify=y)
     clf = DummyClassifier(strategy='stratified', random_state=None, constant=None)
-    clf.fit(X_train, y_train)
-    y_predict = clf.predict_proba(X_test)
-    return my_accuracy_score(y, y_test, y_predict)
+    return clf
+
+def SGDClassifier():
+    from sklearn.linear_model import SGDClassifier
+    clf = SGDClassifier(loss='modified_huber', penalty='l2', alpha=0.0001, l1_ratio=0.15,
+                fit_intercept=True, max_iter=1000, tol=1e-3, shuffle=True,
+                verbose=0, epsilon=0.1, n_jobs=Parameters.NUMBER_OF_JOBS,
+                random_state=None, learning_rate='optimal', eta0=0.0, power_t=0.5,
+                early_stopping=False, validation_fraction=0.1, n_iter_no_change=5,
+                class_weight=None, warm_start=False, average=False, n_iter=None)
+    return clf
+
+def BaggingClassifier():
+    from sklearn.ensemble import BaggingClassifier
+    clf = BaggingClassifier(base_estimator=None, n_estimators=10, max_samples=1.0,
+                max_features=1.0, bootstrap=True, bootstrap_features=False,
+                oob_score=False, warm_start=False, n_jobs=Parameters.NUMBER_OF_JOBS,
+                random_state=None, verbose=0)
+    return clf
+
+def RFE(): # TODO: Allow to choose the estimator through the configuration file.
+    from sklearn.feature_selection import RFE
+    selector = RFE(estimator=ComplementNB(), n_features_to_select=None, step=1, verbose=0)
+    return selector
+
+def RFECV(): # TODO: Allow to choose the estimator through the configuration file.
+    from sklearn.feature_selection import RFECV
+    selector = RFECV(estimator=ComplementNB(), step=1, min_features_to_select=1, cv=5, scoring=None,
+                verbose=0, n_jobs=Parameters.NUMBER_OF_JOBS)
+    return selector
 
 class Pipeline():
     def __init__(self, classifiers):
         self.classifiers = classifiers
+        self.cross_validate = Parameters.CROSS_VALIDATE
     
     def start(self, X, y):
+        from sklearn.model_selection import cross_validate
         from time import time
         from logger import logger
+        if not self.cross_validate:
+            X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42, shuffle=True, stratify=y)
         for f in self.classifiers:
+            logger.info("Starting %s." % (f.__name__))
+            clf = f()
             t1 = time()
             try:
-                out = f(X, y)
-            except MemoryError:
-                out = MemoryError.__name__
-            logger.info("%s: %s | %ss" % (f.__name__, out, (time() - t1)))
+                if self.cross_validate:
+                    scores = cross_validate(estimator=clf, X=X, y=y, groups=None, scoring=None, cv=5,
+                                n_jobs=Parameters.NUMBER_OF_JOBS, verbose=0,
+                                fit_params=None, pre_dispatch='2*n_jobs',
+                                return_train_score='warn', return_estimator=False,
+                                error_score='raise')
+                    out = scores
+                else:
+                    clf.fit(X_train, y_train)
+                    y_predict = clf.predict_proba(X_test)
+                    #from sklearn.metrics import confusion_matrix, classification_report
+                    #logger.debug("Confusion matrix:\n%s" % confusion_matrix(y_test, y_predict))  
+                    #logger.debug("Classification report:\n%s" % classification_report(y_test, y_predict))
+                    out = my_accuracy_score(y, y_test, y_predict)
+                logger_func = logger.info
+            except Exception as e:
+                out = repr(e)
+                logger_func = logger.error
+            logger_func("%s: %s | %ss" % (f.__name__, out, (time() - t1)))
 
 def my_accuracy_score(y, y_test, y_predict):
     from numpy import argsort, flip
