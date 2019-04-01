@@ -24,8 +24,8 @@ class Parameters:
         config = ConfigParser()
         config.read(config_filename)
         Parameters.EXCEL_FILE = config.get("Preprocessing", "Excel file")
-        Parameters.EXCEL_COLUMN_WITH_TEXT_DATA = config.get("Preprocessing", "Excel column with text data")
-        Parameters.EXCEL_COLUMN_WITH_CLASSIFICATION_DATA = config.get("Preprocessing", "Excel column with classification data")
+        Parameters.EXCEL_COLUMN_WITH_TEXT_DATA = config.get("General", "Excel column with text data")
+        Parameters.EXCEL_COLUMN_WITH_CLASSIFICATION_DATA = config.get("General", "Excel column with classification data")
         Parameters.NLTK_STOP_WORDS_PACKAGE = config.get("Feature extraction", "NLTK stop words package")
         Parameters.NUMBER_OF_JOBS = config.get("General", "Number of jobs")
         if Parameters.NUMBER_OF_JOBS == "None":
