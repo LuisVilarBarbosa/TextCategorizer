@@ -22,9 +22,7 @@ def generate_X_y():
             corpus.append(generate_corpus(lemmas))
             classifications.append(get_classification(doc))
     logger.warning("%s document(s) ignored." % num_ignored)
-    logger.info("Removing incompatible data.")
     remove_incompatible_data(corpus, classifications)
-    logger.info("Creating classification.")
     X, y = create_classification(corpus, classifications)
     return X, y
 
@@ -41,11 +39,14 @@ def get_classification(doc):
     return doc.fields[Parameters.EXCEL_COLUMN_WITH_CLASSIFICATION_DATA]
 
 def create_classification(corpus, classifications):
+    logger.info("Creating classification.")
     from nltk import download
     download(info_or_id='stopwords', quiet=True)
     from nltk.corpus import stopwords
     stop_words = set(stopwords.words(Parameters.NLTK_STOP_WORDS_PACKAGE))
     vectorizer = get_vectorizer(Parameters.VECTORIZER, stop_words=stop_words, check_vectorizer=False)
+    logger.info("Running %s." % vectorizer.__class__.__name__)
+    logger.debug("%s configuration: %s" % (vectorizer.__class__.__name__, vectorizer.__dict__))
     X = vectorizer.fit_transform(corpus)
     y = classifications
     #logger.debug(vectorizer.get_feature_names())
@@ -54,6 +55,7 @@ def create_classification(corpus, classifications):
 
 def remove_incompatible_data(corpus, classifications):
     from collections import Counter
+    logger.info("Removing incompatible data.")
     quantities = Counter(classifications)
     for k, v in quantities.items():
         if v <= 1:
@@ -65,12 +67,14 @@ def remove_incompatible_data(corpus, classifications):
 
 def LatentDirichletAllocation(X, y):
     from sklearn.decomposition import LatentDirichletAllocation
+    logger.info("Running %s." % (LatentDirichletAllocation.__name__))
     lda = LatentDirichletAllocation(n_components=10, doc_topic_prior=None,
                 topic_word_prior=None, learning_method='batch', learning_decay=0.7,
                 learning_offset=10.0, max_iter=10, batch_size=128, evaluate_every=-1,
                 total_samples=1000000.0, perp_tol=0.1, mean_change_tol=0.001,
                 max_doc_update_iter=100, n_jobs=None, verbose=0, random_state=None,
                 n_topics=None)
+    logger.debug("%s configuration: %s" % (lda.__class__.__name__, lda.__dict__))
     X = lda.fit_transform(X, y)
     return X, y
 

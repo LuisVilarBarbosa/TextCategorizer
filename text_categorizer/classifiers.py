@@ -2,6 +2,7 @@
 # coding=utf-8
 
 from sklearn.model_selection import train_test_split
+from logger import logger
 from Parameters import Parameters
 
 def RandomForestClassifier():
@@ -110,16 +111,17 @@ class Pipeline():
     def __init__(self, classifiers):
         self.classifiers = classifiers
         self.cross_validate = Parameters.CROSS_VALIDATE
+        logger.debug("Cross validate = %s" % (self.cross_validate))
     
     def start(self, X, y):
         from sklearn.model_selection import cross_validate
         from time import time
-        from logger import logger
         if not self.cross_validate:
             X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42, shuffle=True, stratify=y)
         for f in self.classifiers:
             logger.info("Starting %s." % (f.__name__))
             clf = f()
+            logger.debug("%s configuration: %s" % (f.__name__, clf.__dict__))
             t1 = time()
             try:
                 if self.cross_validate:
@@ -151,6 +153,7 @@ def my_accuracy_score(y, y_test, y_predict):
     assert y_predict.ndim == 2
     sorted_classifications = sorted(set(y))
     accepted_probs = min(1, len(sorted_classifications))
+    logger.debug("Accepted probabilities: any of the highest %s." % (accepted_probs))
     y_pred = []
     for i in range(len(y_predict)):
         idxs_of_sorted_higher2lower = flip(argsort(y_predict[i]))

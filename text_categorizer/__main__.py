@@ -52,7 +52,6 @@ def main():
     logger.info("Extracting features.")
     X, y = generate_X_y()
     logger.info("Running classifiers.")
-    logger.info("Accuracies:")
     clfs = [
         classifiers.RandomForestClassifier,
         classifiers.BernoulliNB,
@@ -70,6 +69,7 @@ def main():
         classifiers.RFECV,
     ]
     p = classifiers.Pipeline(clfs)
+    logger.info("Accuracies:")
     p.start(X, y)
     logger.debug("Execution completed.")
 
