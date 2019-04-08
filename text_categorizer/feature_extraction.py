@@ -9,12 +9,16 @@ from tqdm import tqdm
 from logger import logger
 from Parameters import Parameters
 
-def generate_X_y():
-    docs = pickle_manager.get_documents()
+def generate_X_y(docs=None):
+    if docs is None:
+        docs = pickle_manager.get_documents()
+        total = pickle_manager.get_total_docs()
+    else:
+        total = len(docs)
     num_ignored = 0
     corpus = []
     classifications = []
-    for doc in tqdm(iterable=docs, desc="Preparing to create classification", total=pickle_manager.get_total_docs(), unit="doc"):
+    for doc in tqdm(iterable=docs, desc="Preparing to create classification", total=total, unit="doc"):
         if doc.analyzed_sentences is None:
             num_ignored = num_ignored + 1
         else:
@@ -22,7 +26,8 @@ def generate_X_y():
             corpus.append(generate_corpus(lemmas))
             classifications.append(get_classification(doc))
     logger.warning("%s document(s) ignored." % num_ignored)
-    remove_incompatible_data(corpus, classifications)
+    if Parameters.TRAIN_MODE:
+        remove_incompatible_data(corpus, classifications)
     X, y = create_classification(corpus, classifications)
     return X, y
 
@@ -49,6 +54,8 @@ def create_classification(corpus, classifications):
     logger.debug("%s configuration: %s" % (vectorizer.__class__.__name__, vectorizer.__dict__))
     X = vectorizer.fit_transform(corpus)
     y = classifications
+    if Parameters.TRAIN_MODE and vectorizer.__class__ != HashingVectorizer:
+        pickle_manager.dump(vectorizer.vocabulary_, "features.pkl")
     #logger.debug(vectorizer.get_feature_names())
     #logger.debug(X.shape)
     return X, y
@@ -83,13 +90,18 @@ def get_vectorizer(vectorizer, stop_words=[], check_vectorizer=False):
         assert vectorizer in [TfidfVectorizer.__name__, CountVectorizer.__name__, HashingVectorizer.__name__]
         return
     token_pattern = r'\S+'
+    if Parameters.TRAIN_MODE:
+        vocabulary = None
+    else:
+        if vectorizer != HashingVectorizer.__name__:
+            vocabulary = pickle_manager.load("features.pkl")
     if vectorizer == TfidfVectorizer.__name__:
         v = TfidfVectorizer(input='content', encoding='utf-8',
                 decode_error='strict', strip_accents=None, lowercase=True,
                 preprocessor=None, tokenizer=None, analyzer='word',
                 stop_words=stop_words, token_pattern=token_pattern,
                 ngram_range=(1,1), max_df=1.0, min_df=1, max_features=None,
-                vocabulary=None, binary=False, dtype=np.float64, norm='l2',
+                vocabulary=vocabulary, binary=False, dtype=np.float64, norm='l2',
                 use_idf=True, smooth_idf=True, sublinear_tf=False)
     elif vectorizer == CountVectorizer.__name__:
         v = CountVectorizer(input='content', encoding='utf-8',
@@ -97,7 +109,7 @@ def get_vectorizer(vectorizer, stop_words=[], check_vectorizer=False):
                 preprocessor=None, tokenizer=None, stop_words=stop_words,
                 token_pattern=token_pattern, ngram_range=(1, 1),
                 analyzer='word', max_df=1.0, min_df=1, max_features=None,
-                vocabulary=None, binary=False, dtype=np.int64)
+                vocabulary=vocabulary, binary=False, dtype=np.int64)
     elif vectorizer == HashingVectorizer.__name__:
         v = HashingVectorizer(input='content', encoding='utf-8',
                 decode_error='strict', strip_accents=None, lowercase=True,

@@ -1,6 +1,9 @@
 #!/usr/bin/python3
 # coding=utf-8
 
+import pickle_manager
+
+from sklearn.metrics import accuracy_score, confusion_matrix, classification_report
 from sklearn.model_selection import train_test_split
 from logger import logger
 from Parameters import Parameters
@@ -133,37 +136,35 @@ class Pipeline():
                     out = scores
                 else:
                     clf.fit(X_train, y_train)
-                    y_predict = clf.predict_proba(X_test)
-                    #from sklearn.metrics import confusion_matrix, classification_report
-                    #logger.debug("Confusion matrix:\n%s" % confusion_matrix(y_test, y_predict))  
-                    #logger.debug("Classification report:\n%s" % classification_report(y_test, y_predict))
-                    out = my_accuracy_score(y, y_test, y_predict)
+                    clf_filename = "%s.pkl" % (clf.__class__.__name__)
+                    pickle_manager.dump(clf, clf_filename)
+                    y_predict_proba = clf.predict_proba(X_test)
+                    y_predict = predict_proba_to_predict(clf.classes_, y_predict_proba, y_test)
+                    logger.debug("Confusion matrix:\n%s" % confusion_matrix(y_test, y_predict))
+                    logger.debug("Classification report:\n%s" % classification_report(y_test, y_predict))
+                    out = accuracy_score(y_test, y_predict, normalize=True)
                 logger_func = logger.info
             except Exception as e:
                 out = repr(e)
                 logger_func = logger.error
             logger_func("%s: %s | %ss" % (f.__name__, out, (time() - t1)))
 
-def my_accuracy_score(y, y_test, y_predict):
+def predict_proba_to_predict(clf_classes_, y_predict_proba, y_test=None):
     from numpy import argsort, flip
-    from sklearn.metrics import accuracy_score
-    normalize = True
-    if y_predict.ndim == 1:
-        return accuracy_score(y_test, y_predict, normalize=normalize)
-    assert y_predict.ndim == 2
-    sorted_classifications = sorted(set(y))
-    accepted_probs = min(1, len(sorted_classifications))
+    assert y_predict_proba.ndim == 2
+    accepted_probs = min(1, len(clf_classes_))
     logger.debug("Accepted probabilities: any of the highest %s." % (accepted_probs))
-    y_pred = []
-    for i in range(len(y_predict)):
-        idxs_of_sorted_higher2lower = flip(argsort(y_predict[i]))
+    y_predict = []
+    for i in range(len(y_predict_proba)):
+        idxs_of_sorted_higher2lower = flip(argsort(y_predict_proba[i]))
         ok = False
         for j in range(accepted_probs):
             index = idxs_of_sorted_higher2lower[j]
-            classification = sorted_classifications[index]
-            if y_test[i] == classification:
-                y_pred.append(classification)
+            classification = clf_classes_[index]
+            if y_test is None or y_test[i] == classification:
+                y_predict.append(classification)
                 ok = True
+                break
         if not ok:
-            y_pred.append(classification)
-    return accuracy_score(y_test, y_pred, normalize=normalize)
+            y_predict.append(classification)
+    return y_predict

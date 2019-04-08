@@ -15,10 +15,11 @@ class Parameters:
     EXCEL_FILTRATION_CODE = None
     CROSS_VALIDATE = None
     VECTORIZER = None
+    TRAIN_MODE = None
 
     # This function must be executed before any access to the static variables of the class.
     @staticmethod
-    def load_configuration(config_filename):
+    def load_configuration(config_filename, train_mode):
         from configparser import ConfigParser
         from feature_extraction import get_vectorizer
         config = ConfigParser()
@@ -41,3 +42,5 @@ class Parameters:
         Parameters.CROSS_VALIDATE = config.getboolean("Classification", "Cross validate")
         Parameters.VECTORIZER = config.get("Feature extraction", "Vectorizer")
         get_vectorizer(Parameters.VECTORIZER, check_vectorizer=True)
+        assert type(train_mode) is bool
+        Parameters.TRAIN_MODE = train_mode

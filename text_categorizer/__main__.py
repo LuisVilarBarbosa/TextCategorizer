@@ -24,7 +24,7 @@ def main():
     logger.debug("Starting execution.")
     verify_python_version()
     config_filename = argv[1]
-    Parameters.load_configuration(config_filename)
+    Parameters.load_configuration(config_filename, train_mode=True)
     if Parameters.PREPROCESS_DATA:
         if not isfile(Parameters.EXCEL_FILE) and not isfile(Parameters.PREPROCESSED_DATA_FILE):
             logger.error("Please, provide a valid Excel file or a valid preprocessed data file.")
