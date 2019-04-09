@@ -59,7 +59,7 @@ def not_found(error):
 
 def main():
     if len(argv) != 3:
-        print("Usage: python3 text_categorizer/prediction_server <configuration file> <port>")
+        print("Usage: python3 text_categorizer/prediction_server.py <configuration file> <port>")
         quit()
     config_filename = argv[1]
     port = int(argv[2])
@@ -68,7 +68,7 @@ def main():
         print("Please, indicate a port higher than %s." % (limit_port))
         quit()
     Parameters.load_configuration(config_filename, train_mode=False)
-    app.run(host='localhost', port=port, debug=True) # host='0.0.0.0' allows access from any network.
+    app.run(host='0.0.0.0', port=port, debug=False) # host='0.0.0.0' allows access from any network.
 
 if __name__ == '__main__':
     main()

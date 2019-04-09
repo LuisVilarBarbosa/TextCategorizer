@@ -1,9 +1,22 @@
 version: '2.0'
 
 services:
-  text_categorizer:
-    build: .
+  text_categorizer-trainer:
+    build:
+      context: .
+      dockerfile: ./Dockerfile-trainer
     volumes:
       - .:/usr/src/app
     environment:
       - CONFIG_FILE=config.ini
+  text_categorizer-prediction_server:
+    build:
+      context: .
+      dockerfile: ./Dockerfile-prediction-server
+    volumes:
+      - .:/usr/src/app
+    environment:
+      - CONFIG_FILE=config.ini
+      - PORT=5000
+    ports:
+      - "5000:5000"
