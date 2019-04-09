@@ -74,14 +74,15 @@ def on_press(key):
 
 def configure_keyboard_listener():
     keyboard_listener = None
-    if KeyboardListener.available():
-        keyboard_listener = KeyboardListener(on_press=on_press)
-        logger.info("Press Esc to stop the preprocessing phase. (The preprocessed documents will be stored.)")
-    else:
-        logger.info("Please, do not stop the program or some of the data might be lost.")
-        logger.info("If you need to stop the preprocessing phase, press CTRL-C and restart the program with the correct configuration.")
-        logger.info(KeyboardListener.how_to_make_available())
-        from time import sleep
-        for _ in tqdm(iterable=range(30), desc="Waiting for cancellation order", unit="s"):
-            sleep(1)
+    if Parameters.TRAIN_MODE:
+        if KeyboardListener.available():
+            keyboard_listener = KeyboardListener(on_press=on_press)
+            logger.info("Press Esc to stop the preprocessing phase. (The preprocessed documents will    be stored.)")
+        else:
+            logger.info("Please, do not stop the program or some of the data might be lost.")
+            logger.info("If you need to stop the preprocessing phase, press CTRL-C and restart the  program with the correct configuration.")
+            logger.info(KeyboardListener.how_to_make_available())
+            from time import sleep
+            for _ in tqdm(iterable=range(30), desc="Waiting for cancellation order", unit="s"):
+                sleep(1)
     return keyboard_listener
