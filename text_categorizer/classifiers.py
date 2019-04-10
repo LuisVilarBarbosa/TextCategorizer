@@ -164,7 +164,6 @@ def predict_proba_to_predict(clf_classes_, y_predict_proba, y_test=None):
             if y_test is None or y_test[i] == classification:
                 y_predict.append(classification)
                 ok = True
-                break
         if not ok:
             y_predict.append(classification)
     return y_predict
