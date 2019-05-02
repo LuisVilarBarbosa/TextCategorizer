@@ -24,7 +24,7 @@ def stanfordnlp_download():
                 found = True
                 break
     if not found:
-        stanfordnlp.download(Parameters.STANFORDNLP_LANGUAGE_PACKAGE, resource_dir=Parameters.STANFORDNLP_RESOURCES_DIR, confirm_if_exists=True, force=False)
+        stanfordnlp.download(Parameters.STANFORDNLP_LANGUAGE_PACKAGE, resource_dir=Parameters.STANFORDNLP_RESOURCES_DIR, confirm_if_exists=True, force=True)
 
 _nlp = None
 _stop = False
