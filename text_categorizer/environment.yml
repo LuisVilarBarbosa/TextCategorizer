@@ -15,6 +15,5 @@ dependencies:
   - stanfordnlp==0.1.2
   - tqdm==4.31.1
   - conllu==1.2.3
-  - pynput==1.4
   - Flask==1.0.2
   - Flask-HTTPAuth==3.2.4 

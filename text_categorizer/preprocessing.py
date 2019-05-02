@@ -1,11 +1,11 @@
 #!/usr/bin/python3
 # coding=utf-8
 
+import signal
 import stanfordnlp
 import pickle_manager
 
 from tqdm import tqdm
-from KeyboardListener import KeyboardListener
 from logger import logger
 from Parameters import Parameters
 
@@ -34,7 +34,9 @@ def stanfordnlp_process(docs=None):
     if _nlp is None:
         stanfordnlp_download()
         _nlp = stanfordnlp.Pipeline(processors='tokenize,mwt,pos,lemma,depparse', lang=Parameters.STANFORDNLP_LANGUAGE_PACKAGE, models_dir=Parameters.STANFORDNLP_RESOURCES_DIR, use_gpu=Parameters.STANFORDNLP_USE_GPU)
-    keyboard_listener = configure_keyboard_listener()
+    sig = signal.SIGINT
+    old_handler = signal.signal(sig, signal_handler)
+    logger.info("Press CTRL+C to stop the preprocessing phase. (The preprocessed documents will be stored.)")
     if docs is None:
         docs = pickle_manager.get_documents()
         total = pickle_manager.get_total_docs()
@@ -58,31 +60,15 @@ def stanfordnlp_process(docs=None):
             pda.dump_append(doc)
     if Parameters.TRAIN_MODE:
         pda.close()
-    if keyboard_listener is not None:
-        keyboard_listener.stop()
     logger.warning("%s document(s) ignored." % num_ignored)
+    signal.signal(sig, old_handler)
     if _stop:
         exit(0)
 
-def on_press(key):
-    from pynput.keyboard import Key
-    if key == Key.esc:
-        print()
-        logger.info("Stopping the preprocessing phase.")
+def signal_handler(sig, frame):
+    if sig == signal.SIGINT:
         global _stop
-        _stop = True
-
-def configure_keyboard_listener():
-    keyboard_listener = None
-    if Parameters.TRAIN_MODE:
-        if KeyboardListener.available():
-            keyboard_listener = KeyboardListener(on_press=on_press)
-            logger.info("Press Esc to stop the preprocessing phase. (The preprocessed documents will    be stored.)")
-        else:
-            logger.info("Please, do not stop the program or some of the data might be lost.")
-            logger.info("If you need to stop the preprocessing phase, press CTRL-C and restart the  program with the correct configuration.")
-            logger.info(KeyboardListener.how_to_make_available())
-            from time import sleep
-            for _ in tqdm(iterable=range(30), desc="Waiting for cancellation order", unit="s"):
-                sleep(1)
-    return keyboard_listener
+        if not _stop:
+            print()
+            logger.info("Stopping the preprocessing phase.")
+            _stop = True
