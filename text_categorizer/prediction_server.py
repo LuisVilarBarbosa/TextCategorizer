@@ -48,8 +48,8 @@ def predict():
     try:
         clf = pickle_manager.load("%s.pkl" % classifier)
         y_predict_proba = clf.predict_proba(X)
-        y_predict = classifiers.predict_proba_to_predict(clf.classes_, y_predict_proba)
-        return jsonify(y_predict)
+        y_predict_classes = classifiers.predict_proba_to_predict_classes(clf.classes_, y_predict_proba)
+        return jsonify(y_predict_classes[0])
     except FileNotFoundError:
         abort(BAD_REQUEST, 'Invalid classifier model')
 

@@ -150,20 +150,28 @@ class Pipeline():
             logger_func("%s: %s | %ss" % (f.__name__, out, (time() - t1)))
 
 def predict_proba_to_predict(clf_classes_, y_predict_proba, y_test=None):
-    from numpy import argsort, flip
-    assert y_predict_proba.ndim == 2
+    ordered_classes = predict_proba_to_predict_classes(clf_classes_, y_predict_proba)
     accepted_probs = min(1, len(clf_classes_))
     logger.debug("Accepted probabilities: any of the highest %s." % (accepted_probs))
     y_predict = []
+    for i in range(len(ordered_classes)):
+        accepted_classes = ordered_classes[i][0:accepted_probs]
+        if y_test is not None and y_test[i] in accepted_classes:
+            y_predict.append(y_test[i])
+        else:
+            y_predict.append(accepted_classes[0])
+    return y_predict
+
+def predict_proba_to_predict_classes(clf_classes_, y_predict_proba):
+    from numpy import argsort, flip
+    assert y_predict_proba.ndim == 2
+    y_predict_classes = []
     for i in range(len(y_predict_proba)):
+        ordered_classes = []
         idxs_of_sorted_higher2lower = flip(argsort(y_predict_proba[i]))
-        ok = False
-        for j in range(accepted_probs):
+        for j in range(len(y_predict_proba[i])):
             index = idxs_of_sorted_higher2lower[j]
             classification = clf_classes_[index]
-            if y_test is None or y_test[i] == classification:
-                y_predict.append(classification)
-                ok = True
-        if not ok:
-            y_predict.append(classification)
-    return y_predict
+            ordered_classes.append(classification)
+        y_predict_classes.append(ordered_classes)
+    return y_predict_classes
