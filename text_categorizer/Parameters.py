@@ -34,7 +34,7 @@ class Parameters:
         else:
             Parameters.NUMBER_OF_JOBS = int(Parameters.NUMBER_OF_JOBS)
         Parameters.STANFORDNLP_LANGUAGE_PACKAGE = config.get("Preprocessing", "StanfordNLP language package")
-        Parameters.STANFORDNLP_USE_GPU = config.get("Preprocessing", "StanfordNLP use GPU")
+        Parameters.STANFORDNLP_USE_GPU = config.getboolean("Preprocessing", "StanfordNLP use GPU")
         Parameters.STANFORDNLP_RESOURCES_DIR = config.get("Preprocessing", "StanfordNLP resources directory")
         Parameters.PREPROCESSED_DATA_FILE = config.get("General", "Preprocessed data file")
         Parameters.PREPROCESS_DATA = config.getboolean("Preprocessing", "Preprocess data")
