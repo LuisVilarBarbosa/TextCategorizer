@@ -45,7 +45,7 @@ def stanfordnlp_process(docs=None):
     num_ignored = 0
     if Parameters.TRAIN_MODE:
         pda = pickle_manager.PickleDumpAppend(total=total, filename=Parameters.PREPROCESSED_DATA_FILE)
-    for doc in tqdm(iterable=docs, desc="Preprocessing", total=total, unit="doc"):
+    for doc in tqdm(iterable=docs, desc="Preprocessing", total=total, unit="doc", dynamic_ncols=True):
         if not _stop and doc.analyzed_sentences is None:
             text = doc.fields[Parameters.EXCEL_COLUMN_WITH_TEXT_DATA]
             try:

@@ -18,7 +18,7 @@ def generate_X_y(docs=None):
     num_ignored = 0
     corpus = []
     classifications = []
-    for doc in tqdm(iterable=docs, desc="Preparing to create classification", total=total, unit="doc"):
+    for doc in tqdm(iterable=docs, desc="Preparing to create classification", total=total, unit="doc", dynamic_ncols=True):
         if doc.analyzed_sentences is None:
             num_ignored = num_ignored + 1
         else:
