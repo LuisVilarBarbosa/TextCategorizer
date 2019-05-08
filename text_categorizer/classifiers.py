@@ -98,17 +98,6 @@ def BaggingClassifier(n_jobs):
                 random_state=None, verbose=0)
     return clf
 
-def RFE(n_jobs): # TODO: Allow to choose the estimator through the configuration file.
-    from sklearn.feature_selection import RFE
-    selector = RFE(estimator=ComplementNB(n_jobs), n_features_to_select=None, step=1, verbose=0)
-    return selector
-
-def RFECV(n_jobs): # TODO: Allow to choose the estimator through the configuration file.
-    from sklearn.feature_selection import RFECV
-    selector = RFECV(estimator=ComplementNB(n_jobs=1), step=1, min_features_to_select=1, cv=5, scoring=None,
-                verbose=0, n_jobs=n_jobs)
-    return selector
-
 class Pipeline():
     def __init__(self, classifiers, cross_validate):
         self.classifiers = classifiers

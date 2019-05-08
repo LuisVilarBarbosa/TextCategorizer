@@ -68,8 +68,6 @@ class Parameters:
             classifiers.DummyClassifier,
             classifiers.SGDClassifier,
             classifiers.BaggingClassifier,
-            classifiers.RFE,
-            classifiers.RFECV,
         ]
         clfs_names = config.get("Classification", "Classifiers").split(",")
         Parameters.CLASSIFIERS = []
