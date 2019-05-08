@@ -31,6 +31,7 @@ def generate_X_y(docs=None):
     X, y = create_classification(corpus=corpus,
                                  classifications=classifications,
                                  nltk_stop_words_package=Parameters.NLTK_STOP_WORDS_PACKAGE,
+                                 use_lda=Parameters.USE_LDA,
                                  vectorizer=Parameters.VECTORIZER,
                                  store_vocabulary=Parameters.TRAINING_MODE,
                                  training_mode=Parameters.TRAINING_MODE)
@@ -45,7 +46,7 @@ def my_filter(doc):
 def generate_corpus(lemmas):
     return ' '.join(lemmas)
 
-def create_classification(corpus, classifications, nltk_stop_words_package, vectorizer, store_vocabulary, training_mode):
+def create_classification(corpus, classifications, nltk_stop_words_package, use_lda, vectorizer, store_vocabulary, training_mode):
     logger.info("Creating classification.")
     from nltk import download
     download(info_or_id='stopwords', quiet=True)
@@ -58,6 +59,8 @@ def create_classification(corpus, classifications, nltk_stop_words_package, vect
     y = classifications
     if store_vocabulary and vectorizer.__class__ != HashingVectorizer:
         pickle_manager.dump(vectorizer.vocabulary_, "features.pkl")
+    if use_lda:
+        X, y = LatentDirichletAllocation(X, y)
     #logger.debug(vectorizer.get_feature_names())
     #logger.debug(X.shape)
     return X, y

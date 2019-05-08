@@ -115,7 +115,7 @@ class Pipeline():
         self.cross_validate = cross_validate
         logger.debug("Cross validate = %s" % (self.cross_validate))
     
-    def start(self, X, y, n_jobs=None):
+    def start(self, X, y, n_jobs=None, n_accepted_probs=1):
         from sklearn.model_selection import cross_validate
         from time import time
         if not self.cross_validate:
@@ -138,7 +138,7 @@ class Pipeline():
                     clf_filename = "%s.pkl" % (clf.__class__.__name__)
                     pickle_manager.dump(clf, clf_filename)
                     y_predict_proba = clf.predict_proba(X_test)
-                    y_predict = predict_proba_to_predict(clf.classes_, y_predict_proba, y_test)
+                    y_predict = predict_proba_to_predict(clf.classes_, y_predict_proba, y_test, n_accepted_probs)
                     logger.debug("Confusion matrix:\n%s" % confusion_matrix(y_test, y_predict))
                     logger.debug("Classification report:\n%s" % classification_report(y_test, y_predict))
                     out = accuracy_score(y_test, y_predict, normalize=True)
@@ -148,9 +148,9 @@ class Pipeline():
                 logger_func = logger.error
             logger_func("%s: %s | %ss" % (f.__name__, out, (time() - t1)))
 
-def predict_proba_to_predict(clf_classes_, y_predict_proba, y_test=None):
+def predict_proba_to_predict(clf_classes_, y_predict_proba, y_test=None, n_accepted_probs=1):
     ordered_classes = predict_proba_to_predict_classes(clf_classes_, y_predict_proba)
-    accepted_probs = min(1, len(clf_classes_))
+    accepted_probs = min(n_accepted_probs, len(clf_classes_))
     logger.debug("Accepted probabilities: any of the highest %s." % (accepted_probs))
     y_predict = []
     for i in range(len(ordered_classes)):

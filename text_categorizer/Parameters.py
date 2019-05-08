@@ -1,6 +1,8 @@
 #!/usr/bin/python3
 # coding=utf-8
 
+import classifiers
+
 class Parameters:
     EXCEL_FILE = None
     EXCEL_COLUMN_WITH_TEXT_DATA = None
@@ -16,6 +18,8 @@ class Parameters:
     CROSS_VALIDATE = None
     VECTORIZER = None
     TRAINING_MODE = None
+    USE_LDA = None
+    CLASSIFIERS = None
 
     # This function must be executed before any access to the static variables of the class.
     @staticmethod
@@ -44,3 +48,31 @@ class Parameters:
         get_vectorizer(Parameters.VECTORIZER, check_vectorizer=True)
         assert type(training_mode) is bool
         Parameters.TRAINING_MODE = training_mode
+        Parameters.USE_LDA = config.getboolean("Feature extraction", "Use LDA")
+        Parameters.NUM_ACCEPTED_PROBS = config.getint("Classification", "Number of probabilities accepted")
+        assert Parameters.NUM_ACCEPTED_PROBS >= 1
+        Parameters.load_classifiers(config)
+    
+    @staticmethod
+    def load_classifiers(config):
+        clfs = [
+            classifiers.RandomForestClassifier,
+            classifiers.BernoulliNB,
+            classifiers.MultinomialNB,
+            classifiers.ComplementNB,
+            classifiers.KNeighborsClassifier,
+            classifiers.MLPClassifier,
+            classifiers.SVC,
+            classifiers.DecisionTreeClassifier,
+            classifiers.ExtraTreeClassifier,
+            classifiers.DummyClassifier,
+            classifiers.SGDClassifier,
+            classifiers.BaggingClassifier,
+            classifiers.RFE,
+            classifiers.RFECV,
+        ]
+        clfs_names = config.get("Classification", "Classifiers").split(",")
+        Parameters.CLASSIFIERS = []
+        for clf in clfs:
+            if clf.__name__ in clfs_names:
+                Parameters.CLASSIFIERS.append(clf)

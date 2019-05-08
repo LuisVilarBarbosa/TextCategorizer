@@ -52,25 +52,9 @@ def main():
     logger.info("Extracting features.")
     X, y = generate_X_y()
     logger.info("Running classifiers.")
-    clfs = [
-        classifiers.RandomForestClassifier,
-        classifiers.BernoulliNB,
-        classifiers.MultinomialNB,
-        classifiers.ComplementNB,
-        classifiers.KNeighborsClassifier,
-        classifiers.MLPClassifier,
-        classifiers.SVC,
-        classifiers.DecisionTreeClassifier,
-        classifiers.ExtraTreeClassifier,
-        classifiers.DummyClassifier,
-        classifiers.SGDClassifier,
-        classifiers.BaggingClassifier,
-        classifiers.RFE,
-        classifiers.RFECV,
-    ]
-    p = classifiers.Pipeline(clfs, Parameters.CROSS_VALIDATE)
+    p = classifiers.Pipeline(Parameters.CLASSIFIERS, Parameters.CROSS_VALIDATE)
     logger.info("Accuracies:")
-    p.start(X, y, Parameters.NUMBER_OF_JOBS)
+    p.start(X, y, Parameters.NUMBER_OF_JOBS, Parameters.NUM_ACCEPTED_PROBS)
     logger.debug("Execution completed.")
 
 if __name__ == "__main__":
