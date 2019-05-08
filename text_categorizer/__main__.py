@@ -24,7 +24,7 @@ def main():
     logger.debug("Starting execution.")
     verify_python_version()
     config_filename = argv[1]
-    Parameters.load_configuration(config_filename, train_mode=True)
+    Parameters.load_configuration(config_filename, training_mode=True)
     if Parameters.PREPROCESS_DATA:
         if not isfile(Parameters.EXCEL_FILE) and not isfile(Parameters.PREPROCESSED_DATA_FILE):
             logger.error("Please, provide a valid Excel file or a valid preprocessed data file.")
@@ -40,11 +40,11 @@ def main():
             logger.info("Creating documents.")
             docs = data_frame_to_document_list(data_frame)
             logger.info("Storing generated documents.")
-            pickle_manager.dump_documents(docs)
+            pickle_manager.dump_documents(docs, Parameters.PREPROCESSED_DATA_FILE)
         logger.info("Preprocessing documents.")
         preprocess()
         logger.info("Checking generated data.")
-        pickle_manager.check_data()
+        pickle_manager.check_data(Parameters.PREPROCESSED_DATA_FILE)
     else:
         if not isfile(Parameters.PREPROCESSED_DATA_FILE):
             logger.error("The indicated preprocessed data file does not exist.")
@@ -68,9 +68,9 @@ def main():
         classifiers.RFE,
         classifiers.RFECV,
     ]
-    p = classifiers.Pipeline(clfs)
+    p = classifiers.Pipeline(clfs, Parameters.CROSS_VALIDATE)
     logger.info("Accuracies:")
-    p.start(X, y)
+    p.start(X, y, Parameters.NUMBER_OF_JOBS)
     logger.debug("Execution completed.")
 
 if __name__ == "__main__":

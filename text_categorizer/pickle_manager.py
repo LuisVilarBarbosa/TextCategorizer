@@ -4,8 +4,6 @@
 import pickle
 import os
 
-from Parameters import Parameters
-
 _pickle_protocol = 2
 
 def dump(obj, path):
@@ -19,8 +17,8 @@ def load(path):
     input_file.close()
     return data
 
-def get_documents():
-    input_file = open(Parameters.PREPROCESSED_DATA_FILE, 'rb')
+def get_documents(filename):
+    input_file = open(filename, 'rb')
     _total = pickle.load(input_file)
     while True:
         try:
@@ -29,23 +27,23 @@ def get_documents():
             input_file.close()
             break
 
-def dump_documents(docs):
-    if os.path.exists(Parameters.PREPROCESSED_DATA_FILE):
-        raise Exception("The file '%s' should not exist." % Parameters.PREPROCESSED_DATA_FILE)
-    pda = PickleDumpAppend(total=len(docs), filename=Parameters.PREPROCESSED_DATA_FILE)
+def dump_documents(docs, filename):
+    if os.path.exists(filename):
+        raise Exception("The file '%s' should not exist." % filename)
+    pda = PickleDumpAppend(total=len(docs), filename=filename)
     for doc in docs:
         pda.dump_append(doc)
     pda.close()
 
-def check_data():
+def check_data(filename):
     from Document import Document
     total = 0
-    docs = get_documents()
+    docs = get_documents(filename)
     for doc in docs:
         assert type(doc) is Document
         total = total + 1
         assert doc.index - 1 == total
-    assert get_total_docs() == total
+    assert get_total_docs(filename) == total
 
 def _generate_file():
     def generate_filename():
@@ -57,8 +55,8 @@ def _generate_file():
     open(file=filename, mode='w').close()
     return filename
 
-def get_total_docs():
-    input_file = open(Parameters.PREPROCESSED_DATA_FILE, 'rb')
+def get_total_docs(filename):
+    input_file = open(filename, 'rb')
     total = pickle.load(input_file)
     input_file.close()
     return total

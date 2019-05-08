@@ -6,41 +6,40 @@ import pickle_manager
 from sklearn.metrics import accuracy_score, confusion_matrix, classification_report
 from sklearn.model_selection import train_test_split
 from logger import logger
-from Parameters import Parameters
 
-def RandomForestClassifier():
+def RandomForestClassifier(n_jobs):
     from sklearn.ensemble import RandomForestClassifier
     clf = RandomForestClassifier(n_estimators=100, criterion='gini', max_depth=None,
                 min_samples_split=2, min_samples_leaf=1, min_weight_fraction_leaf=0.0,
                 max_features='auto', max_leaf_nodes=None, min_impurity_decrease=0.0,
                 min_impurity_split=None, bootstrap=True, oob_score=False,
-                n_jobs=Parameters.NUMBER_OF_JOBS, random_state=None, verbose=0,
+                n_jobs=n_jobs, random_state=None, verbose=0,
                 warm_start=False, class_weight=None)
     return clf
 
-def BernoulliNB():
+def BernoulliNB(n_jobs):
     from sklearn.naive_bayes import BernoulliNB
     clf = BernoulliNB(alpha=1.0, binarize=0.0, fit_prior=True, class_prior=None)
     return clf
 
-def MultinomialNB():
+def MultinomialNB(n_jobs):
     from sklearn.naive_bayes import MultinomialNB
     clf = MultinomialNB(alpha=1.0, fit_prior=True, class_prior=None)
     return clf
 
-def ComplementNB():
+def ComplementNB(n_jobs):
     from sklearn.naive_bayes import ComplementNB
     clf = ComplementNB(alpha=1.0, fit_prior=True, class_prior=None, norm=False)
     return clf
 
-def KNeighborsClassifier():
+def KNeighborsClassifier(n_jobs):
     from sklearn.neighbors import KNeighborsClassifier
     clf = KNeighborsClassifier(n_neighbors=5, weights='uniform', algorithm='auto',
                 leaf_size=30, p=2, metric='minkowski', metric_params=None,
-                n_jobs=Parameters.NUMBER_OF_JOBS)
+                n_jobs=n_jobs)
     return clf
 
-def MLPClassifier():
+def MLPClassifier(n_jobs):
     from sklearn.neural_network import MLPClassifier
     clf = MLPClassifier(hidden_layer_sizes=(100, ), activation='relu', solver='adam',
                 alpha=0.0001, batch_size='auto', learning_rate='constant',
@@ -51,7 +50,7 @@ def MLPClassifier():
                 n_iter_no_change=10)
     return clf
 
-def SVC():
+def SVC(n_jobs):
     from sklearn.svm import SVC
     clf = SVC(C=1.0, kernel='linear', degree=3, gamma='scale', coef0=0.0,
                 shrinking=True, probability=True, tol=0.0001, cache_size=200,
@@ -59,7 +58,7 @@ def SVC():
                 decision_function_shape='ovr', random_state=None)
     return clf
 
-def DecisionTreeClassifier():
+def DecisionTreeClassifier(n_jobs):
     from sklearn.tree import DecisionTreeClassifier
     clf = DecisionTreeClassifier(criterion='gini', splitter='best', max_depth=None,
                 min_samples_split=2, min_samples_leaf=1, min_weight_fraction_leaf=0.0,
@@ -68,7 +67,7 @@ def DecisionTreeClassifier():
                 presort=False)
     return clf
 
-def ExtraTreeClassifier():
+def ExtraTreeClassifier(n_jobs):
     from sklearn.tree import ExtraTreeClassifier
     clf = ExtraTreeClassifier(criterion='gini', splitter='random', max_depth=None,
                 min_samples_split=2, min_samples_leaf=1, min_weight_fraction_leaf=0.0,
@@ -76,60 +75,60 @@ def ExtraTreeClassifier():
                 min_impurity_decrease=0.0, min_impurity_split=None, class_weight=None)
     return clf
 
-def DummyClassifier():
+def DummyClassifier(n_jobs):
     from sklearn.dummy import DummyClassifier
     clf = DummyClassifier(strategy='stratified', random_state=None, constant=None)
     return clf
 
-def SGDClassifier():
+def SGDClassifier(n_jobs):
     from sklearn.linear_model import SGDClassifier
     clf = SGDClassifier(loss='modified_huber', penalty='l2', alpha=0.0001, l1_ratio=0.15,
                 fit_intercept=True, max_iter=1000, tol=1e-3, shuffle=True,
-                verbose=0, epsilon=0.1, n_jobs=Parameters.NUMBER_OF_JOBS,
+                verbose=0, epsilon=0.1, n_jobs=n_jobs,
                 random_state=None, learning_rate='optimal', eta0=0.0, power_t=0.5,
                 early_stopping=False, validation_fraction=0.1, n_iter_no_change=5,
                 class_weight=None, warm_start=False, average=False, n_iter=None)
     return clf
 
-def BaggingClassifier():
+def BaggingClassifier(n_jobs):
     from sklearn.ensemble import BaggingClassifier
     clf = BaggingClassifier(base_estimator=None, n_estimators=10, max_samples=1.0,
                 max_features=1.0, bootstrap=True, bootstrap_features=False,
-                oob_score=False, warm_start=False, n_jobs=Parameters.NUMBER_OF_JOBS,
+                oob_score=False, warm_start=False, n_jobs=n_jobs,
                 random_state=None, verbose=0)
     return clf
 
-def RFE(): # TODO: Allow to choose the estimator through the configuration file.
+def RFE(n_jobs): # TODO: Allow to choose the estimator through the configuration file.
     from sklearn.feature_selection import RFE
-    selector = RFE(estimator=ComplementNB(), n_features_to_select=None, step=1, verbose=0)
+    selector = RFE(estimator=ComplementNB(n_jobs), n_features_to_select=None, step=1, verbose=0)
     return selector
 
-def RFECV(): # TODO: Allow to choose the estimator through the configuration file.
+def RFECV(n_jobs): # TODO: Allow to choose the estimator through the configuration file.
     from sklearn.feature_selection import RFECV
-    selector = RFECV(estimator=ComplementNB(), step=1, min_features_to_select=1, cv=5, scoring=None,
-                verbose=0, n_jobs=Parameters.NUMBER_OF_JOBS)
+    selector = RFECV(estimator=ComplementNB(n_jobs=1), step=1, min_features_to_select=1, cv=5, scoring=None,
+                verbose=0, n_jobs=n_jobs)
     return selector
 
 class Pipeline():
-    def __init__(self, classifiers):
+    def __init__(self, classifiers, cross_validate):
         self.classifiers = classifiers
-        self.cross_validate = Parameters.CROSS_VALIDATE
+        self.cross_validate = cross_validate
         logger.debug("Cross validate = %s" % (self.cross_validate))
     
-    def start(self, X, y):
+    def start(self, X, y, n_jobs=None):
         from sklearn.model_selection import cross_validate
         from time import time
         if not self.cross_validate:
             X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42, shuffle=True, stratify=y)
         for f in self.classifiers:
             logger.info("Starting %s." % (f.__name__))
-            clf = f()
+            clf = f(n_jobs=n_jobs)
             logger.debug("%s configuration: %s" % (f.__name__, clf.__dict__))
             t1 = time()
             try:
                 if self.cross_validate:
                     scores = cross_validate(estimator=clf, X=X, y=y, groups=None, scoring=None, cv=5,
-                                n_jobs=Parameters.NUMBER_OF_JOBS, verbose=0,
+                                n_jobs=n_jobs, verbose=0,
                                 fit_params=None, pre_dispatch='2*n_jobs',
                                 return_train_score='warn', return_estimator=False,
                                 error_score='raise')

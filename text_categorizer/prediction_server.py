@@ -67,7 +67,7 @@ def main():
     if port <= limit_port:
         print("Please, indicate a port higher than %s." % (limit_port))
         quit()
-    Parameters.load_configuration(config_filename, train_mode=False)
+    Parameters.load_configuration(config_filename, training_mode=False)
     app.run(host='0.0.0.0', port=port, debug=False) # host='0.0.0.0' allows access from any network.
 
 if __name__ == '__main__':

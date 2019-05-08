@@ -11,8 +11,8 @@ from Parameters import Parameters
 
 def generate_X_y(docs=None):
     if docs is None:
-        docs = pickle_manager.get_documents()
-        total = pickle_manager.get_total_docs()
+        docs = pickle_manager.get_documents(Parameters.PREPROCESSED_DATA_FILE)
+        total = pickle_manager.get_total_docs(Parameters.PREPROCESSED_DATA_FILE)
     else:
         total = len(docs)
     num_ignored = 0
@@ -24,11 +24,16 @@ def generate_X_y(docs=None):
         else:
             lemmas = my_filter(doc)
             corpus.append(generate_corpus(lemmas))
-            classifications.append(get_classification(doc))
+            classifications.append(doc.fields[Parameters.EXCEL_COLUMN_WITH_CLASSIFICATION_DATA])
     logger.warning("%s document(s) ignored." % num_ignored)
-    if Parameters.TRAIN_MODE:
+    if Parameters.TRAINING_MODE:
         remove_incompatible_data(corpus, classifications)
-    X, y = create_classification(corpus, classifications)
+    X, y = create_classification(corpus=corpus,
+                                 classifications=classifications,
+                                 nltk_stop_words_package=Parameters.NLTK_STOP_WORDS_PACKAGE,
+                                 vectorizer=Parameters.VECTORIZER,
+                                 store_vocabulary=Parameters.TRAINING_MODE,
+                                 training_mode=Parameters.TRAINING_MODE)
     return X, y
 
 def my_filter(doc):
@@ -40,21 +45,18 @@ def my_filter(doc):
 def generate_corpus(lemmas):
     return ' '.join(lemmas)
 
-def get_classification(doc):
-    return doc.fields[Parameters.EXCEL_COLUMN_WITH_CLASSIFICATION_DATA]
-
-def create_classification(corpus, classifications):
+def create_classification(corpus, classifications, nltk_stop_words_package, vectorizer, store_vocabulary, training_mode):
     logger.info("Creating classification.")
     from nltk import download
     download(info_or_id='stopwords', quiet=True)
     from nltk.corpus import stopwords
-    stop_words = set(stopwords.words(Parameters.NLTK_STOP_WORDS_PACKAGE))
-    vectorizer = get_vectorizer(Parameters.VECTORIZER, stop_words=stop_words, check_vectorizer=False)
+    stop_words = set(stopwords.words(nltk_stop_words_package))
+    vectorizer = get_vectorizer(vectorizer, stop_words=stop_words, check_vectorizer=False, training_mode=training_mode)
     logger.info("Running %s." % vectorizer.__class__.__name__)
     logger.debug("%s configuration: %s" % (vectorizer.__class__.__name__, vectorizer.__dict__))
     X = vectorizer.fit_transform(corpus)
     y = classifications
-    if Parameters.TRAIN_MODE and vectorizer.__class__ != HashingVectorizer:
+    if store_vocabulary and vectorizer.__class__ != HashingVectorizer:
         pickle_manager.dump(vectorizer.vocabulary_, "features.pkl")
     #logger.debug(vectorizer.get_feature_names())
     #logger.debug(X.shape)
@@ -85,12 +87,12 @@ def LatentDirichletAllocation(X, y):
     X = lda.fit_transform(X, y)
     return X, y
 
-def get_vectorizer(vectorizer, stop_words=[], check_vectorizer=False):
+def get_vectorizer(vectorizer, stop_words=[], check_vectorizer=False, training_mode=True): #TODO: 'training_mode' should not have a default value.
     if check_vectorizer:
         assert vectorizer in [TfidfVectorizer.__name__, CountVectorizer.__name__, HashingVectorizer.__name__]
         return
     token_pattern = r'\S+'
-    if Parameters.TRAIN_MODE:
+    if training_mode:
         vocabulary = None
     else:
         if vectorizer != HashingVectorizer.__name__:
