@@ -13,7 +13,7 @@ from feature_extraction import generate_X_y
 from functions import data_frame_to_document_list
 from logger import logger
 from Parameters import Parameters
-from preprocessing import preprocess
+from Preprocessor import Preprocessor
 from ui import verify_python_version
 
 #@profile
@@ -42,7 +42,8 @@ def main():
             logger.info("Storing generated documents.")
             pickle_manager.dump_documents(docs, Parameters.PREPROCESSED_DATA_FILE)
         logger.info("Preprocessing documents.")
-        preprocess()
+        preprocessor = Preprocessor()
+        preprocessor.preprocess()
         logger.info("Checking generated data.")
         pickle_manager.check_data(Parameters.PREPROCESSED_DATA_FILE)
     else:
