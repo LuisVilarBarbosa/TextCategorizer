@@ -15,6 +15,7 @@ def preprocess(docs=None):
                                resource_dir=Parameters.STANFORDNLP_RESOURCES_DIR,
                                docs=docs,
                                text_data_field=Parameters.EXCEL_COLUMN_WITH_TEXT_DATA,
+                               training_mode=Parameters.TRAINING_MODE,
                                store_preprocessed_data=Parameters.TRAINING_MODE,
                                preprocessed_data_file=Parameters.PREPROCESSED_DATA_FILE)
 
@@ -35,14 +36,14 @@ def stanfordnlp_download(language_package, resource_dir):
 _nlp = None
 _stop = False
 
-def stanfordnlp_process(language_package, use_gpu, resource_dir, text_data_field, store_preprocessed_data, docs=None, preprocessed_data_file=None):
-    assert (docs is None) is store_preprocessed_data and store_preprocessed_data is (preprocessed_data_file is not None)
+def stanfordnlp_process(language_package, use_gpu, resource_dir, text_data_field, training_mode, store_preprocessed_data, docs=None, preprocessed_data_file=None):
     global _nlp, _stop
     if _nlp is None:
         stanfordnlp_download(language_package=language_package, resource_dir=resource_dir)
         _nlp = stanfordnlp.Pipeline(processors='tokenize,mwt,pos,lemma,depparse', lang=language_package, models_dir=resource_dir, use_gpu=use_gpu)
-    sig = signal.SIGINT
-    old_handler = signal.signal(sig, signal_handler)
+    if training_mode:
+        sig = signal.SIGINT
+        old_handler = signal.signal(sig, signal_handler)
     logger.info("Press CTRL+C to stop the preprocessing phase. (The preprocessed documents will be stored.)")
     if docs is None:
         docs = pickle_manager.get_documents(preprocessed_data_file)
@@ -68,7 +69,8 @@ def stanfordnlp_process(language_package, use_gpu, resource_dir, text_data_field
     if store_preprocessed_data:
         pda.close()
     logger.warning("%s document(s) ignored." % num_ignored)
-    signal.signal(sig, old_handler)
+    if training_mode:
+        signal.signal(sig, old_handler)
     if _stop:
         exit(0)
 
