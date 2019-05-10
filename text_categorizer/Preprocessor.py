@@ -48,7 +48,7 @@ class Preprocessor:
     def _stanfordnlp_process(self, text_data_field, training_mode, store_preprocessed_data, docs=None, preprocessed_data_file=None):
         if training_mode:
             self._set_signal_handlers()
-        logger.info("Press CTRL+C to stop the preprocessing phase. (The preprocessed documents will be stored.)")
+            logger.info("Press CTRL+C to stop the preprocessing phase. (The preprocessed documents will be stored.)")
         if docs is None:
             docs = pickle_manager.get_documents(preprocessed_data_file)
             total = pickle_manager.get_total_docs(preprocessed_data_file)
