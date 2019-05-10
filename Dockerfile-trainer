@@ -6,4 +6,6 @@ COPY text_categorizer/environment.yml /usr/src/app/text_categorizer/environment.
 
 RUN conda env create --file /usr/src/app/text_categorizer/environment.yml
 
-CMD /bin/bash -c "source activate text-categorizer && python3 /usr/src/app/text_categorizer $CONFIG_FILE"
+ENTRYPOINT ["/bin/bash", "-c"]
+
+CMD ["source activate text-categorizer && exec python3 /usr/src/app/text_categorizer \"$CONFIG_FILE\""]

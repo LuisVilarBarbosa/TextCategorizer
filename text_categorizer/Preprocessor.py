@@ -10,6 +10,11 @@ from logger import logger
 from Parameters import Parameters
 
 class Preprocessor:
+    stop_signals = [
+        signal.SIGINT,      # SIGINT is sent by CTRL-C.
+        signal.SIGTERM,     # SIGTERM is sent by Docker on CTRL-C or on a call to 'docker stop'.
+    ]
+
     def __init__(self):
         language_package = Parameters.STANFORDNLP_LANGUAGE_PACKAGE
         use_gpu = Parameters.STANFORDNLP_USE_GPU
@@ -42,8 +47,7 @@ class Preprocessor:
 
     def _stanfordnlp_process(self, text_data_field, training_mode, store_preprocessed_data, docs=None, preprocessed_data_file=None):
         if training_mode:
-            sig = signal.SIGINT
-            old_handler = signal.signal(sig, self._signal_handler)
+            self._set_signal_handlers()
         logger.info("Press CTRL+C to stop the preprocessing phase. (The preprocessed documents will be stored.)")
         if docs is None:
             docs = pickle_manager.get_documents(preprocessed_data_file)
@@ -70,13 +74,22 @@ class Preprocessor:
             pda.close()
         logger.warning("%s document(s) ignored." % num_ignored)
         if training_mode:
-            signal.signal(sig, old_handler)
+            self._reset_signal_handlers()
         if self.stop:
             exit(0)
 
     def _signal_handler(self, sig, frame):
-        if sig == signal.SIGINT:
+        if sig in Preprocessor.stop_signals:
             if not self.stop:
                 print()
                 logger.info("Stopping the preprocessing phase.")
                 self.stop = True
+    
+    def _set_signal_handlers(self):
+        self.old_handlers = dict()
+        for sig in Preprocessor.stop_signals:
+            self.old_handlers[sig] = signal.signal(sig, self._signal_handler)
+    
+    def _reset_signal_handlers(self):
+        for sig, old_handler in self.old_handlers.items():
+            signal.signal(sig, old_handler)
