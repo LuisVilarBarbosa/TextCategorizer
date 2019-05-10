@@ -6,6 +6,7 @@ import stanfordnlp
 import pickle_manager
 
 from tqdm import tqdm
+from traceback import format_exc
 from logger import logger
 from Parameters import Parameters
 
@@ -64,9 +65,9 @@ class Preprocessor:
                     stanfordnlp_doc = stanfordnlp.Document(text)
                     stanfordnlp_doc_updated = self.nlp(stanfordnlp_doc)
                     doc.update(stanfordnlp_document=stanfordnlp_doc_updated, text_data_field=text_data_field)
-                except Exception as e:
+                except Exception:
                     print()
-                    logger.warning("Ignoring document number %s due to the following exception: %s" %  (doc.index, repr(e)))
+                    logger.warning("Ignoring the document with index %s due to the following exception:\n%s" %  (doc.index, format_exc()))
                     num_ignored = num_ignored + 1
             if store_preprocessed_data:
                 pda.dump_append(doc)
