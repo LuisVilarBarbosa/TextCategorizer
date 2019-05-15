@@ -35,7 +35,7 @@ def generate_X_y(docs=None):
                                  vectorizer=Parameters.VECTORIZER,
                                  store_vocabulary=Parameters.TRAINING_MODE,
                                  training_mode=Parameters.TRAINING_MODE)
-    return X, y
+    return X, y, lemmas
 
 def my_filter(doc):
     lemmas = []

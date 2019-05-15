@@ -51,7 +51,7 @@ def main():
             logger.error("The indicated preprocessed data file does not exist.")
             quit()
     logger.info("Extracting features.")
-    X, y = generate_X_y()
+    X, y, _lemmas = generate_X_y()
     logger.info("Running classifiers.")
     p = classifiers.Pipeline(Parameters.CLASSIFIERS, Parameters.CROSS_VALIDATE)
     logger.info("Accuracies:")

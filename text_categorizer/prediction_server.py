@@ -18,6 +18,7 @@ BAD_REQUEST = 400
 UNAUTHORIZED_ACCESS = 401
 NOT_FOUND = 404
 _preprocessor = None
+_feature_weights = dict()
 
 @auth.get_password
 def get_password(username):
@@ -46,18 +47,61 @@ def predict():
     doc.fields[Parameters.EXCEL_COLUMN_WITH_TEXT_DATA] = text
     doc.fields[Parameters.EXCEL_COLUMN_WITH_CLASSIFICATION_DATA] = None
     _preprocessor.preprocess([doc])
-    X, y = feature_extraction.generate_X_y([doc])
+    X, _y, lemmas = feature_extraction.generate_X_y([doc])
     try:
         clf = pickle_manager.load("%s.pkl" % classifier)
         y_predict_proba = clf.predict_proba(X)
         y_predict_classes = classifiers.predict_proba_to_predict_classes(clf.classes_, y_predict_proba)
-        return jsonify(y_predict_classes[0])
+        try:
+            feature_weights = get_feature_weights(clf, lemmas)
+            return jsonify({'prediction': y_predict_classes[0], 'feature_weights': feature_weights})
+        except NotImplementedError:
+            return jsonify({'prediction': y_predict_classes[0]})
     except FileNotFoundError:
         abort(BAD_REQUEST, 'Invalid classifier model')
 
 @app.errorhandler(NOT_FOUND)
 def not_found(error):
     return make_response(jsonify({'error': 'Not found'}), NOT_FOUND)
+
+def get_feature_weights(clf, lemmas):
+    global _feature_weights
+    clf_name = clf.__class__.__name__
+    all_feature_weights = _feature_weights.get(clf_name)
+    if all_feature_weights is None:
+        load_feature_weights(clf)
+        all_feature_weights = _feature_weights.get(clf_name)
+    if type(all_feature_weights) is list:
+        feature_weights = sorted(filter(lambda item: item[0] in lemmas, all_feature_weights), key=lambda item: item[1] * -1)
+    else:
+        assert type(all_feature_weights) is dict
+        feature_weights = dict()
+        for c in all_feature_weights:
+            feature_weights[c] = sorted(filter(lambda item: item[0] in lemmas, all_feature_weights[c]), key=lambda item: item[1] * -1)
+    return feature_weights
+
+def load_feature_weights(clf):
+    global _feature_weights
+    features_dict = pickle_manager.load("features.pkl")
+    features = sorted(features_dict, key=lambda k: features_dict[k])
+    if "feature_importances_" in dir(clf):
+        values = clf.feature_importances_
+        assert len(features) == values.shape[0]
+        feature_weights = list(zip(features, values))
+    elif "coef_" in dir(clf):
+        values = clf.coef_
+        assert len(features) == values.shape[1]
+        feature_weights = dict()
+        if len(clf.classes_) == values.shape[0]:
+            for i in range(len(clf.classes_)):
+                feature_weights[clf.classes_[i]] = list(zip(features, values[i]))
+        else:
+            for i in range(values.shape[0]):
+                feature_weights[i] = list(zip(features, values[i].toarray()[0]))
+    else:
+        raise NotImplementedError
+    clf_name = clf.__class__.__name__
+    _feature_weights[clf_name] = feature_weights
 
 def main():
     global _preprocessor
