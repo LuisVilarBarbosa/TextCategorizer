@@ -20,6 +20,7 @@ class Parameters:
     TRAINING_MODE = None
     USE_LDA = None
     CLASSIFIERS = None
+    TEST_SIZE = None
 
     # This function must be executed before any access to the static variables of the class.
     @staticmethod
@@ -52,6 +53,7 @@ class Parameters:
         Parameters.NUM_ACCEPTED_PROBS = config.getint("Classification", "Number of probabilities accepted")
         assert Parameters.NUM_ACCEPTED_PROBS >= 1
         Parameters.load_classifiers(config)
+        Parameters.TEST_SIZE = config.getfloat("Classification", "Test subset size")
     
     @staticmethod
     def load_classifiers(config):

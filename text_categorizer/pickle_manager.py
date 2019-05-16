@@ -19,7 +19,7 @@ def load(path):
 
 def get_documents(filename):
     input_file = open(filename, 'rb')
-    _total = pickle.load(input_file)
+    _metadata = pickle.load(input_file)
     while True:
         try:
             yield pickle.load(input_file)
@@ -30,7 +30,7 @@ def get_documents(filename):
 def dump_documents(docs, filename):
     if os.path.exists(filename):
         raise Exception("The file '%s' should not exist." % filename)
-    pda = PickleDumpAppend(total=len(docs), filename=filename)
+    pda = PickleDumpAppend(metadata=len(docs), filename=filename)
     for doc in docs:
         pda.dump_append(doc)
     pda.close()
@@ -43,7 +43,9 @@ def check_data(filename):
         assert type(doc) is Document
         total = total + 1
         assert doc.index - 1 == total
-    assert get_total_docs(filename) == total
+    metadata = get_docs_metadata(filename)
+    assert type(metadata) is dict
+    assert metadata['total'] == total
 
 def _generate_file():
     def generate_filename():
@@ -55,20 +57,20 @@ def _generate_file():
     open(file=filename, mode='w').close()
     return filename
 
-def get_total_docs(filename):
+def get_docs_metadata(filename):
     input_file = open(filename, 'rb')
-    total = pickle.load(input_file)
+    metadata = pickle.load(input_file)
     input_file.close()
-    return total
+    return metadata
 
 class PickleDumpAppend():
-    def __init__(self, total, filename):
-        assert type(total) is int
+    def __init__(self, metadata, filename):
+        assert type(metadata) is dict
         assert type(filename) is str
         self.filename_upon_completion = filename
         my_filename = _generate_file()
         self.file = open(file=my_filename, mode='wb')
-        pickle.dump(obj=total, file=self.file, protocol=_pickle_protocol)
+        pickle.dump(obj=metadata, file=self.file, protocol=_pickle_protocol)
     
     def dump_append(self, data):
         pickle.dump(obj=data, file=self.file, protocol=_pickle_protocol)

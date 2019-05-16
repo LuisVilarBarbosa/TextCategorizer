@@ -4,7 +4,7 @@
 import pickle_manager
 
 from sklearn.metrics import accuracy_score, confusion_matrix, classification_report
-from sklearn.model_selection import train_test_split
+from sklearn.utils import safe_indexing
 from logger import logger
 
 def RandomForestClassifier(n_jobs):
@@ -104,11 +104,15 @@ class Pipeline():
         self.cross_validate = cross_validate
         logger.debug("Cross validate = %s" % (self.cross_validate))
     
-    def start(self, X, y, n_jobs=None, n_accepted_probs=1):
+    def start(self, X, y, n_jobs=None, n_accepted_probs=1, training_set_indexes=None, test_set_indexes=None):
         from sklearn.model_selection import cross_validate
         from time import time
         if not self.cross_validate:
-            X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42, shuffle=True, stratify=y)
+            assert training_set_indexes is not None and test_set_indexes is not None
+            X_train = safe_indexing(X, training_set_indexes)
+            X_test = safe_indexing(X, test_set_indexes)
+            y_train = safe_indexing(y, training_set_indexes)
+            y_test = safe_indexing(y, test_set_indexes)
         for f in self.classifiers:
             logger.info("Starting %s." % (f.__name__))
             clf = f(n_jobs=n_jobs)

@@ -12,7 +12,7 @@ from Parameters import Parameters
 def generate_X_y(docs=None):
     if docs is None:
         docs = pickle_manager.get_documents(Parameters.PREPROCESSED_DATA_FILE)
-        total = pickle_manager.get_total_docs(Parameters.PREPROCESSED_DATA_FILE)
+        total = pickle_manager.get_docs_metadata(Parameters.PREPROCESSED_DATA_FILE)['total']
     else:
         total = len(docs)
     num_ignored = 0

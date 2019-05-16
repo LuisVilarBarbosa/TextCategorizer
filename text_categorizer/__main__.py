@@ -14,6 +14,7 @@ from functions import data_frame_to_document_list
 from logger import logger
 from Parameters import Parameters
 from Preprocessor import Preprocessor
+from train_test_split import train_test_split
 from ui import verify_python_version
 
 #@profile
@@ -52,10 +53,15 @@ def main():
             quit()
     logger.info("Extracting features.")
     X, y, _lemmas = generate_X_y()
+    logger.info("Splitting dataset into training and test subsets.")    
+    train_test_split(y, Parameters.TEST_SIZE, Parameters.PREPROCESSED_DATA_FILE)
     logger.info("Running classifiers.")
     p = classifiers.Pipeline(Parameters.CLASSIFIERS, Parameters.CROSS_VALIDATE)
+    metadata = pickle_manager.get_docs_metadata(Parameters.PREPROCESSED_DATA_FILE)
+    training_set_indexes = metadata['training_set_indexes']
+    test_set_indexes = metadata['test_set_indexes']
     logger.info("Accuracies:")
-    p.start(X, y, Parameters.NUMBER_OF_JOBS, Parameters.NUM_ACCEPTED_PROBS)
+    p.start(X, y, Parameters.NUMBER_OF_JOBS, Parameters.NUM_ACCEPTED_PROBS, training_set_indexes, test_set_indexes)
     logger.debug("Execution completed.")
 
 if __name__ == "__main__":

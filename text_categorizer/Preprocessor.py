@@ -52,7 +52,7 @@ class Preprocessor:
             logger.info("Press CTRL+C to stop the preprocessing phase. (The preprocessed documents will be stored.)")
         if docs is None:
             docs = pickle_manager.get_documents(preprocessed_data_file)
-            total = pickle_manager.get_total_docs(preprocessed_data_file)
+            total = pickle_manager.get_docs_metadata(Parameters.PREPROCESSED_DATA_FILE)['total']
         else:
             total = len(docs)
         num_ignored = 0
