@@ -5,20 +5,17 @@ import numpy as np
 import pickle_manager
 
 from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer, HashingVectorizer
-from tqdm import tqdm
 from logger import logger
 from Parameters import Parameters
+from ui import get_documents
 
 def generate_X_y(docs=None):
     if docs is None:
-        docs = pickle_manager.get_documents(Parameters.PREPROCESSED_DATA_FILE)
-        total = pickle_manager.get_docs_metadata(Parameters.PREPROCESSED_DATA_FILE)['total']
-    else:
-        total = len(docs)
+        docs = get_documents(Parameters.PREPROCESSED_DATA_FILE, description="Preparing to create classification")
     num_ignored = 0
     corpus = []
     classifications = []
-    for doc in tqdm(iterable=docs, desc="Preparing to create classification", total=total, unit="doc", dynamic_ncols=True):
+    for doc in docs:
         if doc.analyzed_sentences is None:
             num_ignored = num_ignored + 1
         else:

@@ -5,10 +5,10 @@ import signal
 import stanfordnlp
 import pickle_manager
 
-from tqdm import tqdm
 from traceback import format_exc
 from logger import logger
 from Parameters import Parameters
+from ui import get_documents
 
 class Preprocessor:
     stop_signals = [
@@ -51,15 +51,12 @@ class Preprocessor:
             self._set_signal_handlers()
             logger.info("Press CTRL+C to stop the preprocessing phase. (The preprocessed documents will be stored.)")
         if docs is None:
-            docs = pickle_manager.get_documents(preprocessed_data_file)
-            total = pickle_manager.get_docs_metadata(Parameters.PREPROCESSED_DATA_FILE)['total']
-        else:
-            total = len(docs)
+            docs = get_documents(preprocessed_data_file, description="Preprocessing")
         num_ignored = 0
         if store_preprocessed_data:
             metadata = pickle_manager.get_docs_metadata(preprocessed_data_file)
             pda = pickle_manager.PickleDumpAppend(metadata=metadata, filename=preprocessed_data_file)
-        for doc in tqdm(iterable=docs, desc="Preprocessing", total=total, unit="doc", dynamic_ncols=True):
+        for doc in docs:
             if not self.stop and doc.analyzed_sentences is None:
                 text = doc.fields[text_data_field]
                 try:
