@@ -76,3 +76,4 @@ class Parameters:
         for clf in clfs:
             if clf.__name__ in clfs_names:
                 Parameters.CLASSIFIERS.append(clf)
+        assert len(Parameters.CLASSIFIERS) > 0
