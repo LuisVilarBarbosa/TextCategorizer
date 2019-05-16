@@ -57,7 +57,8 @@ class Preprocessor:
             total = len(docs)
         num_ignored = 0
         if store_preprocessed_data:
-            pda = pickle_manager.PickleDumpAppend(total=total, filename=preprocessed_data_file)
+            metadata = pickle_manager.get_docs_metadata(preprocessed_data_file)
+            pda = pickle_manager.PickleDumpAppend(metadata=metadata, filename=preprocessed_data_file)
         for doc in tqdm(iterable=docs, desc="Preprocessing", total=total, unit="doc", dynamic_ncols=True):
             if not self.stop and doc.analyzed_sentences is None:
                 text = doc.fields[text_data_field]
