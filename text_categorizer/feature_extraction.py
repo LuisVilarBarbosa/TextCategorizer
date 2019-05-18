@@ -22,7 +22,8 @@ def generate_X_y(docs=None):
             lemmas = my_filter(doc)
             corpus.append(generate_corpus(lemmas))
             classifications.append(doc.fields[Parameters.EXCEL_COLUMN_WITH_CLASSIFICATION_DATA])
-    logger.warning("%s document(s) ignored." % num_ignored)
+    if num_ignored > 0:
+        logger.warning("%s document(s) ignored." % num_ignored)
     if Parameters.TRAINING_MODE:
         remove_incompatible_data(corpus, classifications)
     X, y = create_classification(corpus=corpus,

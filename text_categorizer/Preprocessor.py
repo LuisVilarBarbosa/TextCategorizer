@@ -71,7 +71,8 @@ class Preprocessor:
                 pda.dump_append(doc)
         if store_preprocessed_data:
             pda.close()
-        logger.warning("%s document(s) ignored." % num_ignored)
+        if num_ignored > 0:
+            logger.warning("%s document(s) ignored." % num_ignored)
         if training_mode:
             self._reset_signal_handlers()
         if self.stop:
