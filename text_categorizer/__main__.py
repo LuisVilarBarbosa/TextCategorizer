@@ -2,7 +2,6 @@
 # coding=utf-8
 
 import classifiers
-import importlib.util
 import pickle_manager
 
 from os.path import isfile
@@ -33,11 +32,6 @@ def main():
         if not isfile(Parameters.PREPROCESSED_DATA_FILE) and isfile(Parameters.EXCEL_FILE):
             logger.info("Loading Excel file.")
             data_frame = read_excel(Parameters.EXCEL_FILE)
-            logger.info("Executing initial_code_to_run_on_data_frame().")
-            spec = importlib.util.spec_from_file_location("excel_filtration_code", Parameters.EXCEL_FILTRATION_CODE)
-            excel_filtration_code = importlib.util.module_from_spec(spec)
-            spec.loader.exec_module(excel_filtration_code)
-            data_frame = excel_filtration_code.initial_code_to_run_on_data_frame(data_frame)
             logger.info("Creating documents.")
             docs = data_frame_to_document_list(data_frame)
             logger.info("Storing generated documents.")

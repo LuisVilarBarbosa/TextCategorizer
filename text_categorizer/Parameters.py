@@ -14,7 +14,7 @@ class Parameters:
     STANFORDNLP_RESOURCES_DIR = None
     PREPROCESSED_DATA_FILE = None
     PREPROCESS_DATA = None
-    EXCEL_FILTRATION_CODE = None
+    DOCUMENT_ADJUSTMENT_CODE = None
     CROSS_VALIDATE = None
     VECTORIZER = None
     TRAINING_MODE = None
@@ -43,7 +43,7 @@ class Parameters:
         Parameters.STANFORDNLP_RESOURCES_DIR = config.get("Preprocessing", "StanfordNLP resources directory")
         Parameters.PREPROCESSED_DATA_FILE = config.get("General", "Preprocessed data file")
         Parameters.PREPROCESS_DATA = config.getboolean("Preprocessing", "Preprocess data")
-        Parameters.EXCEL_FILTRATION_CODE = config.get("Preprocessing", "Excel filtration script")
+        Parameters.DOCUMENT_ADJUSTMENT_CODE = config.get("Feature extraction", "Document adjustment script")
         Parameters.CROSS_VALIDATE = config.getboolean("Classification", "Cross validate")
         Parameters.VECTORIZER = config.get("Feature extraction", "Vectorizer")
         get_vectorizer(Parameters.VECTORIZER, check_vectorizer=True)

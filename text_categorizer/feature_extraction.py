@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 # coding=utf-8
 
+import importlib.util
 import numpy as np
 import pickle_manager
 
@@ -12,6 +13,7 @@ from ui import get_documents
 def generate_X_y(docs=None):
     if docs is None:
         docs = get_documents(Parameters.PREPROCESSED_DATA_FILE, description="Preparing to create classification")
+    document_adjustment_code = load_document_adjustment_code(Parameters.DOCUMENT_ADJUSTMENT_CODE)
     num_ignored = 0
     corpus = []
     classifications = []
@@ -19,6 +21,7 @@ def generate_X_y(docs=None):
         if doc.analyzed_sentences is None:
             num_ignored = num_ignored + 1
         else:
+            document_adjustment_code.initial_code_to_run_on_document(doc)
             lemmas = my_filter(doc)
             corpus.append(generate_corpus(lemmas))
             classifications.append(doc.fields[Parameters.EXCEL_COLUMN_WITH_CLASSIFICATION_DATA])
@@ -34,6 +37,12 @@ def generate_X_y(docs=None):
                                  store_vocabulary=Parameters.TRAINING_MODE,
                                  training_mode=Parameters.TRAINING_MODE)
     return X, y, lemmas
+
+def load_document_adjustment_code(filename):
+    spec = importlib.util.spec_from_file_location("document_adjustment_code", filename)
+    document_adjustment_code = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(document_adjustment_code)
+    return document_adjustment_code
 
 def my_filter(doc):
     lemmas = []
