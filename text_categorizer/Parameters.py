@@ -52,12 +52,19 @@ class Parameters:
         assert type(training_mode) is bool
         Parameters.TRAINING_MODE = training_mode
         Parameters.USE_LDA = config.getboolean("Feature extraction", "Use LDA")
-        Parameters.NUM_ACCEPTED_PROBS = config.getint("Classification", "Number of probabilities accepted")
-        assert Parameters.NUM_ACCEPTED_PROBS >= 1
+        Parameters.load_accepted_probs(config)
         Parameters.load_classifiers(config)
         Parameters.TEST_SIZE = config.getfloat("Classification", "Test subset size")
         Parameters.FORCE_SUBSETS_REGENERATION = config.getboolean("Classification", "Force regeneration of training and test subsets")
         Parameters.REMOVE_ADJECTIVES = config.getboolean("Feature extraction", "Remove adjectives")
+    
+    @staticmethod
+    def load_accepted_probs(config):
+        n_accepted_probs = config.get("Classification", "Number of probabilities accepted").split(",")
+        Parameters.SET_NUM_ACCEPTED_PROBS = set(map(lambda v: int(v), n_accepted_probs))
+        assert len(Parameters.SET_NUM_ACCEPTED_PROBS) > 0
+        for v in Parameters.SET_NUM_ACCEPTED_PROBS:
+            assert v >= 1
     
     @staticmethod
     def load_classifiers(config):

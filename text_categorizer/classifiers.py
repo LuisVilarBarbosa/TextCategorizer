@@ -104,7 +104,7 @@ class Pipeline():
         self.cross_validate = cross_validate
         logger.debug("Cross validate = %s" % (self.cross_validate))
     
-    def start(self, X, y, n_jobs=None, n_accepted_probs=1, training_set_indexes=None, test_set_indexes=None):
+    def start(self, X, y, n_jobs=None, set_n_accepted_probs={1,2,3}, training_set_indexes=None, test_set_indexes=None):
         from sklearn.model_selection import cross_validate
         from time import time
         if not self.cross_validate:
@@ -131,15 +131,14 @@ class Pipeline():
                     clf_filename = "%s.pkl" % (clf.__class__.__name__)
                     pickle_manager.dump(clf, clf_filename)
                     y_predict_proba = clf.predict_proba(X_test)
-                    y_predict = predict_proba_to_predict(clf.classes_, y_predict_proba, y_test, n_accepted_probs)
-                    logger.debug("Confusion matrix:\n%s" % confusion_matrix(y_test, y_predict))
-                    logger.debug("Classification report:\n%s" % classification_report(y_test, y_predict))
-                    out = accuracy_score(y_test, y_predict, normalize=True)
-                logger_func = logger.info
+                    for n_accepted_probs in set_n_accepted_probs:
+                        y_predict = predict_proba_to_predict(clf.classes_, y_predict_proba, y_test, n_accepted_probs)
+                        logger.debug("Confusion matrix:\n%s" % confusion_matrix(y_test, y_predict))
+                        logger.debug("Classification report:\n%s" % classification_report(y_test, y_predict))
+                        acc = accuracy_score(y_test, y_predict, normalize=True)
+                        logger.info("%s: %s | %ss" % (f.__name__, acc, (time() - t1)))
             except Exception as e:
-                out = repr(e)
-                logger_func = logger.error
-            logger_func("%s: %s | %ss" % (f.__name__, out, (time() - t1)))
+                logger.error("%s: %s | %ss" % (f.__name__, repr(e), (time() - t1)))
 
 def predict_proba_to_predict(clf_classes_, y_predict_proba, y_test=None, n_accepted_probs=1):
     ordered_classes = predict_proba_to_predict_classes(clf_classes_, y_predict_proba)
