@@ -7,4 +7,5 @@
 # important to force their regeneration in the configuration file to obtain
 # valid statistics.
 def initial_code_to_run_on_document(doc):
+    #doc.analyzed_sentences = None # Indicates that this document should be ignored.
     return
