@@ -21,6 +21,8 @@ class Parameters:
     USE_LDA = None
     CLASSIFIERS = None
     TEST_SIZE = None
+    FORCE_SUBSETS_REGENERATION = None
+    REMOVE_ADJECTIVES = None
 
     # This function must be executed before any access to the static variables of the class.
     @staticmethod
@@ -55,6 +57,7 @@ class Parameters:
         Parameters.load_classifiers(config)
         Parameters.TEST_SIZE = config.getfloat("Classification", "Test subset size")
         Parameters.FORCE_SUBSETS_REGENERATION = config.getboolean("Classification", "Force regeneration of training and test subsets")
+        Parameters.REMOVE_ADJECTIVES = config.getboolean("Feature extraction", "Remove adjectives")
     
     @staticmethod
     def load_classifiers(config):

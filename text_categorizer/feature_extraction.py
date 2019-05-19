@@ -14,6 +14,9 @@ def generate_X_y(docs=None):
     if docs is None:
         docs = get_documents(Parameters.PREPROCESSED_DATA_FILE, description="Preparing to create classification")
     document_adjustment_code = load_document_adjustment_code(Parameters.DOCUMENT_ADJUSTMENT_CODE)
+    upostags_to_ignore = ['PUNCT']
+    if Parameters.REMOVE_ADJECTIVES:
+        upostags_to_ignore.append('ADJ')
     num_ignored = 0
     corpus = []
     classifications = []
@@ -22,7 +25,7 @@ def generate_X_y(docs=None):
             num_ignored = num_ignored + 1
         else:
             document_adjustment_code.initial_code_to_run_on_document(doc)
-            lemmas = my_filter(doc)
+            lemmas = my_filter(doc, upostags_to_ignore)
             corpus.append(generate_corpus(lemmas))
             classifications.append(doc.fields[Parameters.EXCEL_COLUMN_WITH_CLASSIFICATION_DATA])
     if num_ignored > 0:
@@ -44,10 +47,10 @@ def load_document_adjustment_code(filename):
     spec.loader.exec_module(document_adjustment_code)
     return document_adjustment_code
 
-def my_filter(doc):
+def my_filter(doc, upostags_to_ignore):
     lemmas = []
     for sentence in doc.analyzed_sentences:
-        lemmas.extend([word['lemma'] for word in sentence if word['upostag'] != 'PUNCT'])
+        lemmas.extend([word['lemma'] for word in sentence if word['upostag'] not in upostags_to_ignore])
     return lemmas
 
 def generate_corpus(lemmas):
