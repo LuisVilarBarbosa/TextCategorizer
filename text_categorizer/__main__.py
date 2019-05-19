@@ -48,7 +48,7 @@ def main():
     logger.info("Extracting features.")
     X, y, _lemmas = generate_X_y()
     logger.info("Splitting dataset into training and test subsets.")    
-    train_test_split(y, Parameters.TEST_SIZE, Parameters.PREPROCESSED_DATA_FILE)
+    train_test_split(y, Parameters.TEST_SIZE, Parameters.PREPROCESSED_DATA_FILE, Parameters.FORCE_SUBSETS_REGENERATION)
     logger.info("Running classifiers.")
     p = classifiers.Pipeline(Parameters.CLASSIFIERS, Parameters.CROSS_VALIDATE)
     metadata = pickle_manager.get_docs_metadata(Parameters.PREPROCESSED_DATA_FILE)

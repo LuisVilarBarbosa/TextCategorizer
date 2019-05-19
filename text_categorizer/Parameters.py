@@ -54,6 +54,7 @@ class Parameters:
         assert Parameters.NUM_ACCEPTED_PROBS >= 1
         Parameters.load_classifiers(config)
         Parameters.TEST_SIZE = config.getfloat("Classification", "Test subset size")
+        Parameters.FORCE_SUBSETS_REGENERATION = config.getboolean("Classification", "Force regeneration of training and test subsets")
     
     @staticmethod
     def load_classifiers(config):
