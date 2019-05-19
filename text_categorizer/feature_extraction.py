@@ -21,10 +21,10 @@ def generate_X_y(docs=None):
     corpus = []
     classifications = []
     for doc in docs:
+        document_adjustment_code.initial_code_to_run_on_document(doc)
         if doc.analyzed_sentences is None:
             num_ignored = num_ignored + 1
         else:
-            document_adjustment_code.initial_code_to_run_on_document(doc)
             lemmas = my_filter(doc, upostags_to_ignore)
             corpus.append(generate_corpus(lemmas))
             classifications.append(doc.fields[Parameters.EXCEL_COLUMN_WITH_CLASSIFICATION_DATA])
