@@ -30,7 +30,8 @@ def get_documents(filename):
 def dump_documents(docs, filename):
     if os.path.exists(filename):
         raise Exception("The file '%s' should not exist." % filename)
-    pda = PickleDumpAppend(metadata=len(docs), filename=filename)
+    metadata = {'total': len(docs)}
+    pda = PickleDumpAppend(metadata=metadata, filename=filename)
     for doc in docs:
         pda.dump_append(doc)
     pda.close()
