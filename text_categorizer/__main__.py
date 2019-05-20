@@ -24,38 +24,38 @@ def main():
     logger.debug("Starting execution.")
     verify_python_version()
     config_filename = argv[1]
-    Parameters.load_configuration(config_filename, training_mode=True)
-    if Parameters.PREPROCESS_DATA:
-        if not isfile(Parameters.EXCEL_FILE) and not isfile(Parameters.PREPROCESSED_DATA_FILE):
+    parameters = Parameters(config_filename, training_mode=True)
+    if parameters.preprocessed_data:
+        if not isfile(parameters.excel_file) and not isfile(parameters.preprocessed_data_file):
             logger.error("Please, provide a valid Excel file or a valid preprocessed data file.")
             quit()
-        if not isfile(Parameters.PREPROCESSED_DATA_FILE) and isfile(Parameters.EXCEL_FILE):
+        if not isfile(parameters.preprocessed_data_file) and isfile(parameters.excel_file):
             logger.info("Loading Excel file.")
-            data_frame = read_excel(Parameters.EXCEL_FILE)
+            data_frame = read_excel(parameters.excel_file)
             logger.info("Creating documents.")
             docs = data_frame_to_document_list(data_frame)
             logger.info("Storing generated documents.")
-            pickle_manager.dump_documents(docs, Parameters.PREPROCESSED_DATA_FILE)
+            pickle_manager.dump_documents(docs, parameters.preprocessed_data_file)
         logger.info("Preprocessing documents.")
-        preprocessor = Preprocessor()
+        preprocessor = Preprocessor(parameters)
         preprocessor.preprocess()
         logger.info("Checking generated data.")
-        pickle_manager.check_data(Parameters.PREPROCESSED_DATA_FILE)
+        pickle_manager.check_data(parameters.preprocessed_data_file)
     else:
-        if not isfile(Parameters.PREPROCESSED_DATA_FILE):
+        if not isfile(parameters.preprocessed_data_file):
             logger.error("The indicated preprocessed data file does not exist.")
             quit()
     logger.info("Extracting features.")
-    X, y, _lemmas = generate_X_y()
+    X, y, _lemmas = generate_X_y(parameters)
     logger.info("Splitting dataset into training and test subsets.")    
-    train_test_split(y, Parameters.TEST_SIZE, Parameters.PREPROCESSED_DATA_FILE, Parameters.FORCE_SUBSETS_REGENERATION)
+    train_test_split(y, parameters.test_subset_size, parameters.preprocessed_data_file, parameters.force_subsets_regeneration)
     logger.info("Running classifiers.")
-    p = classifiers.Pipeline(Parameters.CLASSIFIERS, Parameters.CROSS_VALIDATE)
-    metadata = pickle_manager.get_docs_metadata(Parameters.PREPROCESSED_DATA_FILE)
+    p = classifiers.Pipeline(parameters.classifiers, parameters.cross_validate)
+    metadata = pickle_manager.get_docs_metadata(parameters.preprocessed_data_file)
     training_set_indexes = metadata['training_set_indexes']
     test_set_indexes = metadata['test_set_indexes']
     logger.info("Accuracies:")
-    p.start(X, y, Parameters.NUMBER_OF_JOBS, Parameters.SET_NUM_ACCEPTED_PROBS, training_set_indexes, test_set_indexes)
+    p.start(X, y, parameters.number_of_jobs, parameters.set_num_accepted_probs, training_set_indexes, test_set_indexes)
     logger.debug("Execution completed.")
 
 if __name__ == "__main__":

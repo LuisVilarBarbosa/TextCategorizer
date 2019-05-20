@@ -17,6 +17,7 @@ auth = HTTPBasicAuth()
 BAD_REQUEST = 400
 UNAUTHORIZED_ACCESS = 401
 NOT_FOUND = 404
+_parameters = None
 _preprocessor = None
 _feature_weights = dict()
 
@@ -34,7 +35,7 @@ def unauthorized():
 @app.route('/', methods=['POST'])
 @auth.login_required
 def predict():
-    global _preprocessor
+    global _parameters, _preprocessor
     if not request.json:
         abort(BAD_REQUEST)
     text = request.json.get('text')
@@ -44,10 +45,10 @@ def predict():
     if type(classifier) is not str:
         abort(BAD_REQUEST, 'Invalid classifier')
     doc = Document(index=-1, fields=dict(), analyzed_sentences=None)
-    doc.fields[Parameters.EXCEL_COLUMN_WITH_TEXT_DATA] = text
-    doc.fields[Parameters.EXCEL_COLUMN_WITH_CLASSIFICATION_DATA] = None
+    doc.fields[_parameters.excel_column_with_text_data] = text
+    doc.fields[_parameters.excel_column_with_classification_data] = None
     _preprocessor.preprocess([doc])
-    X, _y, lemmas = feature_extraction.generate_X_y([doc])
+    X, _y, lemmas = feature_extraction.generate_X_y(_parameters, [doc])
     try:
         clf = pickle_manager.load("%s.pkl" % classifier)
         y_predict_proba = clf.predict_proba(X)
@@ -104,7 +105,7 @@ def load_feature_weights(clf):
     _feature_weights[clf_name] = feature_weights
 
 def main():
-    global _preprocessor
+    global _parameters, _preprocessor
     if len(argv) != 3:
         print("Usage: python3 text_categorizer/prediction_server.py <configuration file> <port>")
         quit()
@@ -114,8 +115,8 @@ def main():
     if port <= limit_port:
         print("Please, indicate a port higher than %s." % (limit_port))
         quit()
-    Parameters.load_configuration(config_filename, training_mode=False)
-    _preprocessor = Preprocessor()
+    _parameters = Parameters(config_filename, training_mode=False)
+    _preprocessor = Preprocessor(_parameters)
     app.run(host='0.0.0.0', port=port, debug=False) # host='0.0.0.0' allows access from any network.
 
 if __name__ == '__main__':

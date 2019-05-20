@@ -7,15 +7,14 @@ import pickle_manager
 
 from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer, HashingVectorizer
 from logger import logger
-from Parameters import Parameters
 from ui import get_documents
 
-def generate_X_y(docs=None):
+def generate_X_y(parameters, docs=None):
     if docs is None:
-        docs = get_documents(Parameters.PREPROCESSED_DATA_FILE, description="Preparing to create classification")
-    document_adjustment_code = load_document_adjustment_code(Parameters.DOCUMENT_ADJUSTMENT_CODE)
+        docs = get_documents(parameters.preprocessed_data_file, description="Preparing to create classification")
+    document_adjustment_code = load_document_adjustment_code(parameters.document_adjustment_code)
     upostags_to_ignore = ['PUNCT']
-    if Parameters.REMOVE_ADJECTIVES:
+    if parameters.remove_adjectives:
         logger.info("The removal of adjectives is enabled.")
         upostags_to_ignore.append('ADJ')
     else:
@@ -30,18 +29,18 @@ def generate_X_y(docs=None):
         else:
             lemmas = my_filter(doc, upostags_to_ignore)
             corpus.append(generate_corpus(lemmas))
-            classifications.append(doc.fields[Parameters.EXCEL_COLUMN_WITH_CLASSIFICATION_DATA])
+            classifications.append(doc.fields[parameters.excel_column_with_classification_data])
     if num_ignored > 0:
         logger.warning("%s document(s) ignored." % num_ignored)
-    if Parameters.TRAINING_MODE:
+    if parameters.training_mode:
         remove_incompatible_data(corpus, classifications)
     X, y = create_classification(corpus=corpus,
                                  classifications=classifications,
-                                 nltk_stop_words_package=Parameters.NLTK_STOP_WORDS_PACKAGE,
-                                 use_lda=Parameters.USE_LDA,
-                                 vectorizer=Parameters.VECTORIZER,
-                                 store_vocabulary=Parameters.TRAINING_MODE,
-                                 training_mode=Parameters.TRAINING_MODE)
+                                 nltk_stop_words_package=parameters.nltk_stop_words_package,
+                                 use_lda=parameters.use_lda,
+                                 vectorizer=parameters.vectorizer,
+                                 store_vocabulary=parameters.training_mode,
+                                 training_mode=parameters.training_mode)
     return X, y, lemmas
 
 def load_document_adjustment_code(filename):

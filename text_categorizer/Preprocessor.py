@@ -7,7 +7,6 @@ import pickle_manager
 
 from traceback import format_exc
 from logger import logger
-from Parameters import Parameters
 from ui import get_documents
 
 class Preprocessor:
@@ -16,20 +15,21 @@ class Preprocessor:
         signal.SIGTERM,     # SIGTERM is sent by Docker on CTRL-C or on a call to 'docker stop'.
     ]
 
-    def __init__(self):
-        language_package = Parameters.STANFORDNLP_LANGUAGE_PACKAGE
-        use_gpu = Parameters.STANFORDNLP_USE_GPU
-        resource_dir = Parameters.STANFORDNLP_RESOURCES_DIR
+    def __init__(self, parameters):
+        self.parameters = parameters
+        language_package = self.parameters.stanfordnlp_language_package
+        use_gpu = self.parameters.stanfordnlp_use_gpu
+        resource_dir = self.parameters.stanfordnlp_resources_dir
         Preprocessor._stanfordnlp_download(language_package=language_package, resource_dir=resource_dir)
         self.nlp = stanfordnlp.Pipeline(processors='tokenize,mwt,pos,lemma,depparse', lang=language_package, models_dir=resource_dir, use_gpu=use_gpu)
         self.stop = False
 
     def preprocess(self, docs=None):
         return self._stanfordnlp_process(docs=docs,
-                                   text_data_field=Parameters.EXCEL_COLUMN_WITH_TEXT_DATA,
-                                   training_mode=Parameters.TRAINING_MODE,
-                                   store_preprocessed_data=Parameters.TRAINING_MODE,
-                                   preprocessed_data_file=Parameters.PREPROCESSED_DATA_FILE)
+                                   text_data_field=self.parameters.excel_column_with_text_data,
+                                   training_mode=self.parameters.training_mode,
+                                   store_preprocessed_data=self.parameters.training_mode,
+                                   preprocessed_data_file=self.parameters.preprocessed_data_file)
 
     @staticmethod
     def _stanfordnlp_download(language_package, resource_dir):

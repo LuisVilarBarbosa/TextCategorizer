@@ -3,71 +3,51 @@
 
 import classifiers
 
-class Parameters:
-    EXCEL_FILE = None
-    EXCEL_COLUMN_WITH_TEXT_DATA = None
-    EXCEL_COLUMN_WITH_CLASSIFICATION_DATA = None
-    NLTK_STOP_WORDS_PACKAGE = None
-    NUMBER_OF_JOBS = None
-    STANFORDNLP_LANGUAGE_PACKAGE = None
-    STANFORDNLP_USE_GPU = None
-    STANFORDNLP_RESOURCES_DIR = None
-    PREPROCESSED_DATA_FILE = None
-    PREPROCESS_DATA = None
-    DOCUMENT_ADJUSTMENT_CODE = None
-    CROSS_VALIDATE = None
-    VECTORIZER = None
-    TRAINING_MODE = None
-    USE_LDA = None
-    CLASSIFIERS = None
-    TEST_SIZE = None
-    FORCE_SUBSETS_REGENERATION = None
-    REMOVE_ADJECTIVES = None
+from configparser import ConfigParser
+from feature_extraction import get_vectorizer
 
-    # This function must be executed before any access to the static variables of the class.
-    @staticmethod
-    def load_configuration(config_filename, training_mode):
-        from configparser import ConfigParser
-        from feature_extraction import get_vectorizer
+class Parameters:
+    def __init__(self, config_filename, training_mode):
         config = ConfigParser()
         config.read(config_filename)
-        Parameters.EXCEL_FILE = config.get("Preprocessing", "Excel file")
-        Parameters.EXCEL_COLUMN_WITH_TEXT_DATA = config.get("General", "Excel column with text data")
-        Parameters.EXCEL_COLUMN_WITH_CLASSIFICATION_DATA = config.get("General", "Excel column with classification data")
-        Parameters.NLTK_STOP_WORDS_PACKAGE = config.get("Feature extraction", "NLTK stop words package")
-        Parameters.NUMBER_OF_JOBS = config.get("General", "Number of jobs")
-        if Parameters.NUMBER_OF_JOBS == "None":
-            Parameters.NUMBER_OF_JOBS = None
-        else:
-            Parameters.NUMBER_OF_JOBS = int(Parameters.NUMBER_OF_JOBS)
-        Parameters.STANFORDNLP_LANGUAGE_PACKAGE = config.get("Preprocessing", "StanfordNLP language package")
-        Parameters.STANFORDNLP_USE_GPU = config.getboolean("Preprocessing", "StanfordNLP use GPU")
-        Parameters.STANFORDNLP_RESOURCES_DIR = config.get("Preprocessing", "StanfordNLP resources directory")
-        Parameters.PREPROCESSED_DATA_FILE = config.get("General", "Preprocessed data file")
-        Parameters.PREPROCESS_DATA = config.getboolean("Preprocessing", "Preprocess data")
-        Parameters.DOCUMENT_ADJUSTMENT_CODE = config.get("Feature extraction", "Document adjustment script")
-        Parameters.CROSS_VALIDATE = config.getboolean("Classification", "Cross validate")
-        Parameters.VECTORIZER = config.get("Feature extraction", "Vectorizer")
-        get_vectorizer(Parameters.VECTORIZER, check_vectorizer=True)
+        self.excel_file = config.get("Preprocessing", "Excel file")
+        self.excel_column_with_text_data = config.get("General", "Excel column with text data")
+        self.excel_column_with_classification_data = config.get("General", "Excel column with classification data")
+        self.nltk_stop_words_package = config.get("Feature extraction", "NLTK stop words package")
+        self._load_number_of_jobs(config)
+        self.stanfordnlp_language_package = config.get("Preprocessing", "StanfordNLP language package")
+        self.stanfordnlp_use_gpu = config.getboolean("Preprocessing", "StanfordNLP use GPU")
+        self.stanfordnlp_resources_dir = config.get("Preprocessing", "StanfordNLP resources directory")
+        self.preprocessed_data_file = config.get("General", "Preprocessed data file")
+        self.preprocessed_data = config.getboolean("Preprocessing", "Preprocess data")
+        self.document_adjustment_code = config.get("Feature extraction", "Document adjustment script")
+        self.cross_validate = config.getboolean("Classification", "Cross validate")
+        self.vectorizer = config.get("Feature extraction", "Vectorizer")
+        get_vectorizer(self.vectorizer, check_vectorizer=True)
         assert type(training_mode) is bool
-        Parameters.TRAINING_MODE = training_mode
-        Parameters.USE_LDA = config.getboolean("Feature extraction", "Use LDA")
-        Parameters.load_accepted_probs(config)
-        Parameters.load_classifiers(config)
-        Parameters.TEST_SIZE = config.getfloat("Classification", "Test subset size")
-        Parameters.FORCE_SUBSETS_REGENERATION = config.getboolean("Classification", "Force regeneration of training and test subsets")
-        Parameters.REMOVE_ADJECTIVES = config.getboolean("Feature extraction", "Remove adjectives")
+        self.training_mode = training_mode
+        self.use_lda = config.getboolean("Feature extraction", "Use LDA")
+        self._load_accepted_probs(config)
+        self._load_classifiers(config)
+        self.test_subset_size = config.getfloat("Classification", "Test subset size")
+        self.force_subsets_regeneration = config.getboolean("Classification", "Force regeneration of training and test subsets")
+        self.remove_adjectives = config.getboolean("Feature extraction", "Remove adjectives")
     
-    @staticmethod
-    def load_accepted_probs(config):
+    def _load_number_of_jobs(self, config):
+        self.number_of_jobs = config.get("General", "Number of jobs")
+        if self.number_of_jobs == "None":
+            self.number_of_jobs = None
+        else:
+            self.number_of_jobs = int(self.number_of_jobs)
+    
+    def _load_accepted_probs(self, config):
         n_accepted_probs = config.get("Classification", "Number of probabilities accepted").split(",")
-        Parameters.SET_NUM_ACCEPTED_PROBS = set(map(lambda v: int(v), n_accepted_probs))
-        assert len(Parameters.SET_NUM_ACCEPTED_PROBS) > 0
-        for v in Parameters.SET_NUM_ACCEPTED_PROBS:
+        self.set_num_accepted_probs = set(map(lambda v: int(v), n_accepted_probs))
+        assert len(self.set_num_accepted_probs) > 0
+        for v in self.set_num_accepted_probs:
             assert v >= 1
     
-    @staticmethod
-    def load_classifiers(config):
+    def _load_classifiers(self, config):
         clfs = [
             classifiers.RandomForestClassifier,
             classifiers.BernoulliNB,
@@ -83,8 +63,8 @@ class Parameters:
             classifiers.BaggingClassifier,
         ]
         clfs_names = config.get("Classification", "Classifiers").split(",")
-        Parameters.CLASSIFIERS = []
+        self.classifiers = []
         for clf in clfs:
             if clf.__name__ in clfs_names:
-                Parameters.CLASSIFIERS.append(clf)
-        assert len(Parameters.CLASSIFIERS) > 0
+                self.classifiers.append(clf)
+        assert len(self.classifiers) > 0
