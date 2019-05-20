@@ -31,6 +31,7 @@ class Parameters:
         self.test_subset_size = config.getfloat("Classification", "Test subset size")
         self.force_subsets_regeneration = config.getboolean("Classification", "Force regeneration of training and test subsets")
         self.remove_adjectives = config.getboolean("Feature extraction", "Remove adjectives")
+        self._load_synonyms_file(config)
     
     def _load_number_of_jobs(self, config):
         self.number_of_jobs = config.get("General", "Number of jobs")
@@ -71,3 +72,8 @@ class Parameters:
             if clf.__name__ in clfs_names:
                 self.classifiers.append(clf)
         assert len(self.classifiers) > 0
+    
+    def _load_synonyms_file(self, config):
+        self.synonyms_file = config.get("Feature extraction", "Synonyms file")
+        if self.synonyms_file == "None":
+            self.synonyms_file = None

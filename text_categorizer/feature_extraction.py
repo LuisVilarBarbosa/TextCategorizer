@@ -6,6 +6,7 @@ import numpy as np
 import pickle_manager
 
 from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer, HashingVectorizer
+from ContoPTParser import ContoPTParser
 from logger import logger
 from ui import get_documents
 
@@ -22,12 +23,17 @@ def generate_X_y(parameters, docs=None):
     num_ignored = 0
     corpus = []
     classifications = []
+    if parameters.synonyms_file is not None:
+        contoPTParser = ContoPTParser(parameters.synonyms_file)
+        synonyms = contoPTParser.synonyms
     for doc in docs:
         document_adjustment_code.initial_code_to_run_on_document(doc)
         if doc.analyzed_sentences is None:
             num_ignored = num_ignored + 1
         else:
             lemmas = my_filter(doc, upostags_to_ignore)
+            if parameters.synonyms_file is not None:
+                lemmas = list(map(lambda l: l if synonyms.get(l) is None else synonyms.get(l), lemmas))
             corpus.append(generate_corpus(lemmas))
             classifications.append(doc.fields[parameters.excel_column_with_classification_data])
     if num_ignored > 0:
