@@ -4,7 +4,7 @@
 import classifiers
 
 from configparser import ConfigParser
-from feature_extraction import get_vectorizer
+from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer, HashingVectorizer
 
 class Parameters:
     def __init__(self, config_filename, training_mode):
@@ -22,8 +22,7 @@ class Parameters:
         self.preprocessed_data = config.getboolean("Preprocessing", "Preprocess data")
         self.document_adjustment_code = config.get("Feature extraction", "Document adjustment script")
         self.cross_validate = config.getboolean("Classification", "Cross validate")
-        self.vectorizer = config.get("Feature extraction", "Vectorizer")
-        get_vectorizer(self.vectorizer, check_vectorizer=True)
+        self._load_vectorizer(config)
         assert type(training_mode) is bool
         self.training_mode = training_mode
         self.use_lda = config.getboolean("Feature extraction", "Use LDA")
@@ -39,6 +38,10 @@ class Parameters:
             self.number_of_jobs = None
         else:
             self.number_of_jobs = int(self.number_of_jobs)
+    
+    def _load_vectorizer(self, config):
+        self.vectorizer = config.get("Feature extraction", "Vectorizer")
+        assert self.vectorizer in [TfidfVectorizer.__name__, CountVectorizer.__name__, HashingVectorizer.__name__]
     
     def _load_accepted_probs(self, config):
         n_accepted_probs = config.get("Classification", "Number of probabilities accepted").split(",")

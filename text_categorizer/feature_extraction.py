@@ -64,7 +64,7 @@ def create_classification(corpus, classifications, nltk_stop_words_package, use_
     download(info_or_id='stopwords', quiet=True)
     from nltk.corpus import stopwords
     stop_words = set(stopwords.words(nltk_stop_words_package))
-    vectorizer = get_vectorizer(vectorizer, stop_words=stop_words, check_vectorizer=False, training_mode=training_mode)
+    vectorizer = get_vectorizer(vectorizer, training_mode, stop_words=stop_words)
     logger.info("Running %s." % vectorizer.__class__.__name__)
     logger.debug("%s configuration: %s" % (vectorizer.__class__.__name__, vectorizer.__dict__))
     X = vectorizer.fit_transform(corpus)
@@ -102,10 +102,7 @@ def LatentDirichletAllocation(X, y):
     X = lda.fit_transform(X, y)
     return X, y
 
-def get_vectorizer(vectorizer, stop_words=[], check_vectorizer=False, training_mode=True): #TODO: 'training_mode' should not have a default value.
-    if check_vectorizer:
-        assert vectorizer in [TfidfVectorizer.__name__, CountVectorizer.__name__, HashingVectorizer.__name__]
-        return
+def get_vectorizer(vectorizer, training_mode, stop_words=[]):
     token_pattern = r'\S+'
     if training_mode:
         vocabulary = None
