@@ -16,7 +16,10 @@ def generate_X_y(docs=None):
     document_adjustment_code = load_document_adjustment_code(Parameters.DOCUMENT_ADJUSTMENT_CODE)
     upostags_to_ignore = ['PUNCT']
     if Parameters.REMOVE_ADJECTIVES:
+        logger.info("The removal of adjectives is enabled.")
         upostags_to_ignore.append('ADJ')
+    else:
+        logger.info("The removal of adjectives is disabled.")
     num_ignored = 0
     corpus = []
     classifications = []
