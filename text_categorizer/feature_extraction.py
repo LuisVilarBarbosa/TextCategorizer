@@ -23,7 +23,10 @@ def generate_X_y(parameters, docs=None):
     num_ignored = 0
     corpus = []
     classifications = []
-    if parameters.synonyms_file is not None:
+    if parameters.synonyms_file is None:
+        logger.info("The substitution of synonyms is disabled.")
+    else:
+        logger.info("The substitution of synonyms is enabled.")
         contoPTParser = ContoPTParser(parameters.synonyms_file)
         synonyms = contoPTParser.synonyms
     for doc in docs:
