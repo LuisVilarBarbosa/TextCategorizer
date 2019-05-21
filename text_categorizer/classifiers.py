@@ -137,7 +137,7 @@ class Pipeline():
                                 fit_params=None, pre_dispatch='2*n_jobs',
                                 return_train_score='warn', return_estimator=False,
                                 error_score='raise')
-                    out = scores
+                    logger.info("%s: %s | %ss" % (f.__name__, scores, (time() - t1)))
                 else:
                     clf.fit(X_train, y_train)
                     clf_filename = "%s.pkl" % (clf.__class__.__name__)
