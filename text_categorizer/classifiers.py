@@ -3,9 +3,11 @@
 
 import pickle_manager
 
+from collections import Counter
 from sklearn.metrics import accuracy_score, confusion_matrix, classification_report
 from sklearn.utils import safe_indexing
 from logger import logger
+from resampling import RandomOverSample, RandomUnderSample
 
 def RandomForestClassifier(n_jobs):
     from sklearn.ensemble import RandomForestClassifier
@@ -104,7 +106,7 @@ class Pipeline():
         self.cross_validate = cross_validate
         logger.debug("Cross validate = %s" % (self.cross_validate))
     
-    def start(self, X, y, n_jobs=None, set_n_accepted_probs={1,2,3}, training_set_indexes=None, test_set_indexes=None):
+    def start(self, X, y, n_jobs=None, set_n_accepted_probs={1,2,3}, training_set_indexes=None, test_set_indexes=None, resampling=None):
         from sklearn.model_selection import cross_validate
         from time import time
         if not self.cross_validate:
@@ -113,6 +115,16 @@ class Pipeline():
             X_test = safe_indexing(X, test_set_indexes)
             y_train = safe_indexing(y, training_set_indexes)
             y_test = safe_indexing(y, test_set_indexes)
+            if resampling is not None:
+                if resampling == RandomOverSample.__name__:
+                    logger.info("Starting random over sampler.")
+                    X_train, y_train = RandomOverSample(X_train, y_train)
+                elif resampling == RandomUnderSample.__name__:
+                    logger.info("Starting random under sampler.")
+                    X_train, y_train = RandomUnderSample(X_train, y_train)
+                else:
+                    logger.error("Invalid resampling method.")
+            logger.debug("Number of training examples: %s" % (Counter(y_train)))
         for f in self.classifiers:
             logger.info("Starting %s." % (f.__name__))
             clf = f(n_jobs=n_jobs)

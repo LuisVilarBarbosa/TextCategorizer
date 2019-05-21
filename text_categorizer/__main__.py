@@ -55,7 +55,7 @@ def main():
     training_set_indexes = metadata['training_set_indexes']
     test_set_indexes = metadata['test_set_indexes']
     logger.info("Accuracies:")
-    p.start(X, y, parameters.number_of_jobs, parameters.set_num_accepted_probs, training_set_indexes, test_set_indexes)
+    p.start(X, y, parameters.number_of_jobs, parameters.set_num_accepted_probs, training_set_indexes, test_set_indexes, parameters.resampling)
     logger.debug("Execution completed.")
 
 if __name__ == "__main__":

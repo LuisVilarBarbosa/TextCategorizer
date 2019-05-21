@@ -32,6 +32,7 @@ class Parameters:
         self.force_subsets_regeneration = config.getboolean("Classification", "Force regeneration of training and test subsets")
         self.remove_adjectives = config.getboolean("Feature extraction", "Remove adjectives")
         self._load_synonyms_file(config)
+        self._load_resampling(config)
     
     def _load_number_of_jobs(self, config):
         self.number_of_jobs = config.get("General", "Number of jobs")
@@ -77,3 +78,11 @@ class Parameters:
         self.synonyms_file = config.get("Feature extraction", "Synonyms file")
         if self.synonyms_file == "None":
             self.synonyms_file = None
+    
+    def _load_resampling(self, config):
+        self.resampling = config.get("Classification", "Resampling")
+        assert self.resampling in ["None", "RandomOverSample", "RandomUnderSample"]
+        if self.resampling == "None":
+            self.resampling = None
+        if self.resampling is not None:
+            assert not self.cross_validate
