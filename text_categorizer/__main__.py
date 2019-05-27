@@ -46,7 +46,7 @@ def main():
             logger.error("The indicated preprocessed data file does not exist.")
             quit()
     logger.info("Extracting features.")
-    feature_extractor = FeatureExtractor(nltk_stop_words_package=parameters.nltk_stop_words_package, vectorizer_name=parameters.vectorizer, training_mode=parameters.training_mode, use_lda=parameters.use_lda, document_adjustment_code=parameters.document_adjustment_code, remove_adjectives=parameters.remove_adjectives, synonyms_file=parameters.synonyms_file)
+    feature_extractor = FeatureExtractor(nltk_stop_words_package=parameters.nltk_stop_words_package, vectorizer_name=parameters.vectorizer, training_mode=parameters.training_mode, use_lda=parameters.use_lda, document_adjustment_code=parameters.document_adjustment_code, remove_adjectives=parameters.remove_adjectives, synonyms_file=parameters.synonyms_file, features_file=parameters.features_file)
     X, y, _lemmas = feature_extractor.generate_X_y(class_field=parameters.excel_column_with_classification_data, preprocessed_data_file=parameters.preprocessed_data_file)
     logger.info("Splitting dataset into training and test subsets.")    
     train_test_split(y, parameters.test_subset_size, parameters.preprocessed_data_file, parameters.force_subsets_regeneration)

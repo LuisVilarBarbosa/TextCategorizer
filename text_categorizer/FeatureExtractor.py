@@ -15,11 +15,11 @@ from logger import logger
 from ui import get_documents
 
 class FeatureExtractor:
-    def __init__(self, nltk_stop_words_package="english", vectorizer_name="TfidfVectorizer", training_mode=True, use_lda=False, document_adjustment_code="text_categorizer/document_updater.py", remove_adjectives=False, synonyms_file=None):
+    def __init__(self, nltk_stop_words_package="english", vectorizer_name="TfidfVectorizer", training_mode=True, use_lda=False, document_adjustment_code="text_categorizer/document_updater.py", remove_adjectives=False, synonyms_file=None, features_file="features.pkl"):
         download(info_or_id='stopwords', quiet=True)
         self.stop_words = set(stopwords.words(nltk_stop_words_package))
         self.training_mode = training_mode
-        self.vectorizer = FeatureExtractor._get_vectorizer(vectorizer_name, self.training_mode, stop_words=self.stop_words)
+        self.vectorizer = FeatureExtractor._get_vectorizer(vectorizer_name, self.training_mode, stop_words=self.stop_words, features_file=features_file)
         self.use_lda = use_lda
         self.document_adjustment_code = load_module(document_adjustment_code)
         self.upostags_to_ignore = ['PUNCT']
@@ -113,13 +113,13 @@ class FeatureExtractor:
         return X, y
 
     @staticmethod
-    def _get_vectorizer(vectorizer, training_mode, stop_words=[]):
+    def _get_vectorizer(vectorizer, training_mode, stop_words=[], features_file="features.pkl"):
         token_pattern = r'\S+'
         if training_mode:
             vocabulary = None
         else:
             if vectorizer != HashingVectorizer.__name__:
-                vocabulary = pickle_manager.load("features.pkl")
+                vocabulary = pickle_manager.load(features_file)
         if vectorizer == TfidfVectorizer.__name__:
             v = TfidfVectorizer(input='content', encoding='utf-8',
                     decode_error='strict', strip_accents=None, lowercase=True,
