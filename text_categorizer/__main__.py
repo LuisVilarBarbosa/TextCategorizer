@@ -8,7 +8,7 @@ from os.path import isfile
 from pandas import read_excel
 #from profilehooks import profile
 from sys import argv
-from feature_extraction import generate_X_y
+from FeatureExtractor import FeatureExtractor
 from functions import data_frame_to_document_list
 from logger import logger
 from Parameters import Parameters
@@ -46,7 +46,8 @@ def main():
             logger.error("The indicated preprocessed data file does not exist.")
             quit()
     logger.info("Extracting features.")
-    X, y, _lemmas = generate_X_y(parameters)
+    feature_extractor = FeatureExtractor(nltk_stop_words_package=parameters.nltk_stop_words_package, vectorizer_name=parameters.vectorizer, training_mode=parameters.training_mode, use_lda=parameters.use_lda, document_adjustment_code=parameters.document_adjustment_code, remove_adjectives=parameters.remove_adjectives, synonyms_file=parameters.synonyms_file)
+    X, y, _lemmas = feature_extractor.generate_X_y(class_field=parameters.excel_column_with_classification_data, preprocessed_data_file=parameters.preprocessed_data_file)
     logger.info("Splitting dataset into training and test subsets.")    
     train_test_split(y, parameters.test_subset_size, parameters.preprocessed_data_file, parameters.force_subsets_regeneration)
     logger.info("Running classifiers.")

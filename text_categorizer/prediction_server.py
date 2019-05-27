@@ -2,13 +2,13 @@
 # coding=utf-8
 
 import classifiers
-import feature_extraction
 import pickle_manager
 
 from flask import Flask, jsonify, make_response, request, abort
 from flask_httpauth import HTTPBasicAuth
 from sys import argv
 from Document import Document
+from FeatureExtractor import FeatureExtractor
 from Parameters import Parameters
 from Preprocessor import Preprocessor
 
@@ -17,8 +17,10 @@ auth = HTTPBasicAuth()
 BAD_REQUEST = 400
 UNAUTHORIZED_ACCESS = 401
 NOT_FOUND = 404
-_parameters = None
+_text_field = None
+_class_field = None
 _preprocessor = None
+_feature_extractor = None
 _feature_weights = dict()
 
 @auth.get_password
@@ -35,7 +37,7 @@ def unauthorized():
 @app.route('/', methods=['POST'])
 @auth.login_required
 def predict():
-    global _parameters, _preprocessor
+    global _text_field, _class_field, _preprocessor, _feature_extractor
     if not request.json:
         abort(BAD_REQUEST)
     text = request.json.get('text')
@@ -44,11 +46,9 @@ def predict():
         abort(BAD_REQUEST, 'Invalid text')
     if type(classifier) is not str:
         abort(BAD_REQUEST, 'Invalid classifier')
-    doc = Document(index=-1, fields=dict(), analyzed_sentences=None)
-    doc.fields[_parameters.excel_column_with_text_data] = text
-    doc.fields[_parameters.excel_column_with_classification_data] = None
+    doc = Document(index=-1, fields=dict({_text_field: text, _class_field: None}), analyzed_sentences=None)
     _preprocessor.preprocess([doc])
-    X, _y, lemmas = feature_extraction.generate_X_y(_parameters, [doc])
+    X, _y, lemmas = _feature_extractor.generate_X_y(class_field=_class_field, docs=[doc])
     try:
         clf = pickle_manager.load("%s.pkl" % classifier)
         y_predict_proba = clf.predict_proba(X)
@@ -105,7 +105,7 @@ def load_feature_weights(clf):
     _feature_weights[clf_name] = feature_weights
 
 def main():
-    global _parameters, _preprocessor
+    global _text_field, _class_field, _preprocessor, _feature_extractor
     if len(argv) != 3:
         print("Usage: python3 text_categorizer/prediction_server.py <configuration file> <port>")
         quit()
@@ -115,8 +115,11 @@ def main():
     if port <= limit_port:
         print("Please, indicate a port higher than %s." % (limit_port))
         quit()
-    _parameters = Parameters(config_filename, training_mode=False)
-    _preprocessor = Preprocessor(_parameters)
+    parameters = Parameters(config_filename, training_mode=False)
+    _text_field = parameters.excel_column_with_text_data
+    _class_field = parameters.excel_column_with_classification_data
+    _preprocessor = Preprocessor(parameters)
+    _feature_extractor = FeatureExtractor(nltk_stop_words_package=parameters.nltk_stop_words_package, vectorizer_name=parameters.vectorizer, training_mode=parameters.training_mode, use_lda=parameters.use_lda, document_adjustment_code=parameters.document_adjustment_code, remove_adjectives=parameters.remove_adjectives, synonyms_file=parameters.synonyms_file)
     app.run(host='0.0.0.0', port=port, debug=False) # host='0.0.0.0' allows access from any network.
 
 if __name__ == '__main__':
