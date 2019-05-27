@@ -47,7 +47,7 @@ def predict():
     if type(classifier) is not str:
         abort(BAD_REQUEST, 'Invalid classifier')
     doc = Document(index=-1, fields=dict({_text_field: text, _class_field: None}), analyzed_sentences=None)
-    _preprocessor.preprocess([doc])
+    _preprocessor.preprocess(text_field=_text_field, docs=[doc])
     X, _y, lemmas = _feature_extractor.generate_X_y(class_field=_class_field, docs=[doc])
     try:
         clf = pickle_manager.load("%s.pkl" % classifier)
@@ -118,7 +118,7 @@ def main():
     parameters = Parameters(config_filename, training_mode=False)
     _text_field = parameters.excel_column_with_text_data
     _class_field = parameters.excel_column_with_classification_data
-    _preprocessor = Preprocessor(parameters)
+    _preprocessor = Preprocessor(stanfordnlp_language_package=parameters.stanfordnlp_language_package, stanfordnlp_use_gpu=parameters.stanfordnlp_use_gpu, stanfordnlp_resources_dir=parameters.stanfordnlp_resources_dir, training_mode=parameters.training_mode)
     _feature_extractor = FeatureExtractor(nltk_stop_words_package=parameters.nltk_stop_words_package, vectorizer_name=parameters.vectorizer, training_mode=parameters.training_mode, use_lda=parameters.use_lda, document_adjustment_code=parameters.document_adjustment_code, remove_adjectives=parameters.remove_adjectives, synonyms_file=parameters.synonyms_file, features_file=parameters.features_file)
     app.run(host='0.0.0.0', port=port, debug=False) # host='0.0.0.0' allows access from any network.
 

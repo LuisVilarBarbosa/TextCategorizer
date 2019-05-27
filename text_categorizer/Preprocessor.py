@@ -15,21 +15,14 @@ class Preprocessor:
         signal.SIGTERM,     # SIGTERM is sent by Docker on CTRL-C or on a call to 'docker stop'.
     ]
 
-    def __init__(self, parameters):
-        self.parameters = parameters
-        language_package = self.parameters.stanfordnlp_language_package
-        use_gpu = self.parameters.stanfordnlp_use_gpu
-        resource_dir = self.parameters.stanfordnlp_resources_dir
-        Preprocessor._stanfordnlp_download(language_package=language_package, resource_dir=resource_dir)
-        self.nlp = stanfordnlp.Pipeline(processors='tokenize,mwt,pos,lemma,depparse', lang=language_package, models_dir=resource_dir, use_gpu=use_gpu)
+    def __init__(self, stanfordnlp_language_package="en", stanfordnlp_use_gpu=False, stanfordnlp_resources_dir="./stanfordnlp_resources", training_mode=True):
+        Preprocessor._stanfordnlp_download(language_package=stanfordnlp_language_package, resource_dir=stanfordnlp_resources_dir)
+        self.nlp = stanfordnlp.Pipeline(processors='tokenize,mwt,pos,lemma,depparse', lang=stanfordnlp_language_package, models_dir=stanfordnlp_resources_dir, use_gpu=stanfordnlp_use_gpu)
         self.stop = False
+        self.training_mode = training_mode
 
-    def preprocess(self, docs=None):
-        return self._stanfordnlp_process(docs=docs,
-                                   text_data_field=self.parameters.excel_column_with_text_data,
-                                   training_mode=self.parameters.training_mode,
-                                   store_preprocessed_data=self.parameters.training_mode,
-                                   preprocessed_data_file=self.parameters.preprocessed_data_file)
+    def preprocess(self, text_field, preprocessed_data_file=None, docs=None):
+        return self._stanfordnlp_process(text_data_field=text_field, preprocessed_data_file=preprocessed_data_file, docs=docs)
 
     @staticmethod
     def _stanfordnlp_download(language_package, resource_dir):
@@ -46,14 +39,14 @@ class Preprocessor:
         if not found:
             stanfordnlp.download(language_package, resource_dir=resource_dir, confirm_if_exists=True, force=True)
 
-    def _stanfordnlp_process(self, text_data_field, training_mode, store_preprocessed_data, docs=None, preprocessed_data_file=None):
-        if training_mode:
+    def _stanfordnlp_process(self, text_data_field, preprocessed_data_file=None, docs=None):
+        if self.training_mode:
             self._set_signal_handlers()
             logger.info("Press CTRL+C to stop the preprocessing phase. (The preprocessed documents will be stored.)")
         if docs is None:
             docs = get_documents(preprocessed_data_file, description="Preprocessing")
         num_ignored = 0
-        if store_preprocessed_data:
+        if self.training_mode:
             metadata = pickle_manager.get_docs_metadata(preprocessed_data_file)
             pda = pickle_manager.PickleDumpAppend(metadata=metadata, filename=preprocessed_data_file)
         for doc in docs:
@@ -67,13 +60,13 @@ class Preprocessor:
                     print()
                     logger.warning("Ignoring the document with index %s due to the following exception:\n%s" %  (doc.index, format_exc()))
                     num_ignored = num_ignored + 1
-            if store_preprocessed_data:
+            if self.training_mode:
                 pda.dump_append(doc)
-        if store_preprocessed_data:
+        if self.training_mode:
             pda.close()
         if num_ignored > 0:
             logger.warning("%s document(s) ignored." % num_ignored)
-        if training_mode:
+        if self.training_mode:
             self._reset_signal_handlers()
         if self.stop:
             exit(0)
