@@ -75,9 +75,7 @@ class FeatureExtractor:
         logger.info("Running %s." % self.vectorizer.__class__.__name__)
         if self.training_mode:
             logger.debug("%s configuration: %s" % (self.vectorizer.__class__.__name__, self.vectorizer.__dict__))
-            X = self.vectorizer.fit_transform(corpus)
-        else:
-            X = self.vectorizer.transform(corpus)
+        X = self.vectorizer.fit_transform(corpus)
         y = classifications
         if self.training_mode and self.vectorizer.__class__ != HashingVectorizer:
             pickle_manager.dump(self.vectorizer.vocabulary_, "features.pkl")
