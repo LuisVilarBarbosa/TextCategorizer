@@ -8,6 +8,7 @@ from flask import Flask, jsonify, make_response, request, abort
 from flask_httpauth import HTTPBasicAuth
 from Document import Document
 from FeatureExtractor import FeatureExtractor
+from logger import logger
 from Parameters import Parameters
 from Preprocessor import Preprocessor
 
@@ -109,6 +110,7 @@ def main(config_filename, port):
     if port <= limit_port:
         print("Please, indicate a port higher than %s." % (limit_port))
         quit()
+    logger.disabled = True
     parameters = Parameters(config_filename, training_mode=False)
     _text_field = parameters.excel_column_with_text_data
     _class_field = parameters.excel_column_with_classification_data
