@@ -82,8 +82,8 @@ def get_feature_weights(clf, lemmas):
     return feature_weights
 
 def load_feature_weights(clf):
-    global _feature_weights
-    features_dict = pickle_manager.load("features.pkl")
+    global _feature_extractor, _feature_weights
+    features_dict = _feature_extractor.vectorizer.vocabulary_
     features = sorted(features_dict, key=lambda k: features_dict[k])
     if "feature_importances_" in dir(clf):
         values = clf.feature_importances_
