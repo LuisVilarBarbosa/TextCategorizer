@@ -6,7 +6,6 @@ import pickle_manager
 
 from flask import Flask, jsonify, make_response, request, abort
 from flask_httpauth import HTTPBasicAuth
-from sys import argv
 from Document import Document
 from FeatureExtractor import FeatureExtractor
 from Parameters import Parameters
@@ -104,13 +103,8 @@ def load_feature_weights(clf):
     clf_name = clf.__class__.__name__
     _feature_weights[clf_name] = feature_weights
 
-def main():
+def main(config_filename, port):
     global _text_field, _class_field, _preprocessor, _feature_extractor
-    if len(argv) != 3:
-        print("Usage: python3 text_categorizer/prediction_server.py <configuration file> <port>")
-        quit()
-    config_filename = argv[1]
-    port = int(argv[2])
     limit_port = 1024
     if port <= limit_port:
         print("Please, indicate a port higher than %s." % (limit_port))
@@ -121,6 +115,3 @@ def main():
     _preprocessor = Preprocessor(stanfordnlp_language_package=parameters.stanfordnlp_language_package, stanfordnlp_use_gpu=parameters.stanfordnlp_use_gpu, stanfordnlp_resources_dir=parameters.stanfordnlp_resources_dir, training_mode=parameters.training_mode)
     _feature_extractor = FeatureExtractor(nltk_stop_words_package=parameters.nltk_stop_words_package, vectorizer_name=parameters.vectorizer, training_mode=parameters.training_mode, use_lda=parameters.use_lda, document_adjustment_code=parameters.document_adjustment_code, remove_adjectives=parameters.remove_adjectives, synonyms_file=parameters.synonyms_file, features_file=parameters.features_file)
     app.run(host='0.0.0.0', port=port, debug=False) # host='0.0.0.0' allows access from any network.
-
-if __name__ == '__main__':
-    main()

@@ -8,4 +8,4 @@ RUN conda env create --file /usr/src/app/text_categorizer/environment.yml
 
 ENTRYPOINT ["/bin/bash", "-c"]
 
-CMD ["source activate text-categorizer && exec python3 /usr/src/app/text_categorizer \"$CONFIG_FILE\""]
+CMD ["source activate text-categorizer && exec python3 /usr/src/app/text_categorizer --trainer \"$CONFIG_FILE\""]
