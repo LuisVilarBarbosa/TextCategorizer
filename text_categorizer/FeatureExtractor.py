@@ -19,7 +19,8 @@ class FeatureExtractor:
         download(info_or_id='stopwords', quiet=True)
         self.stop_words = set(stopwords.words(nltk_stop_words_package))
         self.training_mode = training_mode
-        self.vectorizer = FeatureExtractor._get_vectorizer(vectorizer_name, self.training_mode, stop_words=self.stop_words, features_file=features_file)
+        self.features_file = features_file
+        self.vectorizer = FeatureExtractor._get_vectorizer(vectorizer_name, self.training_mode, stop_words=self.stop_words, features_file=self.features_file)
         self.use_lda = use_lda
         self.document_adjustment_code = load_module(document_adjustment_code)
         self.upostags_to_ignore = ['PUNCT']
@@ -78,7 +79,7 @@ class FeatureExtractor:
         X = self.vectorizer.fit_transform(corpus)
         y = classifications
         if self.training_mode and self.vectorizer.__class__ != HashingVectorizer:
-            pickle_manager.dump(self.vectorizer.vocabulary_, "features.pkl")
+            pickle_manager.dump(self.vectorizer.vocabulary_, self.features_file)
         if self.use_lda:
             X, y = FeatureExtractor._LatentDirichletAllocation(X, y)
         #logger.debug(self.vectorizer.get_feature_names())
