@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 # coding=utf-8
 
+import numpy as np
 import pickle_manager
 
 from collections import Counter
@@ -131,16 +132,19 @@ class Pipeline():
             logger.debug("%s configuration: %s" % (f.__name__, clf.__dict__))
             t1 = time()
             try:
+                clf_filename = "%s.pkl" % (clf.__class__.__name__)
                 if self.cross_validate:
                     scores = cross_validate(estimator=clf, X=X, y=y, groups=None, scoring=None, cv=5,
                                 n_jobs=n_jobs, verbose=0,
                                 fit_params=None, pre_dispatch='2*n_jobs',
-                                return_train_score='warn', return_estimator=False,
+                                return_train_score='warn', return_estimator=True,
                                 error_score='raise')
+                    best_test_score_index = np.argmax(scores['test_score'])
+                    clf = scores['estimator'][best_test_score_index]
+                    pickle_manager.dump(clf, clf_filename)
                     logger.info("%s: %s | %ss" % (f.__name__, scores, (time() - t1)))
                 else:
                     clf.fit(X_train, y_train)
-                    clf_filename = "%s.pkl" % (clf.__class__.__name__)
                     pickle_manager.dump(clf, clf_filename)
                     y_predict_proba = clf.predict_proba(X_test)
                     for n_accepted_probs in set_n_accepted_probs:
