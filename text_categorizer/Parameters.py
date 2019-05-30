@@ -4,6 +4,7 @@
 import classifiers
 
 from configparser import ConfigParser
+from flair.embeddings import DocumentPoolEmbeddings
 from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer, HashingVectorizer
 
 class Parameters:
@@ -44,7 +45,7 @@ class Parameters:
     
     def _load_vectorizer(self, config):
         self.vectorizer = config.get("Feature extraction", "Vectorizer")
-        assert self.vectorizer in [TfidfVectorizer.__name__, CountVectorizer.__name__, HashingVectorizer.__name__]
+        assert self.vectorizer in [TfidfVectorizer.__name__, CountVectorizer.__name__, HashingVectorizer.__name__, DocumentPoolEmbeddings.__name__]
     
     def _load_accepted_probs(self, config):
         n_accepted_probs = config.get("Classification", "Number of probabilities accepted").split(",")

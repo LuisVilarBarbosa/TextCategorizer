@@ -1,10 +1,14 @@
 import logging
+from os.path import abspath
+from pathlib import Path
 
 filename="log.txt"
 logformat="%(asctime)s - %(levelname)s - %(module)s - %(funcName)s - %(message)s"
 dateformat="%Y-%m-%d %H:%M:%S %z %Z"
 
-logger = logging.getLogger()
+path = abspath(__file__)
+package = Path(path).parent.name
+logger = logging.getLogger(package)
 logger.setLevel(logging.DEBUG)
 formatter = logging.Formatter(fmt=logformat, datefmt=dateformat)
 

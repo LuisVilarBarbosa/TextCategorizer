@@ -5,10 +5,12 @@ import numpy as np
 import pickle_manager
 
 from collections import Counter
+from flair.embeddings import DocumentPoolEmbeddings, Sentence, BertEmbeddings
 from nltk import download
 from nltk.corpus import stopwords
 from sklearn.decomposition import LatentDirichletAllocation
 from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer, HashingVectorizer
+from tqdm import tqdm
 from ContoPTParser import ContoPTParser
 from functions import load_module
 from logger import logger
@@ -76,9 +78,14 @@ class FeatureExtractor:
         logger.info("Running %s." % self.vectorizer.__class__.__name__)
         if self.training_mode:
             logger.debug("%s configuration: %s" % (self.vectorizer.__class__.__name__, self.vectorizer.__dict__))
-        X = self.vectorizer.fit_transform(corpus)
+        if "fit_transform" in dir(self.vectorizer):
+            X = self.vectorizer.fit_transform(corpus)
+        else:
+            if self.training_mode:
+                corpus = tqdm(iterable=corpus, desc="Extracting features", unit="doc", dynamic_ncols=True)
+            X = np.asarray([FeatureExtractor.chunked_embed(t, self.vectorizer) for t in corpus])
         y = classifications
-        if self.training_mode and self.vectorizer.__class__ != HashingVectorizer:
+        if self.training_mode and self.vectorizer.__class__ not in [HashingVectorizer, DocumentPoolEmbeddings]:
             pickle_manager.dump(self.vectorizer.vocabulary_, self.features_file)
         if self.use_lda:
             X, y = FeatureExtractor._LatentDirichletAllocation(X, y)
@@ -117,7 +124,7 @@ class FeatureExtractor:
         if training_mode:
             vocabulary = None
         else:
-            if vectorizer != HashingVectorizer.__name__:
+            if vectorizer not in [HashingVectorizer.__name__, DocumentPoolEmbeddings.__name__]:
                 vocabulary = pickle_manager.load(features_file)
         if vectorizer == TfidfVectorizer.__name__:
             v = TfidfVectorizer(input='content', encoding='utf-8',
@@ -142,6 +149,33 @@ class FeatureExtractor:
                     analyzer='word', n_features=1048576, binary=False,
                     norm='l2', alternate_sign=True, non_negative=False,
                     dtype=np.float64)
+        elif vectorizer == DocumentPoolEmbeddings.__name__:
+            v = DocumentPoolEmbeddings([BertEmbeddings('bert-base-multilingual-uncased')])
         else:
             raise "Invalid vectorizer."
         return v
+
+    @staticmethod
+    def chunked_embed(corpus, embeddings, chunk_size=256):
+        def find_nth(n, substring, text, start):
+            index = start
+            for _ in range(n):
+                index = text.find(substring, index + 1)
+            return index
+        try:
+            partial_embeddings = []
+            i = 0
+            while i < len(corpus):
+                next_i = find_nth(chunk_size, " ", corpus, i)
+                if next_i < i:
+                    next_i = len(corpus)
+                chunk = corpus[i:next_i]
+                sentence = Sentence(chunk, use_tokenizer=False)
+                embeddings.embed(sentence)
+                partial_embeddings.append(sentence.get_embedding().numpy())
+                i = next_i
+            avg = np.average(np.asarray(partial_embeddings), axis=0)
+            return avg
+        except RuntimeError:
+            print("Please, ignore the message above indicating that the sentence is too long. The problem has been solved.")
+            return FeatureExtractor.chunked_embed(corpus, embeddings, int(chunk_size / 2))
