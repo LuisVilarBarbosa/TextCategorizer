@@ -5,6 +5,7 @@ dependencies:
 - pytorch==1.0.1
 - torchvision==0.2.2
 - cudatoolkit==10.0.130
+- pip==19.1.1
 - pip:
   - pandas==0.24.1
   - xlrd==1.2.0
