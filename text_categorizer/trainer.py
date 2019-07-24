@@ -46,8 +46,15 @@ def main(config_filename):
     logger.info("Running classifiers.")
     p = classifiers.Pipeline(parameters.classifiers, parameters.cross_validate)
     metadata = pickle_manager.get_docs_metadata(parameters.preprocessed_data_file)
-    training_set_indexes = metadata['training_set_indexes']
-    test_set_indexes = metadata['test_set_indexes']
+    training_set_indexes = metadata['training_set_indexes'].tolist()
+    test_set_indexes = metadata['test_set_indexes'].tolist()
+    assert len(training_set_indexes) == len(set(training_set_indexes))
+    assert len(test_set_indexes) == len(set(test_set_indexes))
+    for elem in feature_extractor.to_remove:
+        try:
+            training_set_indexes.remove(elem)
+        except ValueError:
+            test_set_indexes.remove(elem)
     logger.info("Accuracies:")
     p.start(X, y, parameters.number_of_jobs, parameters.set_num_accepted_probs, training_set_indexes, test_set_indexes, parameters.resampling)
     logger.debug("Execution completed.")

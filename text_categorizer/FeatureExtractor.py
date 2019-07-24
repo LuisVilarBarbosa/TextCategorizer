@@ -38,6 +38,7 @@ class FeatureExtractor:
             logger.info("The substitution of synonyms is enabled.")
             contoPTParser = ContoPTParser(synonyms_file)
             self.synonyms = contoPTParser.synonyms
+        self.to_remove = []
 
     def generate_X_y(self, class_field, preprocessed_data_file=None, docs=None):
         if docs is None:
@@ -45,11 +46,15 @@ class FeatureExtractor:
         num_ignored = 0
         corpus = []
         classifications = []
+        i = 0
         for doc in docs:
             self.document_adjustment_code.initial_code_to_run_on_document(doc)
             if doc.analyzed_sentences is None:
                 num_ignored = num_ignored + 1
             else:
+                if doc.to_remove:
+                    self.to_remove.append(i)
+                i = i + 1
                 lemmas = FeatureExtractor._filter(doc, self.upostags_to_ignore)
                 if self.synonyms is not None:
                     lemmas = list(map(lambda l: l if self.synonyms.get(l) is None else self.synonyms.get(l), lemmas))
