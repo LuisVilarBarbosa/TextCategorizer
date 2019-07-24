@@ -17,7 +17,7 @@ class Preprocessor:
 
     def __init__(self, stanfordnlp_language_package="en", stanfordnlp_use_gpu=False, stanfordnlp_resources_dir="./stanfordnlp_resources", training_mode=True):
         Preprocessor._stanfordnlp_download(language_package=stanfordnlp_language_package, resource_dir=stanfordnlp_resources_dir)
-        self.nlp = stanfordnlp.Pipeline(processors='tokenize,mwt,pos,lemma,depparse', lang=stanfordnlp_language_package, models_dir=stanfordnlp_resources_dir, use_gpu=stanfordnlp_use_gpu)
+        self.nlp = stanfordnlp.Pipeline(processors='tokenize,mwt,pos,lemma', lang=stanfordnlp_language_package, models_dir=stanfordnlp_resources_dir, use_gpu=stanfordnlp_use_gpu)
         self.stop = False
         self.training_mode = training_mode
 
