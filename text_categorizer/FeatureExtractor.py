@@ -22,7 +22,7 @@ class FeatureExtractor:
         self.stop_words = set(stopwords.words(nltk_stop_words_package))
         self.training_mode = training_mode
         self.features_file = features_file
-        self.vectorizer = FeatureExtractor._get_vectorizer(vectorizer_name, self.training_mode, stop_words=self.stop_words, features_file=self.features_file)
+        self.vectorizer = FeatureExtractor._get_vectorizer(vectorizer_name, self.training_mode, features_file=self.features_file)
         self.use_lda = use_lda
         self.document_adjustment_code = load_module(document_adjustment_code)
         self.upostags_to_ignore = ['PUNCT']
@@ -58,6 +58,7 @@ class FeatureExtractor:
                 lemmas = FeatureExtractor._filter(doc, self.upostags_to_ignore)
                 if self.synonyms is not None:
                     lemmas = list(map(lambda l: l if self.synonyms.get(l) is None else self.synonyms.get(l), lemmas))
+                lemmas = list(filter(lambda l: l not in self.stop_words, lemmas))
                 corpus.append(FeatureExtractor._generate_corpus(lemmas))
                 classifications.append(doc.fields[class_field])
         if num_ignored > 0:
@@ -124,7 +125,7 @@ class FeatureExtractor:
         return X, y
 
     @staticmethod
-    def _get_vectorizer(vectorizer, training_mode, stop_words=[], features_file="features.pkl"):
+    def _get_vectorizer(vectorizer, training_mode, features_file="features.pkl"):
         token_pattern = r'\S+'
         if training_mode:
             vocabulary = None
@@ -135,21 +136,21 @@ class FeatureExtractor:
             v = TfidfVectorizer(input='content', encoding='utf-8',
                     decode_error='strict', strip_accents=None, lowercase=True,
                     preprocessor=None, tokenizer=None, analyzer='word',
-                    stop_words=stop_words, token_pattern=token_pattern,
+                    stop_words=[], token_pattern=token_pattern,
                     ngram_range=(1,1), max_df=1.0, min_df=1, max_features=None,
                     vocabulary=vocabulary, binary=False, dtype=np.float64, norm='l2',
                     use_idf=True, smooth_idf=True, sublinear_tf=False)
         elif vectorizer == CountVectorizer.__name__:
             v = CountVectorizer(input='content', encoding='utf-8',
                     decode_error='strict', strip_accents=None, lowercase=True,
-                    preprocessor=None, tokenizer=None, stop_words=stop_words,
+                    preprocessor=None, tokenizer=None, stop_words=[],
                     token_pattern=token_pattern, ngram_range=(1, 1),
                     analyzer='word', max_df=1.0, min_df=1, max_features=None,
                     vocabulary=vocabulary, binary=False, dtype=np.int64)
         elif vectorizer == HashingVectorizer.__name__:
             v = HashingVectorizer(input='content', encoding='utf-8',
                     decode_error='strict', strip_accents=None, lowercase=True,
-                    preprocessor=None, tokenizer=None, stop_words=stop_words,
+                    preprocessor=None, tokenizer=None, stop_words=[],
                     token_pattern=token_pattern, ngram_range=(1, 1),
                     analyzer='word', n_features=1048576, binary=False,
                     norm='l2', alternate_sign=True, non_negative=False,
