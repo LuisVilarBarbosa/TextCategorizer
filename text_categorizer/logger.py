@@ -9,6 +9,7 @@ dateformat="%Y-%m-%d %H:%M:%S %z %Z"
 path = abspath(__file__)
 package = Path(path).parent.name
 logger = logging.getLogger(package)
+logger.propagate = False
 logger.setLevel(logging.DEBUG)
 formatter = logging.Formatter(fmt=logformat, datefmt=dateformat)
 
