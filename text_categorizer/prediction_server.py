@@ -6,6 +6,7 @@ import pickle_manager
 
 from flask import Flask, jsonify, make_response, request, abort
 from flask_httpauth import HTTPBasicAuth
+from os.path import basename
 from Document import Document
 from FeatureExtractor import FeatureExtractor
 from logger import logger
@@ -33,7 +34,6 @@ def get_password(username):
 def unauthorized():
     return make_response(jsonify({'error': 'Unauthorized access'}), UNAUTHORIZED_ACCESS)
 
-# TODO: Check if the files are in a valid directory.
 @app.route('/', methods=['POST'])
 @auth.login_required
 def predict():
@@ -45,6 +45,8 @@ def predict():
     if type(text) is not str:
         abort(BAD_REQUEST, 'Invalid text')
     if type(classifier) is not str:
+        abort(BAD_REQUEST, 'Invalid classifier')
+    if basename(classifier) != classifier:
         abort(BAD_REQUEST, 'Invalid classifier')
     doc = Document(index=-1, fields=dict({_text_field: text, _class_field: None}), analyzed_sentences=None)
     _preprocessor.preprocess(text_field=_text_field, docs=[doc])
