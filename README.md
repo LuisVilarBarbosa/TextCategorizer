@@ -1,8 +1,8 @@
-# DISS - Text Categorizer
+# Text Categorizer
 
 Text Categorizer is a tool that implements a configurable pipeline of methods used to train models that predict the categories of textual data.
 
-For training, it provides the ability to obtain information on the confidence of the trained models and perform cross-validation.
+For training, it provides the ability to obtain information on the confidence of the trained models, perform cross-validation and train final models using the entire data set (to be implemented).
 
 For prediction, it provides a server that answers queries with the classification predicted by the models.
 
@@ -28,17 +28,17 @@ The first one is the recommended one because it is more stable and the following
 
 Here are presented the instructions on how to install/update all the dependencies necessary to execute the tool in different environments.
 
-* \<path-to-DISS\> is the path of folder "DISS".
+* \<path-to-TextCategorizer\> is the path of folder "TextCategorizer".
 
 To install/update natively, open a shell (an Anaconda prompt is recommended on Windows and Bash is recommended on Linux) and type the following commands:
 ```
-cd <path-to-DISS>
+cd <path-to-TextCategorizer>
 conda env update -f text_categorizer/environment.yml
 ```
 
 To install/update using Docker, open a shell and type the following commands:
 ```
-cd <path-to-DISS>
+cd <path-to-TextCategorizer>
 docker-compose build
 ```
 
@@ -46,7 +46,7 @@ docker-compose build
 
 Here are presented the instructions on how to execute the tool in different environments.
 
-* \<path-to-DISS\> is the path of folder "DISS".
+* \<path-to-TextCategorizer\> is the path of folder "TextCategorizer".
 
 * \<configuration file\> is the path of the configuration file used. ("config.ini" is provided as example.)
 
@@ -56,21 +56,21 @@ Here are presented the instructions on how to execute the tool in different envi
 
 To execute natively on Windows, open a shell (an Anaconda prompt is recommended) and type the following commands:
 ```
-cd <path-to-DISS>
+cd <path-to-TextCategorizer>
 conda activate text-categorizer
 python text_categorizer <configuration file>
 ```
 
 To execute natively on Linux, open a shell (Bash is recommended) and type the following commands:
 ```
-cd <path-to-DISS>
+cd <path-to-TextCategorizer>
 source activate text-categorizer
 python3 text_categorizer <configuration file>
 ```
 
 To execute using Docker, open a shell and type the following commands:
 ```
-cd <path-to-DISS>
+cd <path-to-TextCategorizer>
 docker-compose up -d text_categorizer-trainer
 docker-compose logs -f # Shows the output. (Press CTRL+C to close.)
 ```
@@ -83,21 +83,21 @@ docker-compose down -t <seconds> text_categorizer-trainer # Please provide a lar
 
 To execute natively on Windows, open a shell (an Anaconda prompt is recommended) and type the following commands:
 ```
-cd <path-to-DISS>
+cd <path-to-TextCategorizer>
 conda activate text-categorizer
 python text_categorizer/prediction_server.py <configuration file> <port>
 ```
 
 To execute natively on Linux, open a shell (Bash is recommended) and type the following commands:
 ```
-cd <path-to-DISS>
+cd <path-to-TextCategorizer>
 source activate text-categorizer
 python3 text_categorizer/prediction_server.py <configuration file> <port>
 ```
 
 To execute using Docker, open a shell and type the following commands:
 ```
-cd <path-to-DISS>
+cd <path-to-TextCategorizer>
 docker-compose up -d text_categorizer-prediction_server
 docker-compose logs -f # Shows the output. (Press CTRL+C to close.)
 ```
@@ -146,4 +146,4 @@ To send a REST request to the prediction server, perform the following operation
 
 - The code is relatively generic and can be used as a basis for other experiments, but should be tuned for practical applications.
 
-- The tool in this repository is no longer being maintained.
+- The tool in this repository is based on the tool present in https://github.com/LuisVilarBarbosa/DISS.
