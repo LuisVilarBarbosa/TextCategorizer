@@ -20,9 +20,8 @@ class FeatureExtractor:
     def __init__(self, nltk_stop_words_package="english", vectorizer_name="TfidfVectorizer", training_mode=True, use_lda=False, document_adjustment_code="text_categorizer/document_updater.py", remove_adjectives=False, synonyms_file=None, features_file="features.pkl"):
         download(info_or_id='stopwords', quiet=True)
         self.stop_words = set(stopwords.words(nltk_stop_words_package))
-        self.training_mode = training_mode
         self.features_file = features_file
-        self.vectorizer = FeatureExtractor._get_vectorizer(vectorizer_name, self.training_mode, features_file=self.features_file)
+        self.vectorizer = FeatureExtractor._get_vectorizer(vectorizer_name, training_mode, features_file=self.features_file)
         self.use_lda = use_lda
         self.document_adjustment_code = load_module(document_adjustment_code)
         self.upostags_to_ignore = ['PUNCT']
@@ -40,7 +39,7 @@ class FeatureExtractor:
             self.synonyms = contoPTParser.synonyms
         self.to_remove = []
 
-    def generate_X_y(self, class_field, preprocessed_data_file=None, docs=None):
+    def prepare(self, class_field, preprocessed_data_file=None, docs=None, training_mode=True):
         if docs is None:
             docs = get_documents(preprocessed_data_file, description="Preparing to create classification")
         num_ignored = 0
@@ -63,10 +62,9 @@ class FeatureExtractor:
                 classifications.append(doc.fields[class_field])
         if num_ignored > 0:
             logger.warning("%s document(s) ignored." % num_ignored)
-        if self.training_mode:
+        if training_mode:
             FeatureExtractor._remove_incompatible_data(corpus, classifications)
-        X, y = self._create_classification(corpus, classifications)
-        return X, y, lemmas
+        return corpus, classifications, lemmas
 
     @staticmethod
     def _filter(doc, upostags_to_ignore):
@@ -79,22 +77,24 @@ class FeatureExtractor:
     def _generate_corpus(lemmas):
         return ' '.join(lemmas)
 
-    def _create_classification(self, corpus, classifications):
-        logger.info("Creating classification.")
+    def generate_X_y(self, corpus, classifications, training_mode=True):
         logger.info("Running %s." % self.vectorizer.__class__.__name__)
-        if self.training_mode:
+        if training_mode:
             logger.debug("%s configuration: %s" % (self.vectorizer.__class__.__name__, self.vectorizer.__dict__))
-        if "fit_transform" in dir(self.vectorizer):
+        if training_mode and "fit_transform" in dir(self.vectorizer):
             X = self.vectorizer.fit_transform(corpus)
+        elif not training_mode and "transform" in dir(self.vectorizer):
+            X = self.vectorizer.transform(corpus)
         else:
-            if self.training_mode:
+            if training_mode:
                 corpus = tqdm(iterable=corpus, desc="Extracting features", unit="doc", dynamic_ncols=True)
             X = np.asarray([FeatureExtractor.chunked_embed(t, self.vectorizer) for t in corpus])
         y = classifications
-        if self.training_mode and self.vectorizer.__class__ not in [HashingVectorizer, DocumentPoolEmbeddings]:
-            pickle_manager.dump(self.vectorizer.vocabulary_, self.features_file)
-        if self.use_lda:
-            X, y = FeatureExtractor._LatentDirichletAllocation(X, y)
+        if training_mode and self.vectorizer.__class__ not in [DocumentPoolEmbeddings]:
+            pickle_manager.dump(self.vectorizer, self.features_file)
+        # TODO: Re-enable LDA after adding the ability to dump and load the model and use tranform() after it has been trained.
+        #if self.use_lda:
+        #    X, y = FeatureExtractor._LatentDirichletAllocation(X, y)
         #logger.debug(self.vectorizer.get_feature_names())
         #logger.debug(X.shape)
         return X, y
@@ -127,18 +127,16 @@ class FeatureExtractor:
     @staticmethod
     def _get_vectorizer(vectorizer, training_mode, features_file="features.pkl"):
         token_pattern = r'\S+'
-        if training_mode:
-            vocabulary = None
-        else:
-            if vectorizer not in [HashingVectorizer.__name__, DocumentPoolEmbeddings.__name__]:
-                vocabulary = pickle_manager.load(features_file)
-        if vectorizer == TfidfVectorizer.__name__:
+        if not training_mode and vectorizer not in [DocumentPoolEmbeddings.__name__]:
+                v = pickle_manager.load(features_file)
+                assert vectorizer == v.__class__.__name__
+        elif vectorizer == TfidfVectorizer.__name__:
             v = TfidfVectorizer(input='content', encoding='utf-8',
                     decode_error='strict', strip_accents=None, lowercase=True,
                     preprocessor=None, tokenizer=None, analyzer='word',
                     stop_words=[], token_pattern=token_pattern,
                     ngram_range=(1,1), max_df=1.0, min_df=1, max_features=None,
-                    vocabulary=vocabulary, binary=False, dtype=np.float64, norm='l2',
+                    vocabulary=None, binary=False, dtype=np.float64, norm='l2',
                     use_idf=True, smooth_idf=True, sublinear_tf=False)
         elif vectorizer == CountVectorizer.__name__:
             v = CountVectorizer(input='content', encoding='utf-8',
@@ -146,7 +144,7 @@ class FeatureExtractor:
                     preprocessor=None, tokenizer=None, stop_words=[],
                     token_pattern=token_pattern, ngram_range=(1, 1),
                     analyzer='word', max_df=1.0, min_df=1, max_features=None,
-                    vocabulary=vocabulary, binary=False, dtype=np.int64)
+                    vocabulary=None, binary=False, dtype=np.int64)
         elif vectorizer == HashingVectorizer.__name__:
             v = HashingVectorizer(input='content', encoding='utf-8',
                     decode_error='strict', strip_accents=None, lowercase=True,

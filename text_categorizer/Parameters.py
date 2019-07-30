@@ -8,7 +8,7 @@ from flair.embeddings import DocumentPoolEmbeddings
 from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer, HashingVectorizer
 
 class Parameters:
-    def __init__(self, config_filename, training_mode):
+    def __init__(self, config_filename):
         config = ConfigParser()
         config.read(config_filename)
         self.excel_file = config.get("Preprocessing", "Excel file")
@@ -23,8 +23,6 @@ class Parameters:
         self.preprocessed_data = config.getboolean("Preprocessing", "Preprocess data")
         self.document_adjustment_code = config.get("Feature extraction", "Document adjustment script")
         self._load_vectorizer(config)
-        assert type(training_mode) is bool
-        self.training_mode = training_mode
         self.use_lda = config.getboolean("Feature extraction", "Use LDA")
         self._load_accepted_probs(config)
         self._load_classifiers(config)

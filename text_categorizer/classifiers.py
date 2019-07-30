@@ -5,7 +5,6 @@ import pickle_manager
 
 from collections import Counter
 from sklearn.metrics import accuracy_score, confusion_matrix, classification_report
-from sklearn.utils import safe_indexing
 from logger import logger
 from resampling import RandomOverSample, RandomUnderSample
 
@@ -103,13 +102,8 @@ class Pipeline():
     def __init__(self, classifiers):
         self.classifiers = classifiers
     
-    def start(self, X, y, n_jobs=None, set_n_accepted_probs={1,2,3}, training_set_indexes=None, test_set_indexes=None, resampling=None):
+    def start(self, X_train, y_train, X_test, y_test, n_jobs=None, set_n_accepted_probs={1,2,3}, resampling=None):
         from time import time
-        assert training_set_indexes is not None and test_set_indexes is not None
-        X_train = safe_indexing(X, training_set_indexes)
-        X_test = safe_indexing(X, test_set_indexes)
-        y_train = safe_indexing(y, training_set_indexes)
-        y_test = safe_indexing(y, test_set_indexes)
         if resampling is not None:
             if resampling == RandomOverSample.__name__:
                 logger.info("Starting random over sampler.")
