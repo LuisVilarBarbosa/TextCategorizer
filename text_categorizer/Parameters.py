@@ -22,7 +22,6 @@ class Parameters:
         self.preprocessed_data_file = config.get("General", "Preprocessed data file")
         self.preprocessed_data = config.getboolean("Preprocessing", "Preprocess data")
         self.document_adjustment_code = config.get("Feature extraction", "Document adjustment script")
-        self.cross_validate = config.getboolean("Classification", "Cross validate")
         self._load_vectorizer(config)
         assert type(training_mode) is bool
         self.training_mode = training_mode
@@ -86,5 +85,3 @@ class Parameters:
         assert self.resampling in ["None", "RandomOverSample", "RandomUnderSample"]
         if self.resampling == "None":
             self.resampling = None
-        if self.resampling is not None:
-            assert not self.cross_validate

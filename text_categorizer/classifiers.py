@@ -1,7 +1,6 @@
 #!/usr/bin/python3
 # coding=utf-8
 
-import numpy as np
 import pickle_manager
 
 from collections import Counter
@@ -102,30 +101,26 @@ def BaggingClassifier(n_jobs):
     return clf
 
 class Pipeline():
-    def __init__(self, classifiers, cross_validate):
+    def __init__(self, classifiers):
         self.classifiers = classifiers
-        self.cross_validate = cross_validate
-        logger.debug("Cross validate = %s" % (self.cross_validate))
     
     def start(self, X, y, n_jobs=None, set_n_accepted_probs={1,2,3}, training_set_indexes=None, test_set_indexes=None, resampling=None):
-        from sklearn.model_selection import cross_validate
         from time import time
-        if not self.cross_validate:
-            assert training_set_indexes is not None and test_set_indexes is not None
-            X_train = safe_indexing(X, training_set_indexes)
-            X_test = safe_indexing(X, test_set_indexes)
-            y_train = safe_indexing(y, training_set_indexes)
-            y_test = safe_indexing(y, test_set_indexes)
-            if resampling is not None:
-                if resampling == RandomOverSample.__name__:
-                    logger.info("Starting random over sampler.")
-                    X_train, y_train = RandomOverSample(X_train, y_train)
-                elif resampling == RandomUnderSample.__name__:
-                    logger.info("Starting random under sampler.")
-                    X_train, y_train = RandomUnderSample(X_train, y_train)
-                else:
-                    logger.error("Invalid resampling method.")
-            logger.debug("Number of training examples: %s" % (Counter(y_train)))
+        assert training_set_indexes is not None and test_set_indexes is not None
+        X_train = safe_indexing(X, training_set_indexes)
+        X_test = safe_indexing(X, test_set_indexes)
+        y_train = safe_indexing(y, training_set_indexes)
+        y_test = safe_indexing(y, test_set_indexes)
+        if resampling is not None:
+            if resampling == RandomOverSample.__name__:
+                logger.info("Starting random over sampler.")
+                X_train, y_train = RandomOverSample(X_train, y_train)
+            elif resampling == RandomUnderSample.__name__:
+                logger.info("Starting random under sampler.")
+                X_train, y_train = RandomUnderSample(X_train, y_train)
+            else:
+                logger.error("Invalid resampling method.")
+        logger.debug("Number of training examples: %s" % (Counter(y_train)))
         for f in self.classifiers:
             logger.info("Starting %s." % (f.__name__))
             clf = f(n_jobs=n_jobs)
@@ -133,26 +128,15 @@ class Pipeline():
             t1 = time()
             try:
                 clf_filename = "%s.pkl" % (clf.__class__.__name__)
-                if self.cross_validate:
-                    scores = cross_validate(estimator=clf, X=X, y=y, groups=None, scoring=None, cv=5,
-                                n_jobs=n_jobs, verbose=0,
-                                fit_params=None, pre_dispatch='2*n_jobs',
-                                return_train_score='warn', return_estimator=True,
-                                error_score='raise')
-                    best_test_score_index = np.argmax(scores['test_score'])
-                    clf = scores['estimator'][best_test_score_index]
-                    pickle_manager.dump(clf, clf_filename)
-                    logger.info("%s: %s | %ss" % (f.__name__, scores, (time() - t1)))
-                else:
-                    clf.fit(X_train, y_train)
-                    pickle_manager.dump(clf, clf_filename)
-                    y_predict_proba = clf.predict_proba(X_test)
-                    for n_accepted_probs in set_n_accepted_probs:
-                        y_predict = predict_proba_to_predict(clf.classes_, y_predict_proba, y_test, n_accepted_probs)
-                        logger.debug("Confusion matrix:\n%s" % confusion_matrix(y_test, y_predict))
-                        logger.debug("Classification report:\n%s" % classification_report(y_test, y_predict))
-                        acc = accuracy_score(y_test, y_predict, normalize=True)
-                        logger.info("%s: %s | %ss" % (f.__name__, acc, (time() - t1)))
+                clf.fit(X_train, y_train)
+                pickle_manager.dump(clf, clf_filename)
+                y_predict_proba = clf.predict_proba(X_test)
+                for n_accepted_probs in set_n_accepted_probs:
+                    y_predict = predict_proba_to_predict(clf.classes_, y_predict_proba, y_test, n_accepted_probs)
+                    logger.debug("Confusion matrix:\n%s" % confusion_matrix(y_test, y_predict))
+                    logger.debug("Classification report:\n%s" % classification_report(y_test, y_predict))
+                    acc = accuracy_score(y_test, y_predict, normalize=True)
+                    logger.info("%s: %s | %ss" % (f.__name__, acc, (time() - t1)))
             except Exception as e:
                 logger.error("%s: %s | %ss" % (f.__name__, repr(e), (time() - t1)))
 

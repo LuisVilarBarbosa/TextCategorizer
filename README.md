@@ -2,7 +2,7 @@
 
 Text Categorizer is a tool that implements a configurable pipeline of methods used to train models that predict the categories of textual data.
 
-For training, it provides the ability to obtain information on the confidence of the trained models, perform cross-validation and train final models using the entire data set (to be implemented).
+For training, it provides the ability to obtain information on the confidence of the trained models and train final models using the entire data set (to be implemented).
 
 For prediction, it provides a server that answers queries with the classification predicted by the models.
 

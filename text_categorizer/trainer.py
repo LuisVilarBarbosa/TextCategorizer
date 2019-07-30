@@ -44,7 +44,7 @@ def main(config_filename):
     logger.info("Splitting dataset into training and test subsets.")    
     train_test_split(y, parameters.test_subset_size, parameters.preprocessed_data_file, parameters.force_subsets_regeneration)
     logger.info("Running classifiers.")
-    p = classifiers.Pipeline(parameters.classifiers, parameters.cross_validate)
+    p = classifiers.Pipeline(parameters.classifiers)
     metadata = pickle_manager.get_docs_metadata(parameters.preprocessed_data_file)
     training_set_indexes = metadata['training_set_indexes'].tolist()
     test_set_indexes = metadata['test_set_indexes'].tolist()
