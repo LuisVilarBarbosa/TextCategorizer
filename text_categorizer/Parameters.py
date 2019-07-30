@@ -61,7 +61,7 @@ class Parameters:
             classifiers.ComplementNB,
             classifiers.KNeighborsClassifier,
             classifiers.MLPClassifier,
-            classifiers.SVC,
+            classifiers.LinearSVC,
             classifiers.DecisionTreeClassifier,
             classifiers.ExtraTreeClassifier,
             classifiers.DummyClassifier,

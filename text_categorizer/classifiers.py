@@ -52,12 +52,11 @@ def MLPClassifier(n_jobs):
                 n_iter_no_change=10)
     return clf
 
-def SVC(n_jobs):
-    from sklearn.svm import SVC
-    clf = SVC(C=1.0, kernel='linear', degree=3, gamma='scale', coef0=0.0,
-                shrinking=True, probability=True, tol=0.0001, cache_size=200,
-                class_weight=None, verbose=False, max_iter=-1,
-                decision_function_shape='ovr', random_state=None)
+def LinearSVC(n_jobs):
+    from LinearSVC_proba import LinearSVC_proba
+    clf = LinearSVC_proba(penalty='l2', loss='squared_hinge', dual=True, tol=0.0001,
+                C=1.0, multi_class='ovr', fit_intercept=True, intercept_scaling=1,
+                class_weight=None, verbose=0, random_state=None, max_iter=1000)
     return clf
 
 def DecisionTreeClassifier(n_jobs):
@@ -127,7 +126,7 @@ class Pipeline():
             logger.debug("%s configuration: %s" % (f.__name__, clf.__dict__))
             t1 = time()
             try:
-                clf_filename = "%s.pkl" % (clf.__class__.__name__)
+                clf_filename = "%s.pkl" % (f.__name__)
                 clf.fit(X_train, y_train)
                 pickle_manager.dump(clf, clf_filename)
                 y_predict_proba = clf.predict_proba(X_test)
