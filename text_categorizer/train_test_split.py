@@ -14,12 +14,13 @@ def train_test_split(classifications, test_size, preprocessed_data_file, force):
     projected_test_size = metadata.get('test_size')
     training_set_indexes = metadata.get('training_set_indexes')
     test_set_indexes = metadata.get('test_set_indexes')
-    if projected_test_size is None or projected_test_size != test_size or training_set_indexes is None or test_set_indexes is None:
-        perform_split = True
-    elif len(training_set_indexes) + len(test_set_indexes) != len(classifications):
+    if projected_test_size is None or training_set_indexes is None or test_set_indexes is None:
         perform_split = True
     if not perform_split:
         logger.info("Using training and test subsets chosen in a previous execution.")
+        if projected_test_size != test_size or len(training_set_indexes) + len(test_set_indexes) != len(classifications):
+            actual_test_size = len(test_set_indexes) / len(classifications)
+            logger.warning("The test subset corresponds to %s%% of the dataset instead of %s%%. The regeneration of the subsets can be enabled in the configuration file." % (actual_test_size, test_size))
         return
     logger.info("Generating new training and test subsets.")
     metadata['test_size'] = test_size
