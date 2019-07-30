@@ -119,3 +119,5 @@ stanfordnlp_resources/
 # Log files
 log.txt
 
+# JSON files
+*.json

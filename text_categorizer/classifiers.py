@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 # coding=utf-8
 
+import json
 import pickle_manager
 
 from collections import Counter
@@ -114,6 +115,7 @@ class Pipeline():
             else:
                 logger.error("Invalid resampling method.")
         logger.debug("Number of training examples: %s" % (Counter(y_train)))
+        predictions = dict()
         for f in self.classifiers:
             logger.info("Starting %s." % (f.__name__))
             clf = f(n_jobs=n_jobs)
@@ -121,17 +123,23 @@ class Pipeline():
             t1 = time()
             try:
                 clf_filename = "%s.pkl" % (f.__name__)
+                predictions_key = "%s_predictions" % (f.__name__)
                 clf.fit(X_train, y_train)
                 pickle_manager.dump(clf, clf_filename)
                 y_predict_proba = clf.predict_proba(X_test)
                 for n_accepted_probs in set_n_accepted_probs:
                     y_predict = predict_proba_to_predict(clf.classes_, y_predict_proba, y_test, n_accepted_probs)
+                    if n_accepted_probs == 1:
+                        predictions[predictions_key] = y_predict
                     logger.debug("Confusion matrix:\n%s" % confusion_matrix(y_test, y_predict))
                     logger.debug("Classification report:\n%s" % classification_report(y_test, y_predict))
                     acc = accuracy_score(y_test, y_predict, normalize=True)
                     logger.info("%s: %s | %ss" % (f.__name__, acc, (time() - t1)))
             except Exception as e:
                 logger.error("%s: %s | %ss" % (f.__name__, repr(e), (time() - t1)))
+        f = open('predictions.json', 'w')
+        json.dump(predictions, f)
+        f.close()
 
 def predict_proba_to_predict(clf_classes_, y_predict_proba, y_test=None, n_accepted_probs=1):
     ordered_classes = predict_proba_to_predict_classes(clf_classes_, y_predict_proba)
