@@ -21,7 +21,7 @@ The first one is the recommended one because it is more stable and the following
 
 ### Prerequisites
 
-- To execute natively, a machine with Anaconda or Miniconda installed is required.
+- To execute natively, a machine with Anaconda3 64-bit or Miniconda3 64-bit installed is required.
 - To execute using Docker, only Docker is required and Docker Compose is recommended.
 
 ### Installing/Updating
@@ -58,14 +58,14 @@ To execute natively on Windows, open a shell (an Anaconda prompt is recommended)
 ```
 cd <path-to-TextCategorizer>
 conda activate text-categorizer
-python -m text_categorizer <configuration file>
+python -m text_categorizer --trainer <configuration file>
 ```
 
 To execute natively on Linux, open a shell (Bash is recommended) and type the following commands:
 ```
 cd <path-to-TextCategorizer>
 source activate text-categorizer
-python3 -m text_categorizer <configuration file>
+python3 -m text_categorizer --trainer <configuration file>
 ```
 
 To execute using Docker, open a shell and type the following commands:
@@ -85,14 +85,14 @@ To execute natively on Windows, open a shell (an Anaconda prompt is recommended)
 ```
 cd <path-to-TextCategorizer>
 conda activate text-categorizer
-python -m text_categorizer/prediction_server.py <configuration file> <port>
+python -m text_categorizer --prediction_server <configuration file> <port>
 ```
 
 To execute natively on Linux, open a shell (Bash is recommended) and type the following commands:
 ```
 cd <path-to-TextCategorizer>
 source activate text-categorizer
-python3 -m text_categorizer/prediction_server.py <configuration file> <port>
+python3 -m text_categorizer --prediction_server <configuration file> <port>
 ```
 
 To execute using Docker, open a shell and type the following commands:
@@ -116,7 +116,7 @@ To send a REST request to the prediction server, perform the following operation
 5. Set the authentication credentials (the default is "admin" both as username and password).
 6. Create a JSON body with a dictionary that contains two keys, "text" and "classifier", where the value for "text" is the text to give to the classifier and the value for "classifier" is the name of one of the trained classifiers. Examples of bodies:
     - {"text": "Example text...", "classifier": "RandomForestClassifier"}
-    - {"text": "Example text...", "classifier": "SVC"}
+    - {"text": "Example text...", "classifier": "LinearSVC"}
 
 ## Testing
 
