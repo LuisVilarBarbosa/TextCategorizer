@@ -1,11 +1,10 @@
 #!/usr/bin/python3
 # coding=utf-8
 
-import classifiers
-
 from configparser import ConfigParser
 from flair.embeddings import DocumentPoolEmbeddings
 from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer, HashingVectorizer
+from text_categorizer import classifiers
 
 class Parameters:
     def __init__(self, config_filename):

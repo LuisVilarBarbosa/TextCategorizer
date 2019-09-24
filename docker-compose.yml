@@ -20,3 +20,9 @@ services:
       - PORT=5000
     ports:
       - "5000:5000"
+  text_categorizer-test:
+    build:
+      context: .
+      dockerfile: ./Dockerfile-test
+    volumes:
+      - .:/usr/src/app

@@ -1,17 +1,16 @@
 #!/usr/bin/python3
 # coding=utf-8
 
-import classifiers
-import pickle_manager
-
 from flask import Flask, jsonify, make_response, request, abort
 from flask_httpauth import HTTPBasicAuth
 from os.path import basename
-from Document import Document
-from FeatureExtractor import FeatureExtractor
-from logger import logger
-from Parameters import Parameters
-from Preprocessor import Preprocessor
+from text_categorizer import classifiers
+from text_categorizer import pickle_manager
+from text_categorizer.Document import Document
+from text_categorizer.FeatureExtractor import FeatureExtractor
+from text_categorizer.logger import logger
+from text_categorizer.Parameters import Parameters
+from text_categorizer.Preprocessor import Preprocessor
 
 app = Flask(__name__)
 auth = HTTPBasicAuth()

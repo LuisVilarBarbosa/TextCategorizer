@@ -58,14 +58,14 @@ To execute natively on Windows, open a shell (an Anaconda prompt is recommended)
 ```
 cd <path-to-TextCategorizer>
 conda activate text-categorizer
-python text_categorizer <configuration file>
+python -m text_categorizer <configuration file>
 ```
 
 To execute natively on Linux, open a shell (Bash is recommended) and type the following commands:
 ```
 cd <path-to-TextCategorizer>
 source activate text-categorizer
-python3 text_categorizer <configuration file>
+python3 -m text_categorizer <configuration file>
 ```
 
 To execute using Docker, open a shell and type the following commands:
@@ -85,14 +85,14 @@ To execute natively on Windows, open a shell (an Anaconda prompt is recommended)
 ```
 cd <path-to-TextCategorizer>
 conda activate text-categorizer
-python text_categorizer/prediction_server.py <configuration file> <port>
+python -m text_categorizer/prediction_server.py <configuration file> <port>
 ```
 
 To execute natively on Linux, open a shell (Bash is recommended) and type the following commands:
 ```
 cd <path-to-TextCategorizer>
 source activate text-categorizer
-python3 text_categorizer/prediction_server.py <configuration file> <port>
+python3 -m text_categorizer/prediction_server.py <configuration file> <port>
 ```
 
 To execute using Docker, open a shell and type the following commands:
@@ -117,6 +117,35 @@ To send a REST request to the prediction server, perform the following operation
 6. Create a JSON body with a dictionary that contains two keys, "text" and "classifier", where the value for "text" is the text to give to the classifier and the value for "classifier" is the name of one of the trained classifiers. Examples of bodies:
     - {"text": "Example text...", "classifier": "RandomForestClassifier"}
     - {"text": "Example text...", "classifier": "SVC"}
+
+## Testing
+
+Here are presented the instructions on how to execute the tests developed for the tool in different environments.
+
+The pytest-cov plugin is used to perform the tests and generate a coverage report that can be analyzed in any browser.
+
+* \<path-to-TextCategorizer\> is the path of folder "TextCategorizer".
+
+To test natively on Windows, open a shell (an Anaconda prompt is recommended) and type the following commands:
+```
+cd <path-to-TextCategorizer>
+conda activate text-categorizer
+pytest --cov-report html --cov=text_categorizer tests/
+```
+
+To test natively on Linux, open a shell (Bash is recommended) and type the following commands:
+```
+cd <path-to-TextCategorizer>
+source activate text-categorizer
+pytest --cov-report html --cov=text_categorizer tests/
+```
+
+To test using Docker, open a shell and type the following commands:
+```
+cd <path-to-TextCategorizer>
+docker-compose up -d text_categorizer-test
+docker-compose logs -f # Shows the output. (Press CTRL+C to close.)
+```
 
 ## Built With
 

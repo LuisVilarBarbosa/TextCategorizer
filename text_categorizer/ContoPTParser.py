@@ -8,9 +8,10 @@ class ContoPTParser:
     pattern2 = compile(r'\s?(.+)\(\d+\.\d+\)')
     
     def __init__(self, filename):
-        self.synonyms = self._load_synonyms(filename)
+        self.synonyms = ContoPTParser._load_synonyms(filename)
 
-    def _load_synonyms(self, filename):
+    @staticmethod
+    def _load_synonyms(filename):
         f = open(filename, "r", encoding="utf-8")
         d = dict()
         line = f.readline()

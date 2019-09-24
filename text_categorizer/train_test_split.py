@@ -1,12 +1,11 @@
 #!/usr/bin/python3
 # coding=utf-8
 
-import pickle_manager
-
 from numpy import arange
 from sklearn.model_selection import train_test_split as sk_train_test_split
-from logger import logger
-from ui import get_documents
+from text_categorizer import pickle_manager
+from text_categorizer.logger import logger
+from text_categorizer.ui import get_documents
 
 def train_test_split(classifications, test_size, preprocessed_data_file, force):
     perform_split = force

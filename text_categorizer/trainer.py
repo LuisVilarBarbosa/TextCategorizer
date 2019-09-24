@@ -1,19 +1,18 @@
 #!/usr/bin/python3
 # coding=utf-8
 
-import classifiers
-import pickle_manager
-
 from os.path import isfile
 from pandas import read_excel
 #from profilehooks import profile
 from sklearn.utils import safe_indexing
-from FeatureExtractor import FeatureExtractor
-from functions import data_frame_to_document_list
-from logger import logger
-from Parameters import Parameters
-from Preprocessor import Preprocessor
-from train_test_split import train_test_split
+from text_categorizer import classifiers
+from text_categorizer import pickle_manager
+from text_categorizer.FeatureExtractor import FeatureExtractor
+from text_categorizer.functions import data_frame_to_document_list
+from text_categorizer.logger import logger
+from text_categorizer.Parameters import Parameters
+from text_categorizer.Preprocessor import Preprocessor
+from text_categorizer.train_test_split import train_test_split
 
 #@profile
 def main(config_filename):

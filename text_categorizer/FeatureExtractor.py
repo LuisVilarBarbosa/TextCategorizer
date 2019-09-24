@@ -2,19 +2,18 @@
 # coding=utf-8
 
 import numpy as np
-import pickle_manager
-
 from collections import Counter
 from flair.embeddings import DocumentPoolEmbeddings, Sentence, BertEmbeddings
 from nltk import download
 from nltk.corpus import stopwords
 from sklearn.decomposition import LatentDirichletAllocation
 from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer, HashingVectorizer
+from text_categorizer import pickle_manager
+from text_categorizer.ContoPTParser import ContoPTParser
+from text_categorizer.functions import load_module
+from text_categorizer.logger import logger
+from text_categorizer.ui import get_documents
 from tqdm import tqdm
-from ContoPTParser import ContoPTParser
-from functions import load_module
-from logger import logger
-from ui import get_documents
 
 class FeatureExtractor:
     def __init__(self, nltk_stop_words_package="english", vectorizer_name="TfidfVectorizer", training_mode=True, use_lda=False, document_adjustment_code="text_categorizer/document_updater.py", remove_adjectives=False, synonyms_file=None, features_file="features.pkl"):

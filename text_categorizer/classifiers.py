@@ -2,12 +2,11 @@
 # coding=utf-8
 
 import json
-import pickle_manager
-
 from collections import Counter
 from sklearn.metrics import accuracy_score, confusion_matrix, classification_report
-from logger import logger
-from resampling import RandomOverSample, RandomUnderSample
+from text_categorizer.logger import logger
+from text_categorizer import pickle_manager
+from text_categorizer.resampling import RandomOverSample, RandomUnderSample
 
 def RandomForestClassifier(n_jobs):
     from sklearn.ensemble import RandomForestClassifier
@@ -53,7 +52,7 @@ def MLPClassifier(n_jobs):
     return clf
 
 def LinearSVC(n_jobs):
-    from LinearSVC_proba import LinearSVC_proba
+    from text_categorizer.LinearSVC_proba import LinearSVC_proba
     clf = LinearSVC_proba(penalty='l2', loss='squared_hinge', dual=True, tol=0.0001,
                 C=1.0, multi_class='ovr', fit_intercept=True, intercept_scaling=1,
                 class_weight=None, verbose=0, random_state=None, max_iter=1000)
@@ -142,6 +141,7 @@ class Pipeline():
         f.close()
 
 def predict_proba_to_predict(clf_classes_, y_predict_proba, y_test=None, n_accepted_probs=1):
+    assert (y_test is None and n_accepted_probs == 1) or (y_test is not None and n_accepted_probs >= 1)
     ordered_classes = predict_proba_to_predict_classes(clf_classes_, y_predict_proba)
     accepted_probs = min(n_accepted_probs, len(clf_classes_))
     logger.debug("Accepted probabilities: any of the highest %s." % (accepted_probs))

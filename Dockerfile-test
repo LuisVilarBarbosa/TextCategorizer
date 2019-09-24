@@ -12,4 +12,4 @@ RUN conda env create --file /usr/src/app/text_categorizer/environment.yml
 
 ENTRYPOINT ["/bin/bash", "-c"]
 
-CMD ["source activate text-categorizer && exec python3 -m text_categorizer --prediction_server \"$CONFIG_FILE\" \"$PORT\""]
+CMD ["source activate text-categorizer && exec pytest --cov-report html --cov=text_categorizer /usr/src/app/tests/"]

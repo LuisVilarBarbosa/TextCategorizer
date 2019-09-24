@@ -4,12 +4,11 @@
 import conllu
 import nltk
 import signal
-import pickle_manager
-
+from text_categorizer import pickle_manager
+from text_categorizer.logger import logger
+from text_categorizer.ui import get_documents
 from traceback import format_exc
-from logger import logger
 from string import punctuation
-from ui import get_documents
 
 # TODO: Allow to use both StanfordNLP and NLTK, choosing which one to use in the configuration file.
 class Preprocessor:

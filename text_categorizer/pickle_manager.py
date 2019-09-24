@@ -3,6 +3,8 @@
 
 import pickle
 import os
+from text_categorizer.Document import Document
+from uuid import uuid4
 
 _pickle_protocol = 2
 
@@ -19,13 +21,15 @@ def load(path):
 
 def get_documents(filename):
     input_file = open(filename, 'rb')
-    _metadata = pickle.load(input_file)
-    while True:
-        try:
-            yield pickle.load(input_file)
-        except EOFError:
-            input_file.close()
-            break
+    metadata = pickle.load(input_file)
+    total = metadata['total']
+    for _ in range(total):
+        yield pickle.load(input_file)
+    try:
+        pickle.load(input_file)
+        raise "The file '%s' has more documents than indicated in the metadata." % (input_file)
+    except EOFError:
+        input_file.close()
 
 def dump_documents(docs, filename):
     if os.path.exists(filename):
@@ -37,7 +41,6 @@ def dump_documents(docs, filename):
     pda.close()
 
 def check_data(filename):
-    from Document import Document
     total = 0
     docs = get_documents(filename)
     for doc in docs:
@@ -45,18 +48,14 @@ def check_data(filename):
         total = total + 1
         assert doc.index - 1 == total
     metadata = get_docs_metadata(filename)
-    assert type(metadata) is dict
     assert metadata['total'] == total
 
 def _generate_file():
-    def generate_filename():
-        from uuid import uuid4
-        return ''.join([str(uuid4()), ".pkl"])
-    filename = generate_filename()
-    while os.path.exists(filename):
-        filename = generate_filename()
-    open(file=filename, mode='w').close()
-    return filename
+    while True:
+        filename = ''.join([str(uuid4()), ".pkl"])
+        if not os.path.exists(filename):
+            open(file=filename, mode='w').close()
+            return filename
 
 def get_docs_metadata(filename):
     input_file = open(filename, 'rb')
