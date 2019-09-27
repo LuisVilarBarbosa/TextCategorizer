@@ -12,8 +12,7 @@ from text_categorizer import pickle_manager
 from text_categorizer.ContoPTParser import ContoPTParser
 from text_categorizer.functions import load_module
 from text_categorizer.logger import logger
-from text_categorizer.ui import get_documents
-from tqdm import tqdm
+from text_categorizer.ui import get_documents, progress
 
 class FeatureExtractor:
     def __init__(self, nltk_stop_words_package="english", vectorizer_name="TfidfVectorizer", training_mode=True, use_lda=False, document_adjustment_code="text_categorizer/document_updater.py", remove_adjectives=False, synonyms_file=None, features_file="features.pkl"):
@@ -86,7 +85,7 @@ class FeatureExtractor:
             X = self.vectorizer.transform(corpus)
         else:
             if training_mode:
-                corpus = tqdm(iterable=corpus, desc="Extracting features", unit="doc", dynamic_ncols=True)
+                corpus = progress(iterable=corpus, desc="Extracting features", unit="doc", dynamic_ncols=True)
             X = np.asarray([FeatureExtractor.chunked_embed(t, self.vectorizer) for t in corpus])
         y = classifications
         if training_mode and self.vectorizer.__class__ not in [DocumentPoolEmbeddings]:
