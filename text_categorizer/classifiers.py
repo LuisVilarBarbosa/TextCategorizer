@@ -114,7 +114,7 @@ class Pipeline():
             else:
                 logger.error("Invalid resampling method.")
         logger.debug("Number of training examples: %s" % (Counter(y_train)))
-        predictions = dict()
+        predictions = {'y_true': y_test}
         for f in self.classifiers:
             logger.info("Starting %s." % (f.__name__))
             clf = f(n_jobs=n_jobs)
@@ -122,7 +122,7 @@ class Pipeline():
             t1 = time()
             try:
                 clf_filename = "%s.pkl" % (f.__name__)
-                predictions_key = "%s_predictions" % (f.__name__)
+                predictions_key = "y_pred_%s" % (f.__name__)
                 clf.fit(X_train, y_train)
                 pickle_manager.dump(clf, clf_filename)
                 y_predict_proba = clf.predict_proba(X_test)
