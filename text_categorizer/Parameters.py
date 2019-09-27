@@ -71,6 +71,7 @@ class Parameters:
             if clf.__name__ in clfs_names:
                 self.classifiers.append(clf)
         assert len(self.classifiers) > 0
+        assert len(self.classifiers) == len(clfs_names)
     
     def _load_synonyms_file(self, config):
         self.synonyms_file = config.get("Feature extraction", "Synonyms file")
