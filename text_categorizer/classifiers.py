@@ -3,6 +3,7 @@
 
 import json
 from collections import Counter
+from pandas import DataFrame
 from sklearn.metrics import accuracy_score, confusion_matrix, classification_report
 from text_categorizer.logger import logger
 from text_categorizer import pickle_manager
@@ -114,7 +115,7 @@ class Pipeline():
             else:
                 logger.error("Invalid resampling method.")
         logger.debug("Number of training examples: %s" % (Counter(y_train)))
-        predictions = {'y_true': y_test}
+        predictions = DataFrame({'y_true': y_test})
         for f in self.classifiers:
             logger.info("Starting %s." % (f.__name__))
             clf = f(n_jobs=n_jobs)
@@ -137,7 +138,7 @@ class Pipeline():
             except Exception as e:
                 logger.error("%s: %s | %ss" % (f.__name__, repr(e), (time() - t1)))
         f = open('predictions.json', 'w')
-        json.dump(predictions, f)
+        json.dump(predictions.to_dict(orient='list'), f)
         f.close()
 
 def predict_proba_to_predict(clf_classes_, y_predict_proba, y_test=None, n_accepted_probs=1):

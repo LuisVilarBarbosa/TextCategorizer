@@ -21,3 +21,4 @@ dependencies:
   - imblearn==0.0
   - flair==0.4.1
   - pytest-cov==2.7.1
+  - xlsxwriter==1.2.1
