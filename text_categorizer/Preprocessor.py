@@ -77,3 +77,4 @@ class Preprocessor:
     def _reset_signal_handlers(self):
         for sig, old_handler in self.old_handlers.items():
             signal.signal(sig, old_handler)
+        self.old_handlers.clear()
