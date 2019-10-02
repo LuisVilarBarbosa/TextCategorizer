@@ -28,6 +28,7 @@ def main(config_filename):
         if not isfile(parameters.preprocessed_data_file) and isfile(parameters.excel_file):
             logger.info("Loading Excel file.")
             data_frame = read_excel(parameters.excel_file)
+            data_frame = data_frame.fillna("NaN")
             logger.info("Creating documents.")
             docs = data_frame_to_document_list(data_frame)
             logger.info("Storing generated documents.")
