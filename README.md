@@ -124,6 +124,8 @@ Here are presented the instructions on how to execute the tests developed for th
 
 The pytest-cov plugin is used to perform the tests and generate a coverage report that can be analyzed in any browser.
 
+It is recommended to perform the final tests using Docker because it ensures that the entire pipeline is working correctly and that no invalid cross-device renaming is occurring.
+
 * \<path-to-TextCategorizer\> is the path of folder "TextCategorizer".
 
 To test natively on Windows, open a shell (an Anaconda prompt is recommended) and type the following commands:
