@@ -30,7 +30,7 @@ class Parameters:
         self.remove_adjectives = config.getboolean("Feature extraction", "Remove adjectives")
         self._load_synonyms_file(config)
         self._load_resampling(config)
-        self.features_file = config.get("Feature extraction", "Features file")
+        self.vectorizer_file = config.get("Feature extraction", "Vectorizer file")
     
     def _load_number_of_jobs(self, config):
         self.number_of_jobs = config.get("General", "Number of jobs")

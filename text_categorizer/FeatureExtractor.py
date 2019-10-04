@@ -15,11 +15,11 @@ from text_categorizer.logger import logger
 from text_categorizer.ui import get_documents, progress
 
 class FeatureExtractor:
-    def __init__(self, nltk_stop_words_package="english", vectorizer_name="TfidfVectorizer", training_mode=True, use_lda=False, document_adjustment_code="text_categorizer/document_updater.py", remove_adjectives=False, synonyms_file=None, features_file="features.pkl"):
+    def __init__(self, nltk_stop_words_package="english", vectorizer_name="TfidfVectorizer", training_mode=True, use_lda=False, document_adjustment_code="text_categorizer/document_updater.py", remove_adjectives=False, synonyms_file=None, vectorizer_file="vectorizer.pkl"):
         download(info_or_id='stopwords', quiet=True)
         self.stop_words = set(stopwords.words(nltk_stop_words_package))
-        self.features_file = features_file
-        self.vectorizer = FeatureExtractor._get_vectorizer(vectorizer_name, training_mode, features_file=self.features_file)
+        self.vectorizer_file = vectorizer_file
+        self.vectorizer = FeatureExtractor._get_vectorizer(vectorizer_name, training_mode, vectorizer_file=self.vectorizer_file)
         self.use_lda = use_lda
         self.document_adjustment_code = load_module(document_adjustment_code)
         self.upostags_to_ignore = ['PUNCT']
@@ -89,7 +89,7 @@ class FeatureExtractor:
             X = np.asarray([FeatureExtractor.chunked_embed(t, self.vectorizer) for t in corpus])
         y = classifications
         if training_mode and self.vectorizer.__class__ not in [DocumentPoolEmbeddings]:
-            pickle_manager.dump(self.vectorizer, self.features_file)
+            pickle_manager.dump(self.vectorizer, self.vectorizer_file)
         # TODO: Re-enable LDA after adding the ability to dump and load the model and use tranform() after it has been trained.
         #if self.use_lda:
         #    X, y = FeatureExtractor._LatentDirichletAllocation(X, y)
@@ -123,10 +123,10 @@ class FeatureExtractor:
         return X, y
 
     @staticmethod
-    def _get_vectorizer(vectorizer, training_mode, features_file="features.pkl"):
+    def _get_vectorizer(vectorizer, training_mode, vectorizer_file="vectorizer.pkl"):
         token_pattern = r'\S+'
         if not training_mode and vectorizer not in [DocumentPoolEmbeddings.__name__]:
-                v = pickle_manager.load(features_file)
+                v = pickle_manager.load(vectorizer_file)
                 assert vectorizer == v.__class__.__name__
         elif vectorizer == TfidfVectorizer.__name__:
             v = TfidfVectorizer(input='content', encoding='utf-8',

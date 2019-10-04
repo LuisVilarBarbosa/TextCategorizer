@@ -43,7 +43,7 @@ def main(config_filename):
             logger.error("The indicated preprocessed data file does not exist.")
             quit()
     logger.info("Extracting features and splitting dataset into training and test subsets.")
-    feature_extractor = FeatureExtractor(nltk_stop_words_package=parameters.nltk_stop_words_package, vectorizer_name=parameters.vectorizer, training_mode=True, use_lda=parameters.use_lda, document_adjustment_code=parameters.document_adjustment_code, remove_adjectives=parameters.remove_adjectives, synonyms_file=parameters.synonyms_file, features_file=parameters.features_file)
+    feature_extractor = FeatureExtractor(nltk_stop_words_package=parameters.nltk_stop_words_package, vectorizer_name=parameters.vectorizer, training_mode=True, use_lda=parameters.use_lda, document_adjustment_code=parameters.document_adjustment_code, remove_adjectives=parameters.remove_adjectives, synonyms_file=parameters.synonyms_file, vectorizer_file=parameters.vectorizer_file)
     corpus, classifications, _lemmas = feature_extractor.prepare(class_field=parameters.excel_column_with_classification_data, preprocessed_data_file=parameters.preprocessed_data_file)
     train_test_split(classifications, parameters.test_subset_size, parameters.preprocessed_data_file, parameters.force_subsets_regeneration)
     metadata = pickle_manager.get_docs_metadata(parameters.preprocessed_data_file)
