@@ -4,6 +4,7 @@
 from flask import Flask, jsonify, make_response, request, abort
 from flask_httpauth import HTTPBasicAuth
 from os.path import basename
+from pandas import DataFrame
 from text_categorizer import classifiers
 from text_categorizer import pickle_manager
 from text_categorizer.Document import Document
@@ -22,6 +23,7 @@ _class_field = None
 _preprocessor = None
 _feature_extractor = None
 _feature_weights = dict()
+_classifiers = dict()
 
 @auth.get_password
 def get_password(username):
@@ -36,7 +38,7 @@ def unauthorized():
 @app.route('/', methods=['POST'])
 @auth.login_required
 def predict():
-    global _text_field, _class_field, _preprocessor, _feature_extractor
+    global _text_field, _class_field, _preprocessor, _feature_extractor, _classifiers
     if not request.json:
         abort(BAD_REQUEST)
     text = request.json.get('text')
@@ -52,14 +54,18 @@ def predict():
     corpus, classifications, lemmas = _feature_extractor.prepare(class_field=_class_field, docs=[doc], training_mode=False)
     X, _y = _feature_extractor.generate_X_y(corpus, classifications, training_mode=False)
     try:
-        clf = pickle_manager.load("%s.pkl" % classifier)
+        clf = _classifiers.get(classifier)
+        if clf is None:
+            clf = pickle_manager.load("%s.pkl" % classifier)
+            _classifiers[classifier] = clf
         y_predict_proba = clf.predict_proba(X)
         y_predict_classes = classifiers.predict_proba_to_predict_classes(clf.classes_, y_predict_proba)
-        try:
-            feature_weights = get_feature_weights(clf, lemmas)
-            return jsonify({'prediction': y_predict_classes[0], 'feature_weights': feature_weights})
-        except NotImplementedError:
-            return jsonify({'prediction': y_predict_classes[0]})
+        feature_weights = get_feature_weights(clf, lemmas)
+        prediction = DataFrame({'prediction': y_predict_classes[0]}).to_dict('list')
+        if feature_weights is None:
+            return jsonify(prediction)
+        else:
+            return jsonify({**prediction, **feature_weights})
     except FileNotFoundError:
         abort(BAD_REQUEST, 'Invalid classifier model')
 
@@ -71,40 +77,47 @@ def get_feature_weights(clf, lemmas):
     global _feature_weights
     clf_name = clf.__class__.__name__
     all_feature_weights = _feature_weights.get(clf_name)
+    lemmas_set = set(lemmas)
     if all_feature_weights is None:
-        load_feature_weights(clf)
-        all_feature_weights = _feature_weights.get(clf_name)
-    if type(all_feature_weights) is list:
-        feature_weights = sorted(filter(lambda item: item[0] in lemmas, all_feature_weights), key=lambda item: item[1] * -1)
+        all_feature_weights = load_feature_weights(clf)
+        _feature_weights[clf_name] = all_feature_weights
+    if type(all_feature_weights) is set:
+        fw = [item for item in all_feature_weights if item[0] in lemmas_set]
+        fw.sort(key=lambda item: -item[1])
+        feature_weights = DataFrame({'feature_weights': fw}).to_dict('list')
     else:
         assert type(all_feature_weights) is dict
         feature_weights = dict()
         for c in all_feature_weights:
-            feature_weights[c] = sorted(filter(lambda item: item[0] in lemmas, all_feature_weights[c]), key=lambda item: item[1] * -1)
+            fw = [item for item in all_feature_weights[c] if item[0] in lemmas_set]
+            fw.sort(key=lambda item: -item[1])
+            feature_weights[c] = fw
+        feature_weights = DataFrame({'feature_weights': feature_weights}).to_dict('dict')
     return feature_weights
 
 def load_feature_weights(clf):
-    global _feature_extractor, _feature_weights
-    features_dict = _feature_extractor.vectorizer.vocabulary_
-    features = sorted(features_dict, key=lambda k: features_dict[k])
-    if "feature_importances_" in dir(clf):
-        values = clf.feature_importances_
-        assert len(features) == values.shape[0]
-        feature_weights = list(zip(features, values))
-    elif "coef_" in dir(clf):
-        values = clf.coef_
-        assert len(features) == values.shape[1]
-        feature_weights = dict()
-        if len(clf.classes_) == values.shape[0]:
-            for i in range(len(clf.classes_)):
-                feature_weights[clf.classes_[i]] = list(zip(features, values[i]))
-        else:
-            for i in range(values.shape[0]):
-                feature_weights[i] = list(zip(features, values[i].toarray()[0]))
-    else:
-        raise NotImplementedError
-    clf_name = clf.__class__.__name__
-    _feature_weights[clf_name] = feature_weights
+    global _feature_extractor
+    feature_weights = set()
+    if 'vocabulary_' in dir(_feature_extractor.vectorizer):
+        features_dict = _feature_extractor.vectorizer.vocabulary_
+        features = sorted(features_dict, key=lambda k: features_dict[k])
+        dir_clf = dir(clf)
+        if "feature_importances_" in dir_clf:
+            values = clf.feature_importances_
+            assert len(features) == values.shape[0]
+            feature_weights = set(zip(features, values))
+        elif "coef_" in dir_clf:
+            values = clf.coef_
+            assert len(features) == values.shape[1]
+            feature_weights = dict()
+            clf_classes_ = clf.classes_
+            if len(clf_classes_) == values.shape[0]:
+                for i in range(len(clf_classes_)):
+                    feature_weights[clf_classes_[i]] = set(zip(features, values[i]))
+            else:
+                for i in range(values.shape[0]):
+                    feature_weights[i] = set(zip(features, values[i]))
+    return feature_weights
 
 def main(config_filename, port):
     global _text_field, _class_field, _preprocessor, _feature_extractor
