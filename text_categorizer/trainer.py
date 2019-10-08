@@ -15,6 +15,30 @@ from text_categorizer.Parameters import Parameters
 from text_categorizer.Preprocessor import Preprocessor
 from text_categorizer.train_test_split import train_test_split
 
+def load_20newsgroups(parameters):
+    p = parameters
+    p.excel_file = ''.join([p.excel_file, '.xlsx'])
+    p.excel_column_with_text_data = 'data'
+    p.excel_column_with_classification_data = 'target'
+    if not exists(p.excel_file) and not exists(p.preprocessed_data_file):
+        bunch = fetch_20newsgroups(data_home='.', subset='all', categories=None, shuffle=False, random_state=42, remove=(), download_if_missing=True)
+        df = DataFrame()
+        df[p.excel_column_with_text_data] = bunch.data
+        df[p.excel_column_with_classification_data] = bunch.target
+        df.to_excel(p.excel_file, engine='xlsxwriter')
+    return p
+
+def get_train_test(corpus, classifications, training_set_indexes, test_set_indexes, indexes_to_remove):
+    assert len(training_set_indexes) == len(set(training_set_indexes))
+    assert len(test_set_indexes) == len(set(test_set_indexes))
+    train_idxs = [i for i in training_set_indexes if not i in indexes_to_remove]
+    test_idxs = [i for i in test_set_indexes if not i in indexes_to_remove]
+    corpus_train = safe_indexing(corpus, train_idxs)
+    corpus_test = safe_indexing(corpus, test_idxs)
+    classifications_train = safe_indexing(classifications, train_idxs)
+    classifications_test = safe_indexing(classifications, test_idxs)
+    return corpus_train, corpus_test, classifications_train, classifications_test
+
 #@profile
 def main(config_filename):
     logger.debug("Starting execution.")
@@ -44,22 +68,10 @@ def main(config_filename):
             quit()
     logger.info("Extracting features and splitting dataset into training and test subsets.")
     feature_extractor = FeatureExtractor(nltk_stop_words_package=parameters.nltk_stop_words_package, vectorizer_name=parameters.vectorizer, training_mode=True, use_lda=parameters.use_lda, document_adjustment_code=parameters.document_adjustment_code, remove_adjectives=parameters.remove_adjectives, synonyms_file=parameters.synonyms_file, vectorizer_file=parameters.vectorizer_file)
-    corpus, classifications, _lemmas = feature_extractor.prepare(class_field=parameters.excel_column_with_classification_data, preprocessed_data_file=parameters.preprocessed_data_file)
+    corpus, classifications, idxs_to_remove, _lemmas = feature_extractor.prepare(class_field=parameters.excel_column_with_classification_data, preprocessed_data_file=parameters.preprocessed_data_file)
     train_test_split(classifications, parameters.test_subset_size, parameters.preprocessed_data_file, parameters.force_subsets_regeneration)
     metadata = pickle_manager.get_docs_metadata(parameters.preprocessed_data_file)
-    training_set_indexes = metadata['training_set_indexes'].tolist()
-    test_set_indexes = metadata['test_set_indexes'].tolist()
-    assert len(training_set_indexes) == len(set(training_set_indexes))
-    assert len(test_set_indexes) == len(set(test_set_indexes))
-    for elem in feature_extractor.to_remove:
-        try:
-            training_set_indexes.remove(elem)
-        except ValueError:
-            test_set_indexes.remove(elem)
-    corpus_train = safe_indexing(corpus, training_set_indexes)
-    corpus_test = safe_indexing(corpus, test_set_indexes)
-    classifications_train = safe_indexing(classifications, training_set_indexes)
-    classifications_test = safe_indexing(classifications, test_set_indexes)
+    corpus_train, corpus_test, classifications_train, classifications_test = get_train_test(corpus, classifications, metadata['training_set_indexes'], metadata['test_set_indexes'], idxs_to_remove)
     X_train, y_train = feature_extractor.generate_X_y(corpus_train, classifications_train, training_mode=True)
     X_test, y_test = feature_extractor.generate_X_y(corpus_test, classifications_test, training_mode=False) 
     logger.info("Running classifiers.")
@@ -67,16 +79,3 @@ def main(config_filename):
     logger.info("Accuracies:")
     p.start(X_train, y_train, X_test, y_test, parameters.number_of_jobs, parameters.set_num_accepted_probs, parameters.resampling)
     logger.debug("Execution completed.")
-
-def load_20newsgroups(parameters):
-    p = parameters
-    p.excel_file = ''.join([p.excel_file, '.xlsx'])
-    p.excel_column_with_text_data = 'data'
-    p.excel_column_with_classification_data = 'target'
-    if not exists(p.excel_file) and not exists(p.preprocessed_data_file):
-        bunch = fetch_20newsgroups(data_home='.', subset='all', categories=None, shuffle=False, random_state=42, remove=(), download_if_missing=True)
-        df = DataFrame()
-        df[p.excel_column_with_text_data] = bunch.data
-        df[p.excel_column_with_classification_data] = bunch.target
-        df.to_excel(p.excel_file, engine='xlsxwriter')
-    return p

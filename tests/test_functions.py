@@ -4,7 +4,6 @@ from itertools import zip_longest
 from pandas import DataFrame, read_excel
 from sys import modules
 from text_categorizer import functions
-from text_categorizer.Document import _excel_start_row
 from tests.utils import example_excel_file
 
 def test_get_python_version():
@@ -35,7 +34,7 @@ def test_data_frame_to_document_list():
     assert len(docs) == len(df)
     for i in range(len(docs)):
         doc = docs[i]
-        assert doc.index == i + _excel_start_row
+        assert doc.index == i
 
 def test_load_module():
     module_name = 'document_updater'

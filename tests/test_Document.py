@@ -1,11 +1,8 @@
 import pytest
 from pandas import DataFrame, read_excel
 from stanfordnlp.pipeline.doc import Document as SNLPDoc
-from text_categorizer.Document import Document, _excel_start_row
+from text_categorizer.Document import Document
 from tests.utils import example_excel_file
-
-def test__excel_start_row():
-    assert _excel_start_row == 2
 
 def test___init__():
     index = -1
@@ -26,7 +23,7 @@ def test_from_data_frame():
     df = read_excel(example_excel_file)
     index = 0
     doc = Document.from_data_frame(df, index)
-    assert doc.index == index + _excel_start_row
+    assert doc.index == index
     assert sorted(doc.fields.keys()) == sorted(df.columns)
     assert str(doc.fields) == str(df.to_dict('records')[index])
     assert doc.analyzed_sentences is None

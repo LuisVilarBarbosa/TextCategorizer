@@ -46,7 +46,7 @@ def check_data(filename):
     for doc in docs:
         assert type(doc) is Document
         total = total + 1
-        assert doc.index - 1 == total
+        assert doc.index + 1 == total
     metadata = get_docs_metadata(filename)
     assert metadata['total'] == total
 

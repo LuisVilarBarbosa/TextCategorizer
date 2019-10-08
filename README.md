@@ -167,7 +167,7 @@ docker-compose logs -f # Shows the output. (Press CTRL+C to close.)
 
 - The code has been tested on Windows 10, MX Linux 18.2 (Debian stable based) and Docker images for Miniconda (Debian based).
 
-- In some situations, the tool may present a reference to a document with index X where X is equal to the number of the row of the document in the Excel file.
+- In some situations, the tool may present a reference to a document with index X where X belongs to the interval [0, number of documents[. The number of the row of the document in the Excel file should be equal to the index plus 2.
 
 - Pickle is used to dump and load data to and from files. This protocol is the fastest of the tested protocols, but is considered insecure. Please take this information into consideration.
 

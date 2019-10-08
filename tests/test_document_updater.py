@@ -10,10 +10,7 @@ def test_initial_code_to_run_on_document():
     assert doc.index == index
     assert doc.fields == fields
     assert doc.analyzed_sentences == analyzed_sentences
-    with pytest.raises(AttributeError):
-        assert doc.to_remove
     initial_code_to_run_on_document(doc)
     assert doc.index == index
     assert doc.fields == fields
     assert doc.analyzed_sentences == analyzed_sentences
-    assert doc.to_remove == False

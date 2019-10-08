@@ -35,40 +35,37 @@ class FeatureExtractor:
             logger.info("The substitution of synonyms is enabled.")
             contoPTParser = ContoPTParser(synonyms_file)
             self.synonyms = contoPTParser.synonyms
-        self.to_remove = []
 
     def prepare(self, class_field, preprocessed_data_file=None, docs=None, training_mode=True):
         if docs is None:
             docs = get_documents(preprocessed_data_file, description="Preparing to create classification")
         num_ignored = 0
+        idxs_to_remove = []
         corpus = []
         classifications = []
-        i = 0
         for doc in docs:
             self.document_adjustment_code.initial_code_to_run_on_document(doc)
             if doc.analyzed_sentences is None:
                 num_ignored = num_ignored + 1
-            else:
-                if doc.to_remove:
-                    self.to_remove.append(i)
-                i = i + 1
-                lemmas = FeatureExtractor._filter(doc, self.upostags_to_ignore)
-                if self.synonyms is not None:
-                    lemmas = list(map(lambda l: l if self.synonyms.get(l) is None else self.synonyms.get(l), lemmas))
-                lemmas = list(filter(lambda l: l not in self.stop_words, lemmas))
-                corpus.append(FeatureExtractor._generate_corpus(lemmas))
-                classifications.append(doc.fields[class_field])
+                idxs_to_remove.append(doc.index)
+            lemmas = FeatureExtractor._filter(doc, self.upostags_to_ignore)
+            if self.synonyms is not None:
+                lemmas = list(map(lambda l: l if self.synonyms.get(l) is None else self.synonyms.get(l), lemmas))
+            lemmas = list(filter(lambda l: l not in self.stop_words, lemmas))
+            corpus.append(FeatureExtractor._generate_corpus(lemmas))
+            classifications.append(doc.fields[class_field])
         if num_ignored > 0:
             logger.warning("%s document(s) ignored." % num_ignored)
         if training_mode:
-            FeatureExtractor._remove_incompatible_data(corpus, classifications)
-        return corpus, classifications, lemmas
+            idxs_to_remove.extend(FeatureExtractor._find_incompatible_data_indexes(corpus, classifications))
+        return corpus, classifications, idxs_to_remove, lemmas
 
     @staticmethod
     def _filter(doc, upostags_to_ignore):
         lemmas = []
-        for sentence in doc.analyzed_sentences:
-            lemmas.extend([word['lemma'] for word in sentence if word['upostag'] not in upostags_to_ignore])
+        if doc.analyzed_sentences is not None:
+            for sentence in doc.analyzed_sentences:
+                lemmas.extend([word['lemma'] for word in sentence if word['upostag'] not in upostags_to_ignore])
         return lemmas
 
     @staticmethod
@@ -98,16 +95,17 @@ class FeatureExtractor:
         return X, y
 
     @staticmethod
-    def _remove_incompatible_data(corpus, classifications):
-        logger.info("Removing incompatible data.")
+    def _find_incompatible_data_indexes(corpus, classifications):
+        logger.info("Searching for incompatible data.")
         quantities = Counter(classifications)
+        idxs_to_remove = []
         for k, v in quantities.items():
             if v <= 1:
                 logger.warning("Ignoring documents with the classification '%s' because the classification only occurs %d time(s)." % (k, v))
                 for _ in range(v):
                     index = classifications.index(k)
-                    corpus.pop(index)
-                    classifications.pop(index)
+                    idxs_to_remove.append(index)
+        return idxs_to_remove
 
     @staticmethod
     def _LatentDirichletAllocation(X, y):

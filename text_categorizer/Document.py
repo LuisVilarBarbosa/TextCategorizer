@@ -5,8 +5,6 @@ import conllu
 import pandas
 import stanfordnlp
 
-_excel_start_row = 2
-
 class Document:
     def __init__(self, index, fields, analyzed_sentences):
         self.index = index
@@ -17,12 +15,11 @@ class Document:
     def from_data_frame(data_frame, index):
         assert type(data_frame) is pandas.DataFrame
         assert type(index) is int
-        doc_index = index + _excel_start_row
         fields = dict()
         columns = data_frame.columns
         for i in range(len(columns)):
             fields[columns[i]] = data_frame.iloc[index, i]
-        return Document(index=doc_index, fields=fields, analyzed_sentences=None)
+        return Document(index=index, fields=fields, analyzed_sentences=None)
 
     def update(self, stanfordnlp_document, text_data_field):
         assert type(stanfordnlp_document) is stanfordnlp.Document

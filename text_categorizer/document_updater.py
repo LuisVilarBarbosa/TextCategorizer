@@ -9,5 +9,4 @@
 # This code should work for the training phase and for the prediction phase.
 def initial_code_to_run_on_document(doc):
     #doc.analyzed_sentences = None # Indicates that this document should be completely ignored.
-    doc.to_remove = False # Indicates whether this document should be ignored by classifiers.
     return
