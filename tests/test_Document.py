@@ -28,20 +28,6 @@ def test_from_data_frame():
     assert str(doc.fields) == str(df.to_dict('records')[index])
     assert doc.analyzed_sentences is None
 
-def test_update():
-    test_field = 'test_field'
-    not_SNLPDoc = 'test_str'
-    doc1 = Document(index=-1, fields={test_field: 0}, analyzed_sentences=None)
-    params1 = [[not_SNLPDoc, test_field], [SNLPDoc(''), test_field]]
-    for snlpdoc, text_data_field in params1:
-        with pytest.raises(AssertionError):
-            doc1.update(snlpdoc, text_data_field)
-    params2 = [[SNLPDoc(''), True], [SNLPDoc('test_text'), True]] #TODO: Add pre-processed SNLP document.
-    for snlpdoc, expected_value in params2:
-        doc2 = Document(index=-1, fields={test_field: snlpdoc.text}, analyzed_sentences=None)
-        doc2.update(snlpdoc, test_field)
-        assert (doc2.analyzed_sentences is None) == expected_value
-
 def test_copy():
     test_dict = {'test_field': 'test_value'}
     for analyzed_sentences in [None, test_dict]:

@@ -1,7 +1,6 @@
 #!/usr/bin/python3
 # coding=utf-8
 
-import conllu
 import nltk
 import signal
 from text_categorizer import pickle_manager
@@ -31,7 +30,7 @@ class Preprocessor:
     def preprocess(self, text_field, preprocessed_data_file=None, docs=None):
         return self._nltk_process(text_data_field=text_field, preprocessed_data_file=preprocessed_data_file, docs=docs)
 
-    # TODO: PoS is invalid for non-English (only English and Russian are supported), so the removal of adjectives does not work correctly for non-English.
+    # TODO: PoS is not in use (only English and Russian are supported), so the removal of adjectives does not work correctly.
     def _nltk_process(self, text_data_field, preprocessed_data_file=None, docs=None):
         if self.training_mode:
             self._set_signal_handlers()
@@ -44,15 +43,19 @@ class Preprocessor:
         for doc in docs:
             if not self.stop and doc.analyzed_sentences is None:
                 text = doc.fields[text_data_field]
-                sentences = [nltk.pos_tag(nltk.word_tokenize(sent), tagset='universal', lang='eng') for sent in nltk.sent_tokenize(text)]
-                conll = ''.join(nltk.parse.util.taggedsents_to_conll(sentences))
-                doc.analyzed_sentences = conllu.parse(conll)
-                for s in doc.analyzed_sentences:
-                    for word in s:
-                        lemma = self.lemmatizer.lemmatize(word['form'].lower())
-                        word['lemma'] = lemma
-                        if lemma in punctuation:
-                            word['upostag'] = "PUNCT"
+                sentences = []
+                for sent in nltk.sent_tokenize(text):
+                    tokens = []
+                    for word in nltk.word_tokenize(sent):
+                        lemma = self.lemmatizer.lemmatize(word.lower())
+                        token = {
+                            'form': word,
+                            'lemma': lemma,
+                            'upostag': 'PUNCT' if lemma in punctuation else None
+                        }
+                        tokens.append(token)
+                    sentences.append(tokens)
+                doc.analyzed_sentences = sentences
             if self.training_mode:
                 pda.dump_append(doc)
         if self.training_mode:

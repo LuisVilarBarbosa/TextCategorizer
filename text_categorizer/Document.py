@@ -1,7 +1,6 @@
 #!/usr/bin/python3
 # coding=utf-8
 
-import conllu
 import pandas
 import stanfordnlp
 
@@ -20,13 +19,6 @@ class Document:
         for i in range(len(columns)):
             fields[columns[i]] = data_frame.iloc[index, i]
         return Document(index=index, fields=fields, analyzed_sentences=None)
-
-    def update(self, stanfordnlp_document, text_data_field):
-        assert type(stanfordnlp_document) is stanfordnlp.Document
-        assert self.fields[text_data_field] == stanfordnlp_document.text
-        if stanfordnlp_document.conll_file is not None:
-            conll = stanfordnlp_document.conll_file.conll_as_string()
-            self.analyzed_sentences = conllu.parse(conll)
 
     def copy(self):
         if self.analyzed_sentences is None:
