@@ -40,6 +40,7 @@ class Preprocessor:
         if self.training_mode:
             metadata = pickle_manager.get_docs_metadata(preprocessed_data_file)
             pda = pickle_manager.PickleDumpAppend(metadata=metadata, filename=preprocessed_data_file)
+        token_to_lemma = dict()
         for doc in docs:
             if not self.stop and doc.analyzed_sentences is None:
                 text = doc.fields[text_data_field]
@@ -47,7 +48,11 @@ class Preprocessor:
                 for sent in nltk.sent_tokenize(text):
                     tokens = []
                     for word in nltk.word_tokenize(sent):
-                        lemma = self.lemmatizer.lemmatize(word.lower())
+                        token = word.lower()
+                        lemma = token_to_lemma.get(token)
+                        if lemma is None:
+                            lemma = self.lemmatizer.lemmatize(token)
+                            token_to_lemma[token] = lemma
                         token = {
                             'form': word,
                             'lemma': lemma,
