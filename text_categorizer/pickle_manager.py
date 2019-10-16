@@ -79,6 +79,7 @@ def set_docs_metadata(metadata, filename):
     for data in iter(lambda: input_file.read(n), b''):
         output_file.write(data)
         p.update(len(data)//n)
+    p.close()
     input_file.close()
     output_file.close()
     move(temp_filename, filename)
