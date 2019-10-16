@@ -84,6 +84,8 @@ def test_get_docs_metadata():
     assert metadata['total'] == len(docs)
     remove_and_check(filename)
 
+def test_set_docs_metadata():
+    pass
 
 def test_PickleDumpAppend___init__():
     metadata = {'total': 0}

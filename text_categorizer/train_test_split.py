@@ -27,7 +27,4 @@ def train_test_split(classifications, test_size, preprocessed_data_file, force):
     training_set_indexes, test_set_indexes = sk_train_test_split(indexes, test_size=test_size,  random_state=42, shuffle=True, stratify=classifications)
     metadata['training_set_indexes'] = training_set_indexes
     metadata['test_set_indexes'] = test_set_indexes
-    pda = pickle_manager.PickleDumpAppend(metadata=metadata, filename=preprocessed_data_file)
-    for doc in get_documents(preprocessed_data_file, description="Storing subsets"):
-        pda.dump_append(doc)
-    pda.close()
+    pickle_manager.set_docs_metadata(metadata=metadata, filename=preprocessed_data_file)

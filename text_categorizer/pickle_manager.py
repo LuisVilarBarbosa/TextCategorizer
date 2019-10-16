@@ -3,7 +3,10 @@
 
 import pickle
 import os
+from shutil import move
+from tempfile import mkstemp
 from text_categorizer.Document import Document
+from text_categorizer.ui import progress
 from uuid import uuid4
 
 _pickle_protocol = 2
@@ -61,6 +64,24 @@ def get_docs_metadata(filename):
     input_file = open(filename, 'rb')
     metadata = pickle.load(input_file)
     input_file.close()
+    return metadata
+
+def set_docs_metadata(metadata, filename):
+    input_file = open(filename, 'rb')
+    old_metadata = pickle.load(input_file)
+    fd, temp_filename = mkstemp()
+    os.close(fd)
+    output_file = open(temp_filename, 'wb')
+    pickle.dump(metadata, output_file)
+    n = 1048576
+    p = progress(desc="Storing subsets", total=os.path.getsize(filename)//n, unit='MB', dynamic_ncols=True)
+    p.update(len(pickle.dumps(old_metadata))//n)
+    for data in iter(lambda: input_file.read(n), b''):
+        output_file.write(data)
+        p.update(len(data)//n)
+    input_file.close()
+    output_file.close()
+    move(temp_filename, filename)
     return metadata
 
 class PickleDumpAppend():
