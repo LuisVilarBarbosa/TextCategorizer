@@ -5,7 +5,6 @@ from os.path import exists, isfile
 from pandas import DataFrame, read_excel
 #from profilehooks import profile
 from sklearn.datasets import fetch_20newsgroups
-from sklearn.utils import safe_indexing
 from text_categorizer import classifiers
 from text_categorizer import pickle_manager
 from text_categorizer.FeatureExtractor import FeatureExtractor
@@ -27,17 +26,6 @@ def load_20newsgroups(parameters):
         df[p.excel_column_with_classification_data] = bunch.target
         df.to_excel(p.excel_file, engine='xlsxwriter')
     return p
-
-def get_train_test(corpus, classifications, training_set_indexes, test_set_indexes, indexes_to_remove):
-    assert len(training_set_indexes) == len(set(training_set_indexes))
-    assert len(test_set_indexes) == len(set(test_set_indexes))
-    train_idxs = [i for i in training_set_indexes if not i in indexes_to_remove]
-    test_idxs = [i for i in test_set_indexes if not i in indexes_to_remove]
-    corpus_train = safe_indexing(corpus, train_idxs)
-    corpus_test = safe_indexing(corpus, test_idxs)
-    classifications_train = safe_indexing(classifications, train_idxs)
-    classifications_test = safe_indexing(classifications, test_idxs)
-    return corpus_train, corpus_test, classifications_train, classifications_test
 
 #@profile
 def main(config_filename):
@@ -69,9 +57,7 @@ def main(config_filename):
     logger.info("Extracting features and splitting dataset into training and test subsets.")
     feature_extractor = FeatureExtractor(nltk_stop_words_package=parameters.nltk_stop_words_package, vectorizer_name=parameters.vectorizer, training_mode=True, use_lda=parameters.use_lda, document_adjustment_code=parameters.document_adjustment_code, remove_adjectives=parameters.remove_adjectives, synonyms_file=parameters.synonyms_file, vectorizer_file=parameters.vectorizer_file)
     corpus, classifications, idxs_to_remove, _lemmas = feature_extractor.prepare(class_field=parameters.excel_column_with_classification_data, preprocessed_data_file=parameters.preprocessed_data_file)
-    train_test_split(classifications, parameters.test_subset_size, parameters.preprocessed_data_file, parameters.force_subsets_regeneration)
-    metadata = pickle_manager.get_docs_metadata(parameters.preprocessed_data_file)
-    corpus_train, corpus_test, classifications_train, classifications_test = get_train_test(corpus, classifications, metadata['training_set_indexes'], metadata['test_set_indexes'], idxs_to_remove)
+    corpus_train, corpus_test, classifications_train, classifications_test = train_test_split(corpus, classifications, parameters.test_subset_size, parameters.preprocessed_data_file, parameters.force_subsets_regeneration, idxs_to_remove)
     X_train, y_train = feature_extractor.generate_X_y(corpus_train, classifications_train, training_mode=True)
     X_test, y_test = feature_extractor.generate_X_y(corpus_test, classifications_test, training_mode=False) 
     logger.info("Running classifiers.")
