@@ -3,8 +3,6 @@
 
 import pickle
 import os
-from shutil import move
-from tempfile import mkstemp
 from text_categorizer.Document import Document
 from text_categorizer.ui import progress
 from uuid import uuid4
@@ -69,8 +67,7 @@ def get_docs_metadata(filename):
 def set_docs_metadata(metadata, filename):
     input_file = open(filename, 'rb')
     old_metadata = pickle.load(input_file)
-    fd, temp_filename = mkstemp()
-    os.close(fd)
+    temp_filename = _generate_file()
     output_file = open(temp_filename, 'wb')
     pickle.dump(metadata, output_file)
     n = 1048576
@@ -82,7 +79,7 @@ def set_docs_metadata(metadata, filename):
     p.close()
     input_file.close()
     output_file.close()
-    move(temp_filename, filename)
+    os.rename(temp_filename, filename)
     return metadata
 
 class PickleDumpAppend():
