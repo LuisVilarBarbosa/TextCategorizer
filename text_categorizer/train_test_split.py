@@ -2,7 +2,7 @@
 # coding=utf-8
 
 from collections import Counter
-from numpy import arange
+from numpy import arange, delete, setdiff1d
 from sklearn.model_selection import train_test_split as sk_train_test_split
 from sklearn.utils import safe_indexing
 from text_categorizer import pickle_manager
@@ -35,8 +35,8 @@ def train_test_split(corpus, classifications, test_size, preprocessed_data_file,
 def get_train_test(corpus, classifications, training_set_indexes, test_set_indexes, indexes_to_remove):
     assert len(training_set_indexes) == len(set(training_set_indexes))
     assert len(test_set_indexes) == len(set(test_set_indexes))
-    train_idxs = [i for i in training_set_indexes if not i in indexes_to_remove]
-    test_idxs = [i for i in test_set_indexes if not i in indexes_to_remove]
+    train_idxs = setdiff1d(training_set_indexes, indexes_to_remove, assume_unique=True)
+    test_idxs = setdiff1d(test_set_indexes, indexes_to_remove, assume_unique=True)
     corpus_train = safe_indexing(corpus, train_idxs)
     corpus_test = safe_indexing(corpus, test_idxs)
     classifications_train = safe_indexing(classifications, train_idxs)
@@ -47,19 +47,19 @@ def _train_test_split(metadata, test_size, classifications, indexes_to_remove):
     m = metadata.copy()
     m['test_size'] = test_size  
     idxs = arange(len(classifications))
-    idxs = [i for i in idxs if not i in indexes_to_remove]
-    class_labels = [classifications[i] for i in range(len(classifications)) if not i in indexes_to_remove]
+    idxs = setdiff1d(idxs, indexes_to_remove, assume_unique=True)
+    class_labels = delete(classifications, indexes_to_remove)
     train_idxs, test_idxs = sk_train_test_split(idxs, test_size=test_size, random_state=42, shuffle=True, stratify=class_labels)
     m['training_set_indexes'] = train_idxs
     m['test_set_indexes'] = test_idxs
     return m
 
 def _is_stratified(classifications, metadata, indexes_to_remove):
-    train_labels = [classifications[i] for i in metadata['training_set_indexes']]
-    test_labels = [classifications[i] for i in metadata['test_set_indexes']]
-    class_labels = [classifications[i] for i in range(len(classifications)) if not i in indexes_to_remove]
+    train_labels = safe_indexing(classifications, metadata['training_set_indexes'])
+    test_labels = safe_indexing(classifications, metadata['test_set_indexes'])
+    class_labels = delete(classifications, indexes_to_remove)
     actual_test_size = len(test_labels) / len(class_labels)
     m = _train_test_split(metadata, actual_test_size, classifications, indexes_to_remove)
-    expected_train_labels = [classifications[i] for i in m['training_set_indexes']]
-    expected_test_labels = [classifications[i] for i in m['test_set_indexes']]
+    expected_train_labels = safe_indexing(classifications, m['training_set_indexes'])
+    expected_test_labels = safe_indexing(classifications, m['test_set_indexes'])
     return Counter(train_labels) == Counter(expected_train_labels) and Counter(test_labels) == Counter(expected_test_labels)
