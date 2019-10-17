@@ -79,6 +79,7 @@ def set_docs_metadata(metadata, filename):
     p.close()
     input_file.close()
     output_file.close()
+    os.remove(filename)
     os.rename(temp_filename, filename)
     return metadata
 
