@@ -1,4 +1,4 @@
-from numpy import int32
+from numpy import int32, int64
 from tests.test_classifiers import clfs
 from text_categorizer import prediction_server
 from text_categorizer.FeatureExtractor import FeatureExtractor
@@ -126,7 +126,7 @@ def replace_tuples_values(obj, value):
         for k, v in obj.items():
             d[replace_tuples_values(k, value)] = replace_tuples_values(v, value)
         return d
-    elif t is int or t is int32:
+    elif t is int or t is int32 or t is int64:
         return obj
     else:
         raise TypeError(t)
