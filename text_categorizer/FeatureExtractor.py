@@ -79,13 +79,12 @@ class FeatureExtractor:
         logger.info("Running %s." % self.vectorizer.__class__.__name__)
         if training_mode:
             logger.debug("%s configuration: %s" % (self.vectorizer.__class__.__name__, self.vectorizer.__dict__))
+        corpus = progress(iterable=corpus, desc="Extracting features", unit="doc", dynamic_ncols=True)
         if training_mode and "fit_transform" in dir(self.vectorizer):
             X = self.vectorizer.fit_transform(corpus)
         elif not training_mode and "transform" in dir(self.vectorizer):
             X = self.vectorizer.transform(corpus)
         else:
-            if training_mode:
-                corpus = progress(iterable=corpus, desc="Extracting features", unit="doc", dynamic_ncols=True)
             X = np.asarray([FeatureExtractor.chunked_embed(t, self.vectorizer) for t in corpus])
         y = classifications
         if training_mode and self.vectorizer.__class__ not in [DocumentPoolEmbeddings]:
