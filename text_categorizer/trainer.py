@@ -56,7 +56,7 @@ def main(config_filename):
             quit()
     logger.info("Extracting features and splitting dataset into training and test subsets.")
     feature_extractor = FeatureExtractor(nltk_stop_words_package=parameters.nltk_stop_words_package, vectorizer_name=parameters.vectorizer, training_mode=True, use_lda=parameters.use_lda, document_adjustment_code=parameters.document_adjustment_code, remove_adjectives=parameters.remove_adjectives, synonyms_file=parameters.synonyms_file, vectorizer_file=parameters.vectorizer_file)
-    corpus, classifications, idxs_to_remove, _lemmas = feature_extractor.prepare(class_field=parameters.excel_column_with_classification_data, preprocessed_data_file=parameters.preprocessed_data_file)
+    corpus, classifications, idxs_to_remove, _docs_lemmas = feature_extractor.prepare(class_field=parameters.excel_column_with_classification_data, preprocessed_data_file=parameters.preprocessed_data_file)
     corpus_train, corpus_test, classifications_train, classifications_test = train_test_split(corpus, classifications, parameters.test_subset_size, parameters.preprocessed_data_file, parameters.force_subsets_regeneration, idxs_to_remove)
     X_train, y_train = feature_extractor.generate_X_y(corpus_train, classifications_train, training_mode=True)
     X_test, y_test = feature_extractor.generate_X_y(corpus_test, classifications_test, training_mode=False) 

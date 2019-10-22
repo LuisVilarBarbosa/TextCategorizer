@@ -43,6 +43,7 @@ class FeatureExtractor:
         idxs_to_remove = []
         corpus = []
         classifications = []
+        docs_lemmas = []
         for doc in docs:
             self.document_adjustment_code.initial_code_to_run_on_document(doc)
             if doc.analyzed_sentences is None:
@@ -54,11 +55,13 @@ class FeatureExtractor:
             lemmas = list(filter(lambda l: l not in self.stop_words, lemmas))
             corpus.append(FeatureExtractor._generate_corpus(lemmas))
             classifications.append(doc.fields[class_field])
+            if not training_mode:
+                docs_lemmas.append(lemmas)
         if num_ignored > 0:
             logger.warning("%s document(s) ignored." % num_ignored)
         if training_mode:
             idxs_to_remove.extend(FeatureExtractor._find_incompatible_data_indexes(corpus, classifications))
-        return corpus, classifications, idxs_to_remove, lemmas
+        return corpus, classifications, idxs_to_remove, docs_lemmas
 
     @staticmethod
     def _filter(doc, upostags_to_ignore):

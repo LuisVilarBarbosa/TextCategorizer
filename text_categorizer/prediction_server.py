@@ -51,7 +51,7 @@ def predict():
         abort(BAD_REQUEST, 'Invalid classifier')
     doc = Document(index=-1, fields=dict({_text_field: text, _class_field: None}), analyzed_sentences=None)
     _preprocessor.preprocess(text_field=_text_field, docs=[doc])
-    corpus, classifications, _idxs_to_remove, lemmas = _feature_extractor.prepare(class_field=_class_field, docs=[doc], training_mode=False)
+    corpus, classifications, _idxs_to_remove, docs_lemmas = _feature_extractor.prepare(class_field=_class_field, docs=[doc], training_mode=False)
     X, _y = _feature_extractor.generate_X_y(corpus, classifications, training_mode=False)
     try:
         clf = _classifiers.get(classifier)
@@ -60,7 +60,7 @@ def predict():
             _classifiers[classifier] = clf
         y_predict_proba = clf.predict_proba(X)
         y_predict_classes = classifiers.predict_proba_to_predict_classes(clf.classes_, y_predict_proba)
-        feature_weights = get_feature_weights(clf, lemmas)
+        feature_weights = get_feature_weights(clf, docs_lemmas[0])
         prediction = DataFrame({'prediction': y_predict_classes[0]}).to_dict('list')
         if feature_weights is None:
             return jsonify(prediction)
