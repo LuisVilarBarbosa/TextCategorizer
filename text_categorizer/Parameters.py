@@ -31,6 +31,7 @@ class Parameters:
         self._load_synonyms_file(config)
         self._load_resampling(config)
         self.vectorizer_file = config.get("Feature extraction", "Vectorizer file")
+        self._load_class_weights(config)
     
     def _load_number_of_jobs(self, config):
         self.number_of_jobs = config.get("General", "Number of jobs")
@@ -83,3 +84,9 @@ class Parameters:
         assert self.resampling in ["None", "RandomOverSample", "RandomUnderSample"]
         if self.resampling == "None":
             self.resampling = None
+    
+    def _load_class_weights(self, config):
+        self.class_weights = config.get("Classification", "Class weights")
+        assert self.class_weights in ["None", "balanced"]
+        if self.class_weights == "None":
+            self.class_weights = None

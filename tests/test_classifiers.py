@@ -22,11 +22,14 @@ clfs = [
 
 def test_classifiers():
     for n_jobs in range(-1, 2):
-        for f in clfs:
-            clf = f(n_jobs=n_jobs)
-            assert clf.__class__.__name__ == f.__name__ or (clf.__class__.__name__ == 'LinearSVC_proba' and f.__name__ == 'LinearSVC')
-            if 'n_jobs' in dir(clf):
-                assert clf.n_jobs == n_jobs
+        for class_weight in [None, 'balanced']:
+            for f in clfs:
+                clf = f(n_jobs=n_jobs, class_weight=class_weight)
+                assert clf.__class__.__name__ == f.__name__ or (clf.__class__.__name__ == 'LinearSVC_proba' and f.__name__  == 'LinearSVC')
+                if 'n_jobs' in dir(clf):
+                    assert clf.n_jobs == n_jobs
+                if 'class_weight' in dir(clf):
+                    assert clf.class_weight == class_weight
 
 def test_Pipeline___init__():
     p = classifiers.Pipeline(clfs)
@@ -38,7 +41,7 @@ def test_Pipeline_start():
 def test_predict_proba_to_predict():
     n_class = 10
     X, y = load_digits(n_class=n_class, return_X_y=True)
-    clf = classifiers.LinearSVC(n_jobs=1)
+    clf = classifiers.LinearSVC(n_jobs=1, class_weight=None)
     with pytest.warns(ConvergenceWarning):
         clf.fit(X, y)
     y_pred1 = clf.predict(X)
@@ -66,7 +69,7 @@ def test_predict_proba_to_predict():
 
 def test_predict_proba_to_predict_classes():
     X, y = load_digits(n_class=10, return_X_y=True)
-    clf = classifiers.LinearSVC(n_jobs=1)
+    clf = classifiers.LinearSVC(n_jobs=1, class_weight=None)
     with pytest.warns(ConvergenceWarning):
         clf.fit(X, y)
     y_pred1 = clf.predict(X)

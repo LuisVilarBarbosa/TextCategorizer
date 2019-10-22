@@ -58,7 +58,7 @@ def test_get_feature_weights():
     assert len(clfs) == len(expected_values_1)
     assert len(clfs) == len(expected_values_2)
     for f in clfs:
-        clf = f(n_jobs=1)
+        clf = f(n_jobs=1, class_weight=None)
         clf_name = clf.__class__.__name__
         clf.fit(X, classifications)
         expected_value_1 = expected_values_1[clf_name]
@@ -98,7 +98,7 @@ def test_load_feature_weights():
         }
         assert len(clfs) == len(expected_values)
         for f in clfs:
-            clf = f(n_jobs=1)
+            clf = f(n_jobs=1, class_weight=None)
             clf_name = clf.__class__.__name__
             clf.fit(X, classifications[i])
             prediction_server._feature_extractor = fe_hashing

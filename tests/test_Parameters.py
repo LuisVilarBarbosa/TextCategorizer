@@ -18,3 +18,6 @@ def test__load_synonyms_file():
 
 def test__load_resampling():
     pass
+
+def test__load_class_weights():
+    pass

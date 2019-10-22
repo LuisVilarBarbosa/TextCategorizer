@@ -9,39 +9,39 @@ from text_categorizer.logger import logger
 from text_categorizer import pickle_manager
 from text_categorizer.resampling import RandomOverSample, RandomUnderSample
 
-def RandomForestClassifier(n_jobs):
+def RandomForestClassifier(n_jobs, class_weight):
     from sklearn.ensemble import RandomForestClassifier
     clf = RandomForestClassifier(n_estimators=100, criterion='gini', max_depth=None,
                 min_samples_split=2, min_samples_leaf=1, min_weight_fraction_leaf=0.0,
                 max_features='auto', max_leaf_nodes=None, min_impurity_decrease=0.0,
                 min_impurity_split=None, bootstrap=True, oob_score=False,
                 n_jobs=n_jobs, random_state=None, verbose=0,
-                warm_start=False, class_weight=None)
+                warm_start=False, class_weight=class_weight)
     return clf
 
-def BernoulliNB(n_jobs):
+def BernoulliNB(n_jobs, class_weight):
     from sklearn.naive_bayes import BernoulliNB
     clf = BernoulliNB(alpha=1.0, binarize=0.0, fit_prior=True, class_prior=None)
     return clf
 
-def MultinomialNB(n_jobs):
+def MultinomialNB(n_jobs, class_weight):
     from sklearn.naive_bayes import MultinomialNB
     clf = MultinomialNB(alpha=1.0, fit_prior=True, class_prior=None)
     return clf
 
-def ComplementNB(n_jobs):
+def ComplementNB(n_jobs, class_weight):
     from sklearn.naive_bayes import ComplementNB
     clf = ComplementNB(alpha=1.0, fit_prior=True, class_prior=None, norm=False)
     return clf
 
-def KNeighborsClassifier(n_jobs):
+def KNeighborsClassifier(n_jobs, class_weight):
     from sklearn.neighbors import KNeighborsClassifier
     clf = KNeighborsClassifier(n_neighbors=5, weights='uniform', algorithm='auto',
                 leaf_size=30, p=2, metric='minkowski', metric_params=None,
                 n_jobs=n_jobs)
     return clf
 
-def MLPClassifier(n_jobs):
+def MLPClassifier(n_jobs, class_weight):
     from sklearn.neural_network import MLPClassifier
     clf = MLPClassifier(hidden_layer_sizes=(100, ), activation='relu', solver='adam',
                 alpha=0.0001, batch_size='auto', learning_rate='constant',
@@ -52,46 +52,46 @@ def MLPClassifier(n_jobs):
                 n_iter_no_change=10)
     return clf
 
-def LinearSVC(n_jobs):
+def LinearSVC(n_jobs, class_weight):
     from text_categorizer.LinearSVC_proba import LinearSVC_proba
     clf = LinearSVC_proba(penalty='l2', loss='squared_hinge', dual=True, tol=0.0001,
                 C=1.0, multi_class='ovr', fit_intercept=True, intercept_scaling=1,
-                class_weight=None, verbose=0, random_state=None, max_iter=1000)
+                class_weight=class_weight, verbose=0, random_state=None, max_iter=1000)
     return clf
 
-def DecisionTreeClassifier(n_jobs):
+def DecisionTreeClassifier(n_jobs, class_weight):
     from sklearn.tree import DecisionTreeClassifier
     clf = DecisionTreeClassifier(criterion='gini', splitter='best', max_depth=None,
                 min_samples_split=2, min_samples_leaf=1, min_weight_fraction_leaf=0.0,
                 max_features=None, random_state=None, max_leaf_nodes=None,
-                min_impurity_decrease=0.0, min_impurity_split=None, class_weight=None,
+                min_impurity_decrease=0.0, min_impurity_split=None, class_weight=class_weight,
                 presort=False)
     return clf
 
-def ExtraTreeClassifier(n_jobs):
+def ExtraTreeClassifier(n_jobs, class_weight):
     from sklearn.tree import ExtraTreeClassifier
     clf = ExtraTreeClassifier(criterion='gini', splitter='random', max_depth=None,
                 min_samples_split=2, min_samples_leaf=1, min_weight_fraction_leaf=0.0,
                 max_features='auto', random_state=None, max_leaf_nodes=None,
-                min_impurity_decrease=0.0, min_impurity_split=None, class_weight=None)
+                min_impurity_decrease=0.0, min_impurity_split=None, class_weight=class_weight)
     return clf
 
-def DummyClassifier(n_jobs):
+def DummyClassifier(n_jobs, class_weight):
     from sklearn.dummy import DummyClassifier
     clf = DummyClassifier(strategy='stratified', random_state=None, constant=None)
     return clf
 
-def SGDClassifier(n_jobs):
+def SGDClassifier(n_jobs, class_weight):
     from sklearn.linear_model import SGDClassifier
     clf = SGDClassifier(loss='modified_huber', penalty='l2', alpha=0.0001, l1_ratio=0.15,
                 fit_intercept=True, max_iter=1000, tol=1e-3, shuffle=True,
                 verbose=0, epsilon=0.1, n_jobs=n_jobs,
                 random_state=None, learning_rate='optimal', eta0=0.0, power_t=0.5,
                 early_stopping=False, validation_fraction=0.1, n_iter_no_change=5,
-                class_weight=None, warm_start=False, average=False, n_iter=None)
+                class_weight=class_weight, warm_start=False, average=False, n_iter=None)
     return clf
 
-def BaggingClassifier(n_jobs):
+def BaggingClassifier(n_jobs, class_weight):
     from sklearn.ensemble import BaggingClassifier
     clf = BaggingClassifier(base_estimator=None, n_estimators=10, max_samples=1.0,
                 max_features=1.0, bootstrap=True, bootstrap_features=False,
@@ -103,7 +103,7 @@ class Pipeline():
     def __init__(self, classifiers):
         self.classifiers = classifiers
     
-    def start(self, X_train, y_train, X_test, y_test, n_jobs=None, set_n_accepted_probs={1,2,3}, resampling=None):
+    def start(self, X_train, y_train, X_test, y_test, n_jobs=None, set_n_accepted_probs={1,2,3}, resampling=None, class_weight=None):
         from time import time
         if resampling is not None:
             if resampling == RandomOverSample.__name__:
@@ -118,7 +118,7 @@ class Pipeline():
         predictions = DataFrame({'y_true': y_test})
         for f in self.classifiers:
             logger.info("Starting %s." % (f.__name__))
-            clf = f(n_jobs=n_jobs)
+            clf = f(n_jobs=n_jobs, class_weight=class_weight)
             logger.debug("%s configuration: %s" % (f.__name__, clf.__dict__))
             t1 = time()
             try:
