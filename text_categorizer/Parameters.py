@@ -32,6 +32,7 @@ class Parameters:
         self._load_resampling(config)
         self.vectorizer_file = config.get("Feature extraction", "Vectorizer file")
         self._load_class_weights(config)
+        self.generate_roc_plots = config.getboolean("Classification", "Generate ROC plots")
     
     def _load_number_of_jobs(self, config):
         self.number_of_jobs = config.get("General", "Number of jobs")

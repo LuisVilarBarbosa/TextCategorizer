@@ -5,8 +5,9 @@ import json
 from collections import Counter
 from pandas import DataFrame
 from sklearn.metrics import accuracy_score, confusion_matrix, classification_report
-from text_categorizer.logger import logger
 from text_categorizer import pickle_manager
+from text_categorizer.logger import logger
+from text_categorizer.plot_roc import plot_roc
 from text_categorizer.resampling import RandomOverSample, RandomUnderSample
 
 def RandomForestClassifier(n_jobs, class_weight):
@@ -103,7 +104,7 @@ class Pipeline():
     def __init__(self, classifiers):
         self.classifiers = classifiers
     
-    def start(self, X_train, y_train, X_test, y_test, n_jobs=None, set_n_accepted_probs={1,2,3}, resampling=None, class_weight=None):
+    def start(self, X_train, y_train, X_test, y_test, n_jobs=None, set_n_accepted_probs={1,2,3}, resampling=None, class_weight=None, generate_roc_plots=False):
         from time import time
         if resampling is not None:
             if resampling == RandomOverSample.__name__:
@@ -131,6 +132,10 @@ class Pipeline():
                     y_predict = predict_proba_to_predict(clf.classes_, y_predict_proba, y_test, n_accepted_probs)
                     if n_accepted_probs == 1:
                         predictions[predictions_key] = y_predict
+                        if generate_roc_plots:
+                            logger.debug("Generating ROC (Receiver Operating Characteristic) plot.")
+                            plt = plot_roc(clf, X_test, y_test)
+                            plt.savefig('ROC_%s.png' % (f.__name__))
                     logger.debug("Confusion matrix:\n%s" % confusion_matrix(y_test, y_predict))
                     logger.debug("Classification report:\n%s" % classification_report(y_test, y_predict))
                     acc = accuracy_score(y_test, y_predict, normalize=True)

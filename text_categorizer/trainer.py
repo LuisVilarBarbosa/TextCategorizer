@@ -63,5 +63,5 @@ def main(config_filename):
     logger.info("Running classifiers.")
     p = classifiers.Pipeline(parameters.classifiers)
     logger.info("Accuracies:")
-    p.start(X_train, y_train, X_test, y_test, parameters.number_of_jobs, parameters.set_num_accepted_probs, parameters.resampling, parameters.class_weights)
+    p.start(X_train, y_train, X_test, y_test, parameters.number_of_jobs, parameters.set_num_accepted_probs, parameters.resampling, parameters.class_weights, parameters.generate_roc_plots)
     logger.debug("Execution completed.")

@@ -121,3 +121,6 @@ log.txt
 
 # JSON files
 *.json
+
+# PNG files
+*.png
