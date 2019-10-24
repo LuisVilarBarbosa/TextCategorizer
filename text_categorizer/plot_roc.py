@@ -13,6 +13,8 @@ def plot_roc(classifier, X_test, y_test):
     y_test = label_binarize(y_test, classes=classifier.classes_)
     n_classes = y_test.shape[1]
     y_score = classifier.decision_function(X_test)
+    if len(y_score.shape) == 1:
+        y_score = np.transpose([y_score])
     # Compute ROC curve and ROC area for each class
     fpr = dict()
     tpr = dict()
