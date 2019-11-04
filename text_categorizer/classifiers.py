@@ -9,7 +9,7 @@ from text_categorizer import pickle_manager
 from text_categorizer.constants import random_state
 from text_categorizer.logger import logger
 from text_categorizer.plot_roc import plot_roc
-from text_categorizer.resampling import RandomOverSample, RandomUnderSample
+from time import time
 
 def RandomForestClassifier(n_jobs, class_weight):
     from sklearn.ensemble import RandomForestClassifier
@@ -105,17 +105,7 @@ class Pipeline():
     def __init__(self, classifiers):
         self.classifiers = classifiers
     
-    def start(self, X_train, y_train, X_test, y_test, n_jobs=None, set_n_accepted_probs={1,2,3}, resampling=None, class_weight=None, generate_roc_plots=False):
-        from time import time
-        if resampling is not None:
-            if resampling == RandomOverSample.__name__:
-                logger.info("Starting random over sampler.")
-                X_train, y_train = RandomOverSample(X_train, y_train)
-            elif resampling == RandomUnderSample.__name__:
-                logger.info("Starting random under sampler.")
-                X_train, y_train = RandomUnderSample(X_train, y_train)
-            else:
-                logger.error("Invalid resampling method.")
+    def start(self, X_train, y_train, X_test, y_test, n_jobs=None, set_n_accepted_probs={1,2,3}, class_weight=None, generate_roc_plots=False):
         logger.debug("Number of training examples: %s" % (Counter(y_train)))
         predictions = DataFrame({'y_true': y_test})
         for f in self.classifiers:
@@ -134,18 +124,14 @@ class Pipeline():
                     if n_accepted_probs == 1:
                         predictions[predictions_key] = y_predict
                         if generate_roc_plots:
-                            logger.debug("Generating ROC (Receiver Operating Characteristic) plot.")
-                            plt = plot_roc(clf, X_test, y_test)
-                            plt.savefig('ROC_%s.png' % (f.__name__))
+                            generate_roc_plot(clf, X_test, y_test, 'ROC_%s.png' % (f.__name__))
                     logger.debug("Confusion matrix:\n%s" % confusion_matrix(y_test, y_predict))
                     logger.debug("Classification report:\n%s" % classification_report(y_test, y_predict))
                     acc = accuracy_score(y_test, y_predict, normalize=True)
                     logger.info("%s: %s | %ss" % (f.__name__, acc, (time() - t1)))
             except Exception as e:
                 logger.error("%s: %s | %ss" % (f.__name__, repr(e), (time() - t1)))
-        f = open('predictions.json', 'w')
-        json.dump(predictions.to_dict(orient='list'), f)
-        f.close()
+        dump_json(predictions, 'predictions.json')
 
 def predict_proba_to_predict(clf_classes_, y_predict_proba, y_test=None, n_accepted_probs=1):
     assert (y_test is None and n_accepted_probs == 1) or (y_test is not None and n_accepted_probs >= 1)
@@ -174,3 +160,13 @@ def predict_proba_to_predict_classes(clf_classes_, y_predict_proba):
             ordered_classes.append(classification)
         y_predict_classes.append(ordered_classes)
     return y_predict_classes
+
+def dump_json(data_frame, filename):
+    f = open(filename, 'w')
+    json.dump(data_frame.to_dict(orient='list'), f)
+    f.close()
+
+def generate_roc_plot(clf, X_test, y_test, filename):
+    logger.debug("Generating ROC (Receiver Operating Characteristic) plot.")
+    plt = plot_roc(clf, X_test, y_test)
+    plt.savefig(filename)

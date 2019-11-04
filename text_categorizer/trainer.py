@@ -13,6 +13,7 @@ from text_categorizer.functions import data_frame_to_document_list
 from text_categorizer.logger import logger
 from text_categorizer.Parameters import Parameters
 from text_categorizer.Preprocessor import Preprocessor
+from text_categorizer.resampling import RandomOverSample, RandomUnderSample
 from text_categorizer.train_test_split import train_test_split
 
 def load_20newsgroups(parameters):
@@ -27,6 +28,20 @@ def load_20newsgroups(parameters):
         df[p.excel_column_with_classification_data] = bunch.target
         df.to_excel(p.excel_file, engine='xlsxwriter')
     return p
+
+def resample(resampling, X_train, y_train):
+    if resampling is None:
+        return X_train, y_train
+    elif resampling == RandomOverSample.__name__:
+        logger.info("Starting random over sampler.")
+        return RandomOverSample(X_train, y_train)
+    elif resampling == RandomUnderSample.__name__:
+        logger.info("Starting random under sampler.")
+        return RandomUnderSample(X_train, y_train)
+    else:
+        error_msg = "Invalid resampling method."
+        logger.error(error_msg)
+        raise ValueError(error_msg)
 
 #@profile
 def main(config_filename):
@@ -60,9 +75,10 @@ def main(config_filename):
     corpus, classifications, idxs_to_remove, _docs_lemmas = feature_extractor.prepare(class_field=parameters.excel_column_with_classification_data, preprocessed_data_file=parameters.preprocessed_data_file)
     corpus_train, corpus_test, classifications_train, classifications_test = train_test_split(corpus, classifications, parameters.test_subset_size, parameters.preprocessed_data_file, parameters.force_subsets_regeneration, idxs_to_remove)
     X_train, y_train = feature_extractor.generate_X_y(corpus_train, classifications_train, training_mode=True)
-    X_test, y_test = feature_extractor.generate_X_y(corpus_test, classifications_test, training_mode=False) 
+    X_test, y_test = feature_extractor.generate_X_y(corpus_test, classifications_test, training_mode=False)
+    X_train, y_train = resample(parameters.resampling, X_train, y_train)
     logger.info("Running classifiers.")
     p = classifiers.Pipeline(parameters.classifiers)
     logger.info("Accuracies:")
-    p.start(X_train, y_train, X_test, y_test, parameters.number_of_jobs, parameters.set_num_accepted_probs, parameters.resampling, parameters.class_weights, parameters.generate_roc_plots)
+    p.start(X_train, y_train, X_test, y_test, parameters.number_of_jobs, parameters.set_num_accepted_probs, parameters.class_weights, parameters.generate_roc_plots)
     logger.debug("Execution completed.")

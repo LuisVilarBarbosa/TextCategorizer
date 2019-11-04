@@ -79,3 +79,9 @@ def test_predict_proba_to_predict_classes():
     y_predict_classes = classifiers.predict_proba_to_predict_classes(clf.classes_, y_predict_proba)
     y_pred2 = list(map(lambda l: l[0], y_predict_classes))
     assert np.array_equal(y_pred1, y_pred2)
+
+def test_dump_json():
+    pass
+
+def test_generate_roc_plot():
+    pass

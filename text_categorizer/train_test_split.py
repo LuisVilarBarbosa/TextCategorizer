@@ -8,7 +8,6 @@ from sklearn.utils import safe_indexing
 from text_categorizer import pickle_manager
 from text_categorizer.constants import random_state
 from text_categorizer.logger import logger
-from text_categorizer.ui import get_documents
 
 def train_test_split(corpus, classifications, test_size, preprocessed_data_file, force, indexes_to_remove):
     metadata = pickle_manager.get_docs_metadata(preprocessed_data_file)
