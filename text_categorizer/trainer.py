@@ -7,6 +7,7 @@ from pandas import DataFrame, read_excel
 from sklearn.datasets import fetch_20newsgroups
 from text_categorizer import classifiers
 from text_categorizer import pickle_manager
+from text_categorizer.constants import random_state
 from text_categorizer.FeatureExtractor import FeatureExtractor
 from text_categorizer.functions import data_frame_to_document_list
 from text_categorizer.logger import logger
@@ -20,7 +21,7 @@ def load_20newsgroups(parameters):
     p.excel_column_with_text_data = 'data'
     p.excel_column_with_classification_data = 'target'
     if not exists(p.excel_file) and not exists(p.preprocessed_data_file):
-        bunch = fetch_20newsgroups(data_home='.', subset='all', categories=None, shuffle=False, random_state=42, remove=(), download_if_missing=True)
+        bunch = fetch_20newsgroups(data_home='.', subset='all', categories=None, shuffle=False, random_state=random_state, remove=(), download_if_missing=True)
         df = DataFrame()
         df[p.excel_column_with_text_data] = bunch.data
         df[p.excel_column_with_classification_data] = bunch.target

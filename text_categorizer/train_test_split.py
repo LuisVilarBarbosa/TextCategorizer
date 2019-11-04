@@ -6,6 +6,7 @@ from numpy import arange, delete, setdiff1d
 from sklearn.model_selection import train_test_split as sk_train_test_split
 from sklearn.utils import safe_indexing
 from text_categorizer import pickle_manager
+from text_categorizer.constants import random_state
 from text_categorizer.logger import logger
 from text_categorizer.ui import get_documents
 
@@ -49,7 +50,7 @@ def _train_test_split(metadata, test_size, classifications, indexes_to_remove):
     idxs = arange(len(classifications))
     idxs = setdiff1d(idxs, indexes_to_remove, assume_unique=True)
     class_labels = delete(classifications, indexes_to_remove)
-    train_idxs, test_idxs = sk_train_test_split(idxs, test_size=test_size, random_state=42, shuffle=True, stratify=class_labels)
+    train_idxs, test_idxs = sk_train_test_split(idxs, test_size=test_size, random_state=random_state, shuffle=True, stratify=class_labels)
     m['training_set_indexes'] = train_idxs
     m['test_set_indexes'] = test_idxs
     return m

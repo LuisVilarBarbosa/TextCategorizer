@@ -9,6 +9,7 @@ from nltk.corpus import stopwords
 from sklearn.decomposition import LatentDirichletAllocation
 from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer, HashingVectorizer
 from text_categorizer import pickle_manager
+from text_categorizer.constants import random_state
 from text_categorizer.ContoPTParser import ContoPTParser
 from text_categorizer.functions import load_module
 from text_categorizer.logger import logger
@@ -116,7 +117,7 @@ class FeatureExtractor:
                     topic_word_prior=None, learning_method='batch', learning_decay=0.7,
                     learning_offset=10.0, max_iter=10, batch_size=128, evaluate_every=-1,
                     total_samples=1000000.0, perp_tol=0.1, mean_change_tol=0.001,
-                    max_doc_update_iter=100, n_jobs=None, verbose=0, random_state=None,
+                    max_doc_update_iter=100, n_jobs=None, verbose=0, random_state=random_state,
                     n_topics=None)
         logger.debug("%s configuration: %s" % (lda.__class__.__name__, lda.__dict__))
         X = lda.fit_transform(X, y)

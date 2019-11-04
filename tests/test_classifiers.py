@@ -30,6 +30,8 @@ def test_classifiers():
                     assert clf.n_jobs == n_jobs
                 if 'class_weight' in dir(clf):
                     assert clf.class_weight == class_weight
+                if 'random_state' in dir(clf):
+                    assert clf.random_state == 42
 
 def test_Pipeline___init__():
     p = classifiers.Pipeline(clfs)
