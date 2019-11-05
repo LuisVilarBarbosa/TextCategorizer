@@ -8,6 +8,7 @@ from nltk import download
 from nltk.corpus import stopwords
 from sklearn.decomposition import LatentDirichletAllocation
 from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer, HashingVectorizer
+from sklearn.manifold import MDS
 from text_categorizer import pickle_manager
 from text_categorizer.constants import random_state
 from text_categorizer.ContoPTParser import ContoPTParser
@@ -16,12 +17,12 @@ from text_categorizer.logger import logger
 from text_categorizer.ui import get_documents, progress
 
 class FeatureExtractor:
-    def __init__(self, nltk_stop_words_package="english", vectorizer_name="TfidfVectorizer", training_mode=True, use_lda=False, document_adjustment_code="text_categorizer/document_updater.py", remove_adjectives=False, synonyms_file=None, vectorizer_file="vectorizer.pkl"):
+    def __init__(self, nltk_stop_words_package="english", vectorizer_name="TfidfVectorizer", training_mode=True, feature_reduction=None, document_adjustment_code="text_categorizer/document_updater.py", remove_adjectives=False, synonyms_file=None, vectorizer_file="vectorizer.pkl"):
         download(info_or_id='stopwords', quiet=True)
         self.stop_words = set(stopwords.words(nltk_stop_words_package))
         self.vectorizer_file = vectorizer_file
         self.vectorizer = FeatureExtractor._get_vectorizer(vectorizer_name, training_mode, vectorizer_file=self.vectorizer_file)
-        self.use_lda = use_lda
+        self.feature_reduction = feature_reduction
         self.document_adjustment_code = load_module(document_adjustment_code)
         self.upostags_to_ignore = ['PUNCT']
         if remove_adjectives:
@@ -90,12 +91,16 @@ class FeatureExtractor:
         y = classifications
         if training_mode and self.vectorizer.__class__ not in [DocumentPoolEmbeddings]:
             pickle_manager.dump(self.vectorizer, self.vectorizer_file)
-        # TODO: Re-enable LDA after adding the ability to dump and load the model and use tranform() after it has been trained.
-        #if self.use_lda:
-        #    X, y = FeatureExtractor._LatentDirichletAllocation(X, y)
-        #logger.debug(self.vectorizer.get_feature_names())
-        #logger.debug(X.shape)
-        return X, y
+        # TODO: Re-enable LDA and MDS after adding the ability to dump and load the model and use tranform() after it has been trained.
+        if self.feature_reduction is None:
+            return X, y
+        #elif self.feature_reduction == "LDA":
+        #    return FeatureExtractor._LatentDirichletAllocation(X, y)
+        #elif self.feature_reduction == "MDS":
+        #    return FeatureExtractor._MDS(X, y)
+        else:
+            raise ValueError("Invalid feature reduction technique: %s" % (self.feature_reduction))
+        
 
     @staticmethod
     def _find_incompatible_data_indexes(corpus, classifications):
@@ -182,3 +187,12 @@ class FeatureExtractor:
         except RuntimeError:
             print("Please, ignore the message above indicating that the sentence is too long. The problem has been solved.")
             return FeatureExtractor.chunked_embed(corpus, embeddings, int(chunk_size / 2))
+
+    @staticmethod
+    def _MDS(X, y):
+        logger.info("Running %s." % (MDS.__name__))
+        mds = MDS(n_components=2, metric=True, n_init=4, max_iter=300, verbose=0, eps=0.001,
+                    n_jobs=None, random_state=random_state, dissimilarity='euclidean')
+        logger.debug("%s configuration: %s" % (mds.__class__.__name__, mds.__dict__))
+        X = mds.fit_transform(X.toarray(), y)
+        return X, y

@@ -21,3 +21,6 @@ def test__load_resampling():
 
 def test__load_class_weights():
     pass
+
+def test__load_feature_reduction():
+    pass

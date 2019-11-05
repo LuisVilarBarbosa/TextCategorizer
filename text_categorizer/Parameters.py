@@ -22,7 +22,7 @@ class Parameters:
         self.preprocessed_data = config.getboolean("Preprocessing", "Preprocess data")
         self.document_adjustment_code = config.get("Feature extraction", "Document adjustment script")
         self._load_vectorizer(config)
-        self.use_lda = config.getboolean("Feature extraction", "Use LDA")
+        self._load_feature_reduction(config)
         self._load_accepted_probs(config)
         self._load_classifiers(config)
         self.test_subset_size = config.getfloat("Classification", "Test subset size")
@@ -91,3 +91,9 @@ class Parameters:
         assert self.class_weights in ["None", "balanced"]
         if self.class_weights == "None":
             self.class_weights = None
+
+    def _load_feature_reduction(self, config):
+        self.feature_reduction = config.get("Feature extraction", "Feature reduction")
+        assert self.feature_reduction in ["None", "LDA", "MDS"]
+        if self.feature_reduction == "None":
+            self.feature_reduction = None

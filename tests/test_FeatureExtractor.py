@@ -24,3 +24,6 @@ def test__get_vectorizer():
 
 def test_chunked_embed():
     pass
+
+def test__MDS():
+    pass
