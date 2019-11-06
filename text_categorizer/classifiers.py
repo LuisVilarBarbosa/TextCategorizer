@@ -108,6 +108,11 @@ class Pipeline():
     def start(self, X_train, y_train, X_test, y_test, n_jobs=None, set_n_accepted_probs={1,2,3}, class_weight=None, generate_roc_plots=False):
         logger.debug("Number of training examples: %s" % (Counter(y_train)))
         predictions = DataFrame({'y_true': y_test})
+        set_n_accepted_probs = set(set_n_accepted_probs)
+        new_set_n_accepted_probs = set([elem for elem in set_n_accepted_probs if elem < len(set(y_train).union(y_test))])
+        if len(new_set_n_accepted_probs) != len(set_n_accepted_probs):
+            set_n_accepted_probs = new_set_n_accepted_probs
+            logger.warning("The accepted probabilities set has been changed to not exceed the number of classes.")
         for f in self.classifiers:
             logger.info("Starting %s." % (f.__name__))
             clf = f(n_jobs=n_jobs, class_weight=class_weight)
