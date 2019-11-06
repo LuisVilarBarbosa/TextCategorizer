@@ -59,13 +59,13 @@ def predict():
             clf = pickle_manager.load("%s.pkl" % classifier)
             _classifiers[classifier] = clf
         y_predict_proba = clf.predict_proba(X)
-        y_predict_classes = classifiers.predict_proba_to_predict_classes(clf.classes_, y_predict_proba)
+        probabilities = dict(map(lambda k, v: (k, v), clf.classes_, y_predict_proba[0]))
         feature_weights = get_feature_weights(clf, docs_lemmas[0])
-        prediction = DataFrame({'prediction': y_predict_classes[0]}).to_dict('list')
+        probabilities = DataFrame({'probabilities': probabilities}).to_dict('dict')
         if feature_weights is None:
-            return jsonify(prediction)
+            return jsonify(probabilities)
         else:
-            return jsonify({**prediction, **feature_weights})
+            return jsonify({**probabilities, **feature_weights})
     except FileNotFoundError:
         abort(BAD_REQUEST, 'Invalid classifier model')
 
@@ -82,15 +82,13 @@ def get_feature_weights(clf, lemmas):
         all_feature_weights = load_feature_weights(clf)
         _feature_weights[clf_name] = all_feature_weights
     if type(all_feature_weights) is set:
-        fw = [item for item in all_feature_weights if item[0] in lemmas_set]
-        fw.sort(key=lambda item: -item[1])
-        feature_weights = DataFrame({'feature_weights': fw}).to_dict('list')
+        fw = dict(filter(lambda item: item[0] in lemmas_set, all_feature_weights))
+        feature_weights = DataFrame({'feature_weights': fw}).to_dict('dict')
     else:
         assert type(all_feature_weights) is dict
         feature_weights = dict()
         for c in all_feature_weights:
-            fw = [item for item in all_feature_weights[c] if item[0] in lemmas_set]
-            fw.sort(key=lambda item: -item[1])
+            fw = dict(filter(lambda item: item[0] in lemmas_set, all_feature_weights[c]))
             feature_weights[c] = fw
         feature_weights = DataFrame({'feature_weights': feature_weights}).to_dict('dict')
     return feature_weights

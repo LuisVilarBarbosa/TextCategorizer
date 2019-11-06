@@ -1,4 +1,4 @@
-from numpy import int32, int64
+from numpy import float64, int32, int64
 from tests.test_classifiers import clfs
 from text_categorizer import prediction_server
 from text_categorizer.FeatureExtractor import FeatureExtractor
@@ -23,21 +23,21 @@ def test_get_feature_weights():
     prediction_server._feature_extractor = fe
     lemmas = ['test', 'corpus', '1.']
     value = 0
-    lemmas_list = [('1.', value), ('corpus', value), ('test', value)]
-    classes_dict = {1: lemmas_list, 2: lemmas_list, 3: lemmas_list}
+    lemmas_dict = {'1.': value, 'corpus': value, 'test': value}
+    classes_dict = {1: lemmas_dict, 2: lemmas_dict, 3: lemmas_dict}
     expected_values_1 = {
-        'RandomForestClassifier': lemmas_list,
+        'RandomForestClassifier': lemmas_dict,
         'BernoulliNB': classes_dict,
         'MultinomialNB': classes_dict,
         'ComplementNB': classes_dict,
-        'KNeighborsClassifier': [],
-        'MLPClassifier': [],
+        'KNeighborsClassifier': dict(),
+        'MLPClassifier': dict(),
         'LinearSVC_proba': classes_dict,
-        'DecisionTreeClassifier': lemmas_list,
-        'ExtraTreeClassifier': lemmas_list,
-        'DummyClassifier': [],
+        'DecisionTreeClassifier': lemmas_dict,
+        'ExtraTreeClassifier': lemmas_dict,
+        'DummyClassifier': dict(),
         'SGDClassifier': classes_dict,
-        'BaggingClassifier': []
+        'BaggingClassifier': dict()
     }
     lemmas_set = {('corpus', value), ('test', value), ('1.', value), ('2.', value), ('3.', value)}
     classes_dict = {1: lemmas_set, 2: lemmas_set, 3: lemmas_set}
@@ -65,8 +65,7 @@ def test_get_feature_weights():
         expected_value_2 = expected_values_2[clf_name]
         assert prediction_server._feature_weights.get(clf_name) is None
         fw1 = prediction_server.get_feature_weights(clf, lemmas)['feature_weights']
-        assert replace_tuples_values(fw1, value=value) == expected_value_1
-        assert check_tuples_order(fw1)
+        assert replace_final_dict_values(fw1, value=value) == expected_value_1
         fw2 = prediction_server._feature_weights[clf_name]
         assert replace_tuples_values(fw2, value=value) == expected_value_2
 
@@ -131,12 +130,17 @@ def replace_tuples_values(obj, value):
     else:
         raise TypeError(t)
 
-def check_tuples_order(obj):
-    t = type(obj)
-    if t is list:
-        print(obj)
-        return obj == sorted(obj, key=lambda item: -item[1])
-    elif t is dict:
-        return all([check_tuples_order(elem) for elem in obj.values()])
+def replace_final_dict_values(obj, value):
+    t1 = type(obj)
+    if t1 is dict:
+        for k, v in obj.items():
+            t2 = type(v)
+            if t2 is dict:
+                obj[k] = replace_final_dict_values(v, value)
+            elif t2 is int or t2 is int32 or t2 is int64 or t2 is float or t2 is float64:
+                obj[k] = value
+            else:
+                raise TypeError(t2)
+        return obj
     else:
-        raise TypeError(t)
+        raise TypeError(t1)
