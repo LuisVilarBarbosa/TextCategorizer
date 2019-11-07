@@ -13,7 +13,7 @@ class Parameters:
         self.excel_file = config.get("Preprocessing", "Excel file")
         self.excel_column_with_text_data = config.get("General", "Excel column with text data")
         self.excel_column_with_classification_data = config.get("General", "Excel column with classification data")
-        self.nltk_stop_words_package = config.get("Feature extraction", "NLTK stop words package")
+        self._load_nltk_stop_words_package(config)
         self._load_number_of_jobs(config)
         self.stanfordnlp_language_package = config.get("Preprocessing", "StanfordNLP language package")
         self.stanfordnlp_use_gpu = config.getboolean("Preprocessing", "StanfordNLP use GPU")
@@ -97,3 +97,8 @@ class Parameters:
         assert self.feature_reduction in ["None", "LDA", "MDS"]
         if self.feature_reduction == "None":
             self.feature_reduction = None
+
+    def _load_nltk_stop_words_package(self, config):
+        self.nltk_stop_words_package = config.get("Feature extraction", "NLTK stop words package")
+        if self.nltk_stop_words_package == "None":
+            self.nltk_stop_words_package = None
