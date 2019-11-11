@@ -1,3 +1,4 @@
+import pytest
 from itertools import zip_longest
 from pandas import read_excel
 from text_categorizer.functions import data_frame_to_document_list
@@ -5,8 +6,14 @@ from text_categorizer.pickle_manager import dump_documents
 from text_categorizer.ui import get_documents, verify_python_version
 from tests.utils import create_temporary_file, example_excel_file, generate_available_filename, remove_and_check
 
-def test_verify_python_version():
+def test_verify_python_version(monkeypatch):
     verify_python_version()
+    with monkeypatch.context() as m:
+        m.setattr("text_categorizer.functions.get_python_version", lambda: [3,5,0])
+        verify_python_version()
+        with pytest.raises(SystemExit):
+            m.setattr("text_categorizer.functions.get_python_version", lambda: [3,4,9])
+            verify_python_version()
 
 def test_get_documents():
     df = read_excel(example_excel_file)

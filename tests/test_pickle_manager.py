@@ -2,7 +2,7 @@ import pytest
 from itertools import zip_longest
 from os.path import exists, getctime
 from pandas import read_excel
-from pickle import load
+from pickle import dump, load
 from random import random
 from text_categorizer import pickle_manager
 from text_categorizer.functions import data_frame_to_document_list
@@ -28,6 +28,17 @@ def test_get_documents():
     docs2 = pickle_manager.get_documents(filename)
     for doc1, doc2 in zip_longest(docs1, docs2):
         assert repr(doc1) == repr(doc2)
+    try:
+        f = open(filename, 'ab')
+        dump(obj=0, file=f, protocol=pickle_manager._pickle_protocol)
+        f.close()
+        docs2 = pickle_manager.get_documents(filename)
+        for doc1, doc2 in zip_longest(docs1, docs2):
+            assert repr(doc1) == repr(doc2)
+        pytest.fail()
+    except Exception as e:
+        assert len(e.args) == 1
+        assert e.args[0] == "The file '%s' has more documents than indicated in the metadata." % (filename)
     remove_and_check(filename)
 
 def test_dump_documents():

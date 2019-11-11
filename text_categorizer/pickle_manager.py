@@ -28,7 +28,7 @@ def get_documents(filename):
         yield pickle.load(input_file)
     try:
         pickle.load(input_file)
-        raise "The file '%s' has more documents than indicated in the metadata." % (input_file)
+        raise Exception("The file '%s' has more documents than indicated in the metadata." % (input_file.name))
     except EOFError:
         input_file.close()
 
