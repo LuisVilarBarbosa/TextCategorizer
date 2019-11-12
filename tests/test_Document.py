@@ -1,8 +1,8 @@
 import pytest
 from pandas import DataFrame, read_excel
 from stanfordnlp.pipeline.doc import Document as SNLPDoc
-from text_categorizer.Document import Document
 from tests.utils import example_excel_file
+from text_categorizer.Document import Document
 
 def test___init__():
     index = -1

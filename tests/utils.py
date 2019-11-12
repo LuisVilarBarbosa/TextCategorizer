@@ -1,4 +1,3 @@
-from itertools import zip_longest
 from os import close, write, unlink
 from os.path import exists
 from tempfile import mkstemp

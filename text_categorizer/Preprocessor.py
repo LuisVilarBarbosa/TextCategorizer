@@ -16,7 +16,7 @@ class Preprocessor:
         signal.SIGTERM,     # SIGTERM is sent by Docker on CTRL-C or on a call to 'docker stop'.
     ]
 
-    def __init__(self, stanfordnlp_language_package="en", stanfordnlp_use_gpu=False, stanfordnlp_resources_dir="./stanfordnlp_resources", training_mode=True):
+    def __init__(self, stanfordnlp_language_package="en", stanfordnlp_use_gpu=False, stanfordnlp_resources_dir="./stanfordnlp_resources", store_data=False):
         quiet = True
         nltk.download('wordnet', quiet=quiet)
         nltk.download('punkt', quiet=quiet)
@@ -25,19 +25,19 @@ class Preprocessor:
         self.language = stanfordnlp_language_package
         self.lemmatizer = nltk.stem.WordNetLemmatizer()
         self.stop = False
-        self.training_mode = training_mode
+        self.store_data = store_data
 
     def preprocess(self, text_field, preprocessed_data_file=None, docs=None):
         return self._nltk_process(text_data_field=text_field, preprocessed_data_file=preprocessed_data_file, docs=docs)
 
     # TODO: PoS is not in use (only English and Russian are supported), so the removal of adjectives does not work correctly.
     def _nltk_process(self, text_data_field, preprocessed_data_file=None, docs=None):
-        if self.training_mode:
+        if self.store_data:
             self._set_signal_handlers()
             logger.info("Press CTRL+C to stop the preprocessing phase. (The preprocessed documents will be stored.)")
         if docs is None:
             docs = get_documents(preprocessed_data_file, description="Preprocessing")
-        if self.training_mode:
+        if self.store_data:
             metadata = pickle_manager.get_docs_metadata(preprocessed_data_file)
             pda = pickle_manager.PickleDumpAppend(metadata=metadata, filename=preprocessed_data_file)
         token_to_lemma = dict()
@@ -61,11 +61,10 @@ class Preprocessor:
                         tokens.append(token)
                     sentences.append(tokens)
                 doc.analyzed_sentences = sentences
-            if self.training_mode:
+            if self.store_data:
                 pda.dump_append(doc)
-        if self.training_mode:
+        if self.store_data:
             pda.close()
-        if self.training_mode:
             self._reset_signal_handlers()
         if self.stop:
             exit(0)

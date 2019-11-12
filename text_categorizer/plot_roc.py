@@ -18,6 +18,8 @@ def plot_roc(classifier, X_test, y_test):
         y_score = classifier.predict_proba(X_test)
     if len(y_score.shape) == 1:
         y_score = np.transpose([y_score])
+    elif y_test.shape[1] == 1:
+        y_score = y_score[:, [1]]
     # Compute ROC curve and ROC area for each class
     fpr = dict()
     tpr = dict()

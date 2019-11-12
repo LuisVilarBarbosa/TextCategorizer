@@ -1,28 +1,24 @@
 #!/usr/bin/python3
 # coding=utf-8
 
-from text_categorizer.prediction_server import main as prediction_server_main
-from text_categorizer.trainer import main as trainer_main
+import sys
+from text_categorizer import prediction_server, trainer
 from text_categorizer.ui import verify_python_version
-from sys import argv
 
-def main():
+def main(argv):
     verify_python_version()
     n_args = len(argv)
-    mode = argv[1] if 1 < len(argv) else None
-    if not ((n_args == 3 and mode == "--trainer") or (n_args == 4 and mode == "--prediction_server")):
-        print("Usage: python3 -m text_categorizer --trainer <configuration file>")
-        print("       python3 -m text_categorizer --prediction_server <configuration file> <port>")
-        quit()
-    if mode == "--trainer":
+    mode = argv[1] if 1 < n_args else None
+    if mode == "--trainer" and n_args == 3:
         config_file = argv[2]
-        trainer_main(config_file)
-    elif mode == "--prediction_server":
+        trainer.main(config_file)
+    elif mode == "--prediction_server" and n_args == 4:
         config_file = argv[2]
         port = int(argv[3])
-        prediction_server_main(config_file, port)
+        prediction_server.main(config_file, port)
     else:
-        raise ValueError("Only the options '--trainer' and '--prediction_server' are accepted.")
+        print("Usage: python3 -m text_categorizer --trainer <configuration file>")
+        print("       python3 -m text_categorizer --prediction_server <configuration file> <port>")
 
 if __name__ == "__main__":
-    main()
+    main(sys.argv)

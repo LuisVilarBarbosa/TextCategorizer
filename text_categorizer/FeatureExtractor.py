@@ -100,7 +100,6 @@ class FeatureExtractor:
         #    return FeatureExtractor._MDS(X, y)
         else:
             raise ValueError("Invalid feature reduction technique: %s" % (self.feature_reduction))
-        
 
     @staticmethod
     def _find_incompatible_data_indexes(corpus, classifications):

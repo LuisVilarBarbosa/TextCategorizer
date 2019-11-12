@@ -1,7 +1,42 @@
+import numpy as np
 import pytest
-from text_categorizer import train_test_split
+from pandas import read_excel
+from tests.utils import example_excel_file, generate_available_filename, remove_and_check
+from text_categorizer import pickle_manager, train_test_split
+from text_categorizer.FeatureExtractor import FeatureExtractor
+from text_categorizer.functions import data_frame_to_document_list
 
 def test_train_test_split():
+    df = read_excel(example_excel_file)
+    docs = data_frame_to_document_list(df)
+    ft = FeatureExtractor()
+    corpus, classifications, _, _ = ft.prepare(class_field='Classification column', preprocessed_data_file=None, docs=docs, training_mode=False)
+    test_size = 0.3
+    preprocessed_data_file = generate_available_filename()
+    force = False
+    idxs_to_remove = [5]
+    try:
+        pickle_manager.dump_documents(docs, preprocessed_data_file)
+        assert pickle_manager.get_docs_metadata(preprocessed_data_file) == {'total': 10}
+        desired = {
+            'total': 10,
+            'test_size': test_size,
+            'training_set_indexes': np.array([6, 1, 0, 2, 8, 3]),
+            'test_set_indexes': np.array([7, 9, 4])
+        }
+        for my_force in [False, True]:
+            train_test_split.train_test_split(corpus, classifications, test_size, preprocessed_data_file, my_force, idxs_to_remove)
+            np.testing.assert_equal(pickle_manager.get_docs_metadata(preprocessed_data_file), desired)
+        for key in ['test_size', 'training_set_indexes', 'test_set_indexes']:
+            m = desired.copy()
+            m[key] = None
+            pickle_manager.set_docs_metadata(m, preprocessed_data_file)
+            train_test_split.train_test_split(corpus, classifications, test_size, preprocessed_data_file, force, idxs_to_remove)
+            np.testing.assert_equal(pickle_manager.get_docs_metadata(preprocessed_data_file), desired)
+        train_test_split.train_test_split(corpus, classifications, test_size, preprocessed_data_file, force, idxs_to_remove)
+        np.testing.assert_equal(pickle_manager.get_docs_metadata(preprocessed_data_file), desired)
+    finally:
+        remove_and_check(preprocessed_data_file)
     pass
 
 def test_get_train_test():
@@ -23,7 +58,21 @@ def test_get_train_test():
     assert classifications_test == [28, 22]
 
 def test__train_test_split():
-    pass
+    metadata1 = {}
+    test_size = 0.3
+    classifications = [1, 2, 3, 1, 2, 3, 1, 2, 3, 1]
+    idxs_to_remove = [5, 3]
+    metadata2 = train_test_split._train_test_split(metadata1, test_size, classifications, idxs_to_remove)
+    assert metadata1 is not metadata2
+    assert metadata1 != metadata2
+    assert metadata2['test_size'] == test_size
+    assert np.array_equal(metadata2['training_set_indexes'], [4, 6, 9, 1, 8])
+    assert np.array_equal(metadata2['test_set_indexes'], [7, 0, 2])
 
 def test__is_stratified():
-    pass
+    classifications = [1, 2, 3, 1, 2, 3, 1, 2, 3, 1]
+    metadata = {'test_size': 0.3, 'training_set_indexes': [4, 6, 9, 1, 8], 'test_set_indexes': [7, 0, 2]}
+    idxs_to_remove = [5, 3]
+    assert train_test_split._is_stratified(classifications, metadata, idxs_to_remove)
+    metadata = {'test_size': 0.3, 'training_set_indexes': [4, 6, 9, 0, 8], 'test_set_indexes': [7, 1, 2]}
+    assert not train_test_split._is_stratified(classifications, metadata, idxs_to_remove)

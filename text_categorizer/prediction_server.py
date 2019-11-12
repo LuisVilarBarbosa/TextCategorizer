@@ -62,10 +62,7 @@ def predict():
         probabilities = dict(map(lambda k, v: (k, v), clf.classes_, y_predict_proba[0]))
         feature_weights = get_feature_weights(clf, docs_lemmas[0])
         probabilities = DataFrame({'probabilities': probabilities}).to_dict('dict')
-        if feature_weights is None:
-            return jsonify(probabilities)
-        else:
-            return jsonify({**probabilities, **feature_weights})
+        return jsonify({**probabilities, **feature_weights})
     except FileNotFoundError:
         abort(BAD_REQUEST, 'Invalid classifier model')
 
@@ -127,6 +124,6 @@ def main(config_filename, port):
     parameters = Parameters(config_filename)
     _text_field = parameters.excel_column_with_text_data
     _class_field = parameters.excel_column_with_classification_data
-    _preprocessor = Preprocessor(stanfordnlp_language_package=parameters.stanfordnlp_language_package, stanfordnlp_use_gpu=parameters.stanfordnlp_use_gpu, stanfordnlp_resources_dir=parameters.stanfordnlp_resources_dir, training_mode=False)
+    _preprocessor = Preprocessor(stanfordnlp_language_package=parameters.stanfordnlp_language_package, stanfordnlp_use_gpu=parameters.stanfordnlp_use_gpu, stanfordnlp_resources_dir=parameters.stanfordnlp_resources_dir, store_data=False)
     _feature_extractor = FeatureExtractor(nltk_stop_words_package=parameters.nltk_stop_words_package, vectorizer_name=parameters.vectorizer, training_mode=False, feature_reduction=parameters.feature_reduction, document_adjustment_code=parameters.document_adjustment_code, remove_adjectives=parameters.remove_adjectives, synonyms_file=parameters.synonyms_file, vectorizer_file=parameters.vectorizer_file)
     app.run(host='0.0.0.0', port=port, debug=False) # host='0.0.0.0' allows access from any network.

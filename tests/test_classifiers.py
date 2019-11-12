@@ -1,8 +1,12 @@
+import json
 import numpy as np
 import pytest
+from os.path import exists
+from pandas import DataFrame
 from sklearn.datasets import load_digits
 from sklearn.exceptions import ConvergenceWarning
 from sklearn.metrics import accuracy_score
+from tests.utils import generate_available_filename, remove_and_check
 from text_categorizer import classifiers
 
 clfs = [
@@ -81,7 +85,29 @@ def test_predict_proba_to_predict_classes():
     assert np.array_equal(y_pred1, y_pred2)
 
 def test_dump_json():
-    pass
+    d1 = {'test_random_values': [np.random.random()]}
+    df = DataFrame(d1)
+    filename = generate_available_filename()
+    try:
+        classifiers.dump_json(df, filename)
+        f = open(filename, 'r')
+        d2 = json.load(f)
+    finally:
+        f.close()
+        remove_and_check(filename)
+    assert d1 == d2
 
+@pytest.mark.filterwarnings("ignore::sklearn.exceptions.ConvergenceWarning")
 def test_generate_roc_plot():
-    pass
+    filename = '%s.png' % (generate_available_filename())
+    for n_class in [2, 10]:
+        X_test, y_test = load_digits(n_class=n_class, return_X_y=True)
+        for f in clfs:
+            clf = f(n_jobs=1, class_weight=None)
+            clf.fit(X_test, y_test)
+            assert not exists(filename)
+            try:
+                classifiers.generate_roc_plot(clf, X_test, y_test, filename)
+                assert exists(filename)
+            finally:
+                remove_and_check(filename)

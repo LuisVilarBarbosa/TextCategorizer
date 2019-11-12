@@ -175,3 +175,4 @@ def generate_roc_plot(clf, X_test, y_test, filename):
     logger.debug("Generating ROC (Receiver Operating Characteristic) plot.")
     plt = plot_roc(clf, X_test, y_test)
     plt.savefig(filename)
+    plt.close()

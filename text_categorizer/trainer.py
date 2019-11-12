@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 # coding=utf-8
 
+from copy import deepcopy
 from os.path import exists, isfile
 from pandas import DataFrame, read_excel
 #from profilehooks import profile
@@ -17,7 +18,7 @@ from text_categorizer.resampling import RandomOverSample, RandomUnderSample
 from text_categorizer.train_test_split import train_test_split
 
 def load_20newsgroups(parameters):
-    p = parameters
+    p = deepcopy(parameters)
     p.excel_file = ''.join([p.excel_file, '.xlsx'])
     p.excel_column_with_text_data = 'data'
     p.excel_column_with_classification_data = 'target'
@@ -62,7 +63,7 @@ def main(config_filename):
             logger.info("Storing generated documents.")
             pickle_manager.dump_documents(docs, parameters.preprocessed_data_file)
         logger.info("Preprocessing documents.")
-        preprocessor = Preprocessor(stanfordnlp_language_package=parameters.stanfordnlp_language_package, stanfordnlp_use_gpu=parameters.stanfordnlp_use_gpu, stanfordnlp_resources_dir=parameters.stanfordnlp_resources_dir, training_mode=True)
+        preprocessor = Preprocessor(stanfordnlp_language_package=parameters.stanfordnlp_language_package, stanfordnlp_use_gpu=parameters.stanfordnlp_use_gpu, stanfordnlp_resources_dir=parameters.stanfordnlp_resources_dir, store_data=True)
         preprocessor.preprocess(text_field=parameters.excel_column_with_text_data, preprocessed_data_file=parameters.preprocessed_data_file)
         logger.info("Checking generated data.")
         pickle_manager.check_data(parameters.preprocessed_data_file)

@@ -1,20 +1,98 @@
+import pytest
+from base64 import b64encode 
 from numpy import float64, int32, int64
+from pandas import read_excel
 from tests.test_classifiers import clfs
+from tests.utils import create_temporary_file, decode, example_excel_file, generate_available_filename, remove_and_check
 from text_categorizer import prediction_server
 from text_categorizer.FeatureExtractor import FeatureExtractor
+from text_categorizer.functions import data_frame_to_document_list
+from text_categorizer.pickle_manager import dump
+from text_categorizer.Preprocessor import Preprocessor
 
-def test_get_password():
-    pass
+valid_headers = {'Authorization': 'Basic {0}'.format(decode(b64encode(b'admin:admin')))}
+invalid_headers = {'Authorization': 'Basic {0}'.format(decode(b64encode(b'username:password')))}
 
-def test_unauthorized():
-    pass
+@pytest.fixture
+def client():
+    with prediction_server.app.test_client() as client:
+        yield client
 
-def test_predict():
-    pass
+def test_get_password(client):
+    res = client.post('/')
+    assert res.status_code == prediction_server.UNAUTHORIZED_ACCESS
+    res = client.post('/', headers=valid_headers)
+    assert res.status_code == prediction_server.BAD_REQUEST
+    res = client.post('/', json={'text': 'Test text.', 'classifier': 'LinearSVC'}, headers=valid_headers)
+    assert res.status_code in [200, 500]
+    res = client.post('/', headers=invalid_headers)
+    assert res.status_code == prediction_server.UNAUTHORIZED_ACCESS
 
-def test_not_found():
-    pass
+def test_unauthorized(client):
+    res = client.post('/', headers=invalid_headers)
+    assert res.status_code == prediction_server.UNAUTHORIZED_ACCESS
+    assert res.json == {'error': 'Unauthorized access'}
 
+def test_predict(client):
+    df = read_excel(example_excel_file)
+    docs = data_frame_to_document_list(df)
+    prediction_server._text_field = 'Example column'
+    prediction_server._class_field = 'Classification column'
+    clfs_filenames = []
+    try:
+        vectorizer_path = create_temporary_file(content=None, text=False)
+        p = Preprocessor()
+        p.preprocess(text_field=prediction_server._text_field, preprocessed_data_file=None, docs=docs)
+        ft = FeatureExtractor(training_mode=True, vectorizer_file=vectorizer_path)
+        corpus, classifications, _, _ = ft.prepare(class_field=prediction_server._class_field, preprocessed_data_file=None, docs=docs, training_mode=True)
+        X, y = ft.generate_X_y(corpus, classifications, training_mode=True)
+        prediction_server._preprocessor = Preprocessor()
+        prediction_server._feature_extractor = FeatureExtractor(training_mode=False, vectorizer_file=vectorizer_path)
+        res = client.post('/', headers=valid_headers)
+        assert res.status_code == prediction_server.BAD_REQUEST
+        res = client.post('/', json={'text': 1, 'classifier': 'LinearSVC'}, headers=valid_headers)
+        assert res.status_code == prediction_server.BAD_REQUEST
+        assert decode(res.data).endswith('<p>Invalid text</p>\n')
+        res = client.post('/', json={'text': 'Test text.', 'classifier': 1}, headers=valid_headers)
+        assert res.status_code == prediction_server.BAD_REQUEST
+        assert decode(res.data).endswith('<p>Invalid classifier</p>\n')
+        res = client.post('/', json={'text': 'Test text.', 'classifier': '../LinearSVC'}, headers=valid_headers)
+        assert res.status_code == prediction_server.BAD_REQUEST
+        assert decode(res.data).endswith('<p>Invalid classifier</p>\n')
+        res = client.post('/', json={'text': 'Test text.', 'classifier': 'LinearSVC'}, headers=valid_headers)
+        assert res.status_code == prediction_server.BAD_REQUEST
+        assert decode(res.data).endswith('<p>Invalid classifier model</p>\n')
+        for f in clfs:
+            clf_filename_base = generate_available_filename()
+            clf_filename = '%s.pkl' % (clf_filename_base)
+            clfs_filenames.append(clf_filename)
+            clf = f(n_jobs=1, class_weight=None)
+            clf.fit(X, y)
+            dump(clf, clf_filename)
+            res = client.post('/', json={'text': 'Test text.', 'classifier': clf_filename_base},    headers=valid_headers)
+            assert res.status_code == 200
+            assert repr(prediction_server._classifiers[clf_filename_base]) == repr(clf)
+            assert replace_final_dict_values(res.json, value=0) in [
+                {'feature_weights': {'I': {}, 'II': {}, 'III': {}}, 'probabilities': {'I': 0, 'II': 0, 'III': 0}},
+                {'feature_weights': {}, 'probabilities': {'I': 0, 'II': 0, 'III': 0}}
+            ]
+    finally:
+        remove_and_check(vectorizer_path)
+        for clf_filename in clfs_filenames:
+            remove_and_check(clf_filename)
+        prediction_server._text_field = None
+        prediction_server._class_field = None
+        prediction_server._preprocessor = None
+        prediction_server._feature_extractor = None
+        prediction_server._feature_weights = dict()
+        prediction_server._classifiers = dict()
+
+def test_not_found(client):
+    res = client.post('/invalid_target', headers=invalid_headers)
+    assert res.status_code == prediction_server.NOT_FOUND
+    assert res.json == {'error': 'Not found'}
+
+@pytest.mark.filterwarnings("ignore::sklearn.exceptions.ConvergenceWarning")
 def test_get_feature_weights():
     corpus = ['Test corpus 1.', 'Test corpus 2.', 'Test corpus 3.']
     classifications = [1, 2, 3]
@@ -69,6 +147,7 @@ def test_get_feature_weights():
         fw2 = prediction_server._feature_weights[clf_name]
         assert replace_tuples_values(fw2, value=value) == expected_value_2
 
+@pytest.mark.filterwarnings("ignore::sklearn.exceptions.ConvergenceWarning")
 def test_load_feature_weights():
     corpus = [['Test corpus 1.', 'Test corpus 2.'], ['Test corpus 1.', 'Test corpus 2.', 'Test corpus 3.']]
     classifications = [[1, 2], [1, 2, 3]]

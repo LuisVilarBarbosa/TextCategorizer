@@ -1,8 +1,8 @@
 import logging
 from os.path import split
+from tests.utils import default_encoding
 from text_categorizer import logger as logger_py
 from text_categorizer.logger import logger
-from tests.utils import default_encoding
 
 def test_logger():
     assert logger.name == logger_py.package

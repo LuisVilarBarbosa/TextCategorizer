@@ -3,8 +3,8 @@ import pytest
 from itertools import zip_longest
 from pandas import DataFrame, read_excel
 from sys import modules
-from text_categorizer import functions
 from tests.utils import example_excel_file
+from text_categorizer import functions
 
 def test_get_python_version():
     from sys import version
