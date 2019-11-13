@@ -109,7 +109,7 @@ def test_get_docs_metadata():
     assert len(metadata) == 1
     assert metadata['total'] == len(docs)
 
-def test_set_docs_metadata():
+def test_set_docs_metadata(capsys):
     df = read_excel(example_excel_file)
     docs1 = data_frame_to_document_list(df)
     filename = generate_available_filename()
@@ -124,6 +124,9 @@ def test_set_docs_metadata():
         docs2 = list(pickle_manager.get_documents(filename))
         for doc1, doc2 in zip_longest(docs1, docs2):
             assert repr(doc1) == repr(doc2)
+        captured = capsys.readouterr()
+        assert captured.out == ''
+        assert captured.err[captured.err.rfind('\r')+1:] == 'Storing subsets: 0MB [00:00, ?MB/s]\n'
     finally:
         remove_and_check(filename)
 
