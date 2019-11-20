@@ -1,10 +1,12 @@
+import json
 import numpy as np
 import pytest
 from itertools import zip_longest
 from pandas import DataFrame, read_excel
+from pandas.util.testing import assert_frame_equal
 from sys import modules
-from tests.utils import example_excel_file
-from text_categorizer import functions
+from tests.utils import create_temporary_file, example_excel_file, remove_and_check
+from text_categorizer import classifiers, functions
 
 def test_get_python_version():
     from sys import version
@@ -42,3 +44,36 @@ def test_load_module():
     filename = 'text_categorizer/%s.py' % (module_name)
     module = functions.load_module(filename)
     assert 'initial_code_to_run_on_document' in dir(module)
+
+def test_predictions_to_data_frame():
+    predictions_dict1 = {
+        'y_true': [0, 1, 0, 1, 0],
+        'y_pred_RandomForestClassifier': [0, 0, 1, 1, 0],
+        'y_pred_LinearSVC': [0, 1, 0, 1, 1]
+    }
+    columns = [
+        '%s %s %s' % (metric, clf, label)
+        for metric in ['f1-score', 'precision', 'recall', 'support']
+        for clf in ['LinearSVC', 'RandomForestClassifier']
+        for label in [0, 1, 'macro avg', 'micro avg', 'weighted avg']
+    ]
+    data = [
+        0.8, 0.8, 0.8, 0.8000000000000002, 0.8,
+        0.6666666666666666, 0.5, 0.5833333333333333, 0.6, 0.6,
+        1.0, 0.6666666666666666, 0.8333333333333333, 0.8, 0.8666666666666666,
+        0.6666666666666666, 0.5, 0.5833333333333333, 0.6, 0.6,
+        0.6666666666666666, 1.0, 0.8333333333333333, 0.8, 0.8,
+        0.6666666666666666, 0.5, 0.5833333333333333, 0.6, 0.6,
+        3, 2, 5, 5, 5,
+        3, 2, 5, 5, 5
+    ]
+    expected_df = DataFrame(data=[data], columns=columns)
+    path = create_temporary_file(content=None, text=True)
+    classifiers.dump_json(DataFrame(predictions_dict1), path)
+    f = open(path, 'r')
+    predictions_dict2 = json.load(f)
+    f.close()
+    remove_and_check(path)
+    df = functions.predictions_to_data_frame(predictions_dict2)
+    assert predictions_dict1 == predictions_dict2
+    assert_frame_equal(df, expected_df)

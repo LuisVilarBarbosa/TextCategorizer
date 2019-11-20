@@ -3,6 +3,8 @@
 
 from importlib.util import spec_from_file_location, module_from_spec
 from os import path
+from pandas import DataFrame
+from sklearn.metrics import classification_report
 from sys import version
 from text_categorizer.Document import Document
 
@@ -32,3 +34,17 @@ def load_module(filename):
     module = module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
+
+def predictions_to_data_frame(predictions_dict):
+    predictions = predictions_dict.copy()
+    y_true = predictions.pop('y_true')
+    data = dict()
+    for k, y_pred in predictions.items():
+        clf = k[len('y_pred_'):]
+        report = classification_report(y_true, y_pred, output_dict=True)
+        for label in report.keys():
+            for metric in report[label].keys():
+                col = '%s %s %s' % (metric, clf, label)
+                data[col] = report[label][metric]
+    df = DataFrame([data])
+    return df
