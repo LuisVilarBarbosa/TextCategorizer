@@ -5,7 +5,7 @@ import nltk
 import signal
 from text_categorizer import pickle_manager
 from text_categorizer.logger import logger
-from text_categorizer.ui import get_documents
+from text_categorizer.ui import get_documents, progress
 from traceback import format_exc
 from string import punctuation
 
@@ -35,8 +35,11 @@ class Preprocessor:
         if self.store_data:
             self._set_signal_handlers()
             logger.info("Press CTRL+C to stop the preprocessing phase. (The preprocessed documents will be stored.)")
+        description = "Preprocessing"
         if docs is None:
-            docs = get_documents(preprocessed_data_file, description="Preprocessing")
+            docs = get_documents(preprocessed_data_file, description=description)
+        else:
+            docs = progress(iterable=docs, desc=description, unit="doc")
         if self.store_data:
             metadata = pickle_manager.get_docs_metadata(preprocessed_data_file)
             pda = pickle_manager.PickleDumpAppend(metadata=metadata, filename=preprocessed_data_file)

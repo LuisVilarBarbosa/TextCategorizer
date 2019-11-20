@@ -39,8 +39,11 @@ class FeatureExtractor:
             self.synonyms = contoPTParser.synonyms
 
     def prepare(self, class_field, preprocessed_data_file=None, docs=None, training_mode=True):
+        description = "Preparing to create classification"
         if docs is None:
-            docs = get_documents(preprocessed_data_file, description="Preparing to create classification")
+            docs = get_documents(preprocessed_data_file, description=description)
+        else:
+            docs = progress(iterable=docs, desc=description, unit="doc")
         num_ignored = 0
         idxs_to_remove = []
         corpus = []
@@ -81,7 +84,7 @@ class FeatureExtractor:
         logger.info("Running %s." % self.vectorizer.__class__.__name__)
         if training_mode:
             logger.debug("%s configuration: %s" % (self.vectorizer.__class__.__name__, self.vectorizer.__dict__))
-        corpus = progress(iterable=corpus, desc="Extracting features", unit="doc", dynamic_ncols=True)
+        corpus = progress(iterable=corpus, desc="Extracting features", unit="doc")
         if training_mode and "fit_transform" in dir(self.vectorizer):
             X = self.vectorizer.fit_transform(corpus)
         elif not training_mode and "transform" in dir(self.vectorizer):

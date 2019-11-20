@@ -37,14 +37,14 @@ def dump_documents(docs, filename):
         raise Exception("The file '%s' should not exist." % filename)
     metadata = {'total': len(docs)}
     pda = PickleDumpAppend(metadata=metadata, filename=filename)
-    for doc in docs:
+    for doc in progress(iterable=docs, desc='Storing documents', unit='doc'):
         pda.dump_append(doc)
     pda.close()
 
 def check_data(filename):
     total = 0
     docs = get_documents(filename)
-    for doc in docs:
+    for doc in progress(iterable=docs, desc='Checking data', unit='doc'):
         assert type(doc) is Document
         total = total + 1
         assert doc.index + 1 == total
@@ -71,7 +71,7 @@ def set_docs_metadata(metadata, filename):
     output_file = open(temp_filename, 'wb')
     pickle.dump(metadata, output_file)
     n = 1048576
-    p = progress(desc="Storing subsets", total=os.path.getsize(filename)//n, unit='MB', dynamic_ncols=True)
+    p = progress(desc="Storing subsets", total=os.path.getsize(filename)//n, unit='MB')
     p.update(len(pickle.dumps(old_metadata))//n)
     for data in iter(lambda: input_file.read(n), b''):
         output_file.write(data)

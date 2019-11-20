@@ -45,7 +45,7 @@ def test_get_documents():
     finally:
         remove_and_check(filename)
 
-def test_dump_documents():
+def test_dump_documents(capsys):
     df = read_excel(example_excel_file)
     docs1 = data_frame_to_document_list(df)
     try:
@@ -65,14 +65,22 @@ def test_dump_documents():
             assert repr(doc1) == repr(doc2)
     finally:
         remove_and_check(filename)
+    captured = capsys.readouterr()
+    assert captured.out == ''
+    assert captured.err[captured.err.rfind('\r')+1:].startswith('Storing documents: 100%|')
+    assert captured.err.endswith('doc/s]\n') or captured.err.endswith('s/doc]\n')
 
-def test_check_data():
+def test_check_data(capsys):
     df = read_excel(example_excel_file)
     docs = data_frame_to_document_list(df)
     filename = generate_available_filename()
     try:
         pickle_manager.dump_documents(docs, filename)
         pickle_manager.check_data(filename)
+        captured = capsys.readouterr()
+        assert captured.out == ''
+        assert captured.err[captured.err.rfind('\r')+1:].startswith('Checking data: 10doc [')
+        assert captured.err.endswith('doc/s]\n') or captured.err.endswith('s/doc]\n')
         count = 10
         metadata1 = {'total': count}
         pda1 = pickle_manager.PickleDumpAppend(metadata1, filename)

@@ -26,7 +26,7 @@ def test___init__():
     p2 = Preprocessor(store_data=True)
     assert p2.store_data is True
 
-def test_preprocess():
+def test_preprocess(capsys):
     text_field = 'Test field'
     index = -1
     fields = {text_field: 'Test value. ' * 2}
@@ -41,8 +41,12 @@ def test_preprocess():
     assert doc.index == index
     assert doc.fields == fields
     assert doc.analyzed_sentences == analyzed_sentences
+    captured = capsys.readouterr()
+    assert captured.out == ''
+    assert captured.err[captured.err.rfind('\r')+1:].startswith('Preprocessing: 100%|')
+    assert captured.err.endswith('doc/s]\n') or captured.err.endswith('s/doc]\n')
 
-def test__nltk_process():
+def test__nltk_process(capsys):
     text_field = 'Test field'
     index = -1
     fields = {text_field: 'Test value. ' * 2}
@@ -59,6 +63,10 @@ def test__nltk_process():
     assert doc.index == index
     assert doc.fields == fields
     assert doc.analyzed_sentences == analyzed_sentences
+    captured = capsys.readouterr()
+    assert captured.out == ''
+    assert captured.err[captured.err.rfind('\r')+1:].startswith('Preprocessing: 100%|')
+    assert captured.err.endswith('doc/s]\n') or captured.err.endswith('s/doc]\n')
     pass
 
 def test__signal_handler():

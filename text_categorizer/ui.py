@@ -14,8 +14,8 @@ def verify_python_version():
 def get_documents(filename, description=None):
     total = pickle_manager.get_docs_metadata(filename)['total']
     docs = pickle_manager.get_documents(filename)
-    for doc in progress(iterable=docs, desc=description, total=total, unit="doc", dynamic_ncols=True):
+    for doc in progress(iterable=docs, desc=description, total=total, unit="doc"):
         yield doc
 
-def progress(**kwargs):
-    return tqdm(**kwargs)
+def progress(iterable=None, desc=None, total=None, unit="it"):
+    return tqdm(iterable=iterable, desc=desc, total=total, unit=unit, dynamic_ncols=True)
