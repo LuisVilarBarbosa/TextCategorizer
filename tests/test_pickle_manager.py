@@ -79,7 +79,7 @@ def test_check_data(capsys):
         pickle_manager.check_data(filename)
         captured = capsys.readouterr()
         assert captured.out == ''
-        assert captured.err[captured.err.rfind('\r')+1:].startswith('Checking data: 10doc [')
+        assert captured.err[captured.err.rfind('\r')+1:].startswith('Checking data: 100%|')
         assert captured.err.endswith('doc/s]\n') or captured.err.endswith('s/doc]\n')
         count = 10
         metadata1 = {'total': count}

@@ -43,12 +43,12 @@ def dump_documents(docs, filename):
 
 def check_data(filename):
     total = 0
+    metadata = get_docs_metadata(filename)
     docs = get_documents(filename)
-    for doc in progress(iterable=docs, desc='Checking data', unit='doc'):
+    for doc in progress(iterable=docs, desc='Checking data', total=metadata['total'], unit='doc'):
         assert type(doc) is Document
         total = total + 1
         assert doc.index + 1 == total
-    metadata = get_docs_metadata(filename)
     assert metadata['total'] == total
 
 def _generate_file():
