@@ -23,50 +23,65 @@ def test___init__():
     assert type(p1.lemmatizer) is nltk.stem.WordNetLemmatizer
     assert p1.stop is False
     assert p1.store_data is False
+    assert p1.spell_checker is None
     p2 = Preprocessor(store_data=True)
     assert p2.store_data is True
+    p3 = Preprocessor(spell_checker_lang='en_US')
+    assert p3.spell_checker.hunspell.lang == 'en_US'
 
 def test_preprocess(capsys):
     text_field = 'Test field'
     index = -1
-    fields = {text_field: 'Test value. ' * 2}
-    analyzed_sentences = [[
+    fields = {text_field: 'Teste value. ' * 2}
+    analyzed_sentences1 = [[
+        {'form': 'Teste', 'lemma': 'teste', 'upostag': None},
+        {'form': 'value', 'lemma': 'value', 'upostag': None},
+        {'form': '.', 'lemma': '.', 'upostag': 'PUNCT'}
+    ]] * 2
+    analyzed_sentences2 = [[
         {'form': 'Test', 'lemma': 'test', 'upostag': None},
         {'form': 'value', 'lemma': 'value', 'upostag': None},
         {'form': '.', 'lemma': '.', 'upostag': 'PUNCT'}
     ]] * 2
-    doc = Document(index=index, fields=fields, analyzed_sentences=None)
-    p = Preprocessor()
-    p.preprocess(text_field=text_field, preprocessed_data_file=None, docs=[doc] * 2)
-    assert doc.index == index
-    assert doc.fields == fields
-    assert doc.analyzed_sentences == analyzed_sentences
-    captured = capsys.readouterr()
-    assert captured.out == ''
-    assert captured.err[captured.err.rfind('\r')+1:].startswith('Preprocessing: 100%|')
-    assert captured.err.endswith('doc/s]\n') or captured.err.endswith('s/doc]\n')
+    for spell_checker_lang, analyzed_sentences in [(None, analyzed_sentences1), ('en_US', analyzed_sentences2)]:
+        doc = Document(index=index, fields=fields, analyzed_sentences=None)
+        p = Preprocessor(spell_checker_lang=spell_checker_lang)
+        p.preprocess(text_field=text_field, preprocessed_data_file=None, docs=[doc] * 2)
+        assert doc.index == index
+        assert doc.fields == fields
+        assert doc.analyzed_sentences == analyzed_sentences
+        captured = capsys.readouterr()
+        assert captured.out == ''
+        assert captured.err[captured.err.rfind('\r')+1:].startswith('Preprocessing: 100%|')
+        assert captured.err.endswith('doc/s]\n') or captured.err.endswith('s/doc]\n')
 
 def test__nltk_process(capsys):
     text_field = 'Test field'
     index = -1
-    fields = {text_field: 'Test value. ' * 2}
-    analyzed_sentences = [[
+    fields = {text_field: 'Teste value. ' * 2}
+    analyzed_sentences1 = [[
+        {'form': 'Teste', 'lemma': 'teste', 'upostag': None},
+        {'form': 'value', 'lemma': 'value', 'upostag': None},
+        {'form': '.', 'lemma': '.', 'upostag': 'PUNCT'}
+    ]] * 2
+    analyzed_sentences2 = [[
         {'form': 'Test', 'lemma': 'test', 'upostag': None},
         {'form': 'value', 'lemma': 'value', 'upostag': None},
         {'form': '.', 'lemma': '.', 'upostag': 'PUNCT'}
     ]] * 2
-    doc = Document(index=index, fields=fields, analyzed_sentences=None)
-    p = Preprocessor()
-    assert p.stop is False
-    p._nltk_process(text_data_field=text_field, preprocessed_data_file=None, docs=[doc] * 2)
-    assert p.stop is False
-    assert doc.index == index
-    assert doc.fields == fields
-    assert doc.analyzed_sentences == analyzed_sentences
-    captured = capsys.readouterr()
-    assert captured.out == ''
-    assert captured.err[captured.err.rfind('\r')+1:].startswith('Preprocessing: 100%|')
-    assert captured.err.endswith('doc/s]\n') or captured.err.endswith('s/doc]\n')
+    for spell_checker_lang, analyzed_sentences in [(None, analyzed_sentences1), ('en_US', analyzed_sentences2)]:
+        doc = Document(index=index, fields=fields, analyzed_sentences=None)
+        p = Preprocessor(spell_checker_lang=spell_checker_lang)
+        assert p.stop is False
+        p._nltk_process(text_data_field=text_field, preprocessed_data_file=None, docs=[doc] * 2)
+        assert p.stop is False
+        assert doc.index == index
+        assert doc.fields == fields
+        assert doc.analyzed_sentences == analyzed_sentences
+        captured = capsys.readouterr()
+        assert captured.out == ''
+        assert captured.err[captured.err.rfind('\r')+1:].startswith('Preprocessing: 100%|')
+        assert captured.err.endswith('doc/s]\n') or captured.err.endswith('s/doc]\n')
     pass
 
 def test__signal_handler():

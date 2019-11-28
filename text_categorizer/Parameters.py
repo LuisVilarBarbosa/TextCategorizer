@@ -33,6 +33,7 @@ class Parameters:
         self.vectorizer_file = config.get("Feature extraction", "Vectorizer file")
         self._load_class_weights(config)
         self.generate_roc_plots = config.getboolean("Classification", "Generate ROC plots")
+        self._load_spell_checker_lang(config)
     
     def _load_number_of_jobs(self, config):
         self.number_of_jobs = config.get("General", "Number of jobs")
@@ -102,3 +103,8 @@ class Parameters:
         self.nltk_stop_words_package = config.get("Feature extraction", "NLTK stop words package")
         if self.nltk_stop_words_package == "None":
             self.nltk_stop_words_package = None
+
+    def _load_spell_checker_lang(self, config):
+        self.spell_checker_lang = config.get("Preprocessing", "Spell checker language")
+        if self.spell_checker_lang == "None":
+            self.spell_checker_lang = None

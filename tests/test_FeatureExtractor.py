@@ -2,7 +2,6 @@ import io
 import nltk
 import pytest
 import requests
-from sklearn.datasets import load_digits
 from sklearn.feature_extraction.text import TfidfVectorizer
 from tests.utils import create_temporary_file, remove_and_check
 from text_categorizer.ContoPTParser import ContoPTParser

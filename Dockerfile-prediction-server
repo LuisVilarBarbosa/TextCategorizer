@@ -5,7 +5,7 @@ WORKDIR /usr/src/app
 COPY text_categorizer/environment.yml /usr/src/app/text_categorizer/environment.yml
 
 RUN apt-get update --fix-missing && \
-    apt-get install -y gcc && \
+    apt-get install -y g++ libhunspell-dev && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 RUN conda env create --file /usr/src/app/text_categorizer/environment.yml

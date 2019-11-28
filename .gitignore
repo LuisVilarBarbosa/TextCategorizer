@@ -124,3 +124,6 @@ log.txt
 
 # PNG files
 *.png
+
+# Hunspell data
+hunspell/

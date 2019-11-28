@@ -63,7 +63,7 @@ def main(config_filename):
             logger.info("Storing generated documents.")
             pickle_manager.dump_documents(docs, parameters.preprocessed_data_file)
         logger.info("Preprocessing documents.")
-        preprocessor = Preprocessor(stanfordnlp_language_package=parameters.stanfordnlp_language_package, stanfordnlp_use_gpu=parameters.stanfordnlp_use_gpu, stanfordnlp_resources_dir=parameters.stanfordnlp_resources_dir, store_data=True)
+        preprocessor = Preprocessor(stanfordnlp_language_package=parameters.stanfordnlp_language_package, stanfordnlp_use_gpu=parameters.stanfordnlp_use_gpu, stanfordnlp_resources_dir=parameters.stanfordnlp_resources_dir, store_data=True, spell_checker_lang=parameters.spell_checker_lang)
         preprocessor.preprocess(text_field=parameters.excel_column_with_text_data, preprocessed_data_file=parameters.preprocessed_data_file)
         logger.info("Checking generated data.")
         pickle_manager.check_data(parameters.preprocessed_data_file)

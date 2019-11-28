@@ -22,6 +22,7 @@ The first one is the recommended one because it is more stable and the following
 ### Prerequisites
 
 - To execute natively, a machine with Anaconda3 64-bit or Miniconda3 64-bit installed is required.
+- To execute natively on Linux, it is also required to have g++ and libhunspell-dev installed.
 - To execute using Docker, only Docker is required and Docker Compose is recommended.
 
 ### Installing/Updating
