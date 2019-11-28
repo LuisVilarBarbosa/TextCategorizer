@@ -1,9 +1,11 @@
 import io
 import nltk
+import numpy as np
 import pytest
 import requests
+from os.path import exists, getmtime
 from sklearn.feature_extraction.text import TfidfVectorizer
-from tests.utils import create_temporary_file, remove_and_check
+from tests.utils import create_temporary_file, generate_available_filename, remove_and_check
 from text_categorizer.ContoPTParser import ContoPTParser
 from text_categorizer.Document import Document
 from text_categorizer.FeatureExtractor import FeatureExtractor
@@ -67,8 +69,29 @@ def test__find_incompatible_data_indexes():
     idxs_to_remove = FeatureExtractor._find_incompatible_data_indexes(corpus, classifications)
     assert idxs_to_remove == [6, 7]
 
-def test__LatentDirichletAllocation():
-    pass
+def test_LatentDirichletAllocation():
+    X = np.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
+    y = np.asarray([0, 1, 2])
+    expected_new_X = np.asarray([
+        [0.01428573, 0.87142845, 0.01428573, 0.01428573, 0.01428573, 0.01428573, 0.01428573, 0.01428573, 0.01428573, 0.01428573],
+        [0.00625001, 0.94374995, 0.00625001, 0.00625001, 0.00625001, 0.00625001, 0.00625001, 0.00625001, 0.00625001, 0.00625001],
+        [0.00400000, 0.96399997, 0.00400000, 0.00400000, 0.00400000, 0.00400000, 0.00400000, 0.00400000, 0.00400000, 0.00400000]
+    ])
+    filename = generate_available_filename()
+    assert not exists(filename)
+    try:
+        new_X1, new_y1 = FeatureExtractor.LatentDirichletAllocation(X, y, filename)
+        assert exists(filename)
+        assert new_X1.shape == (X.shape[0], 10)
+        assert np.allclose(expected_new_X, new_X1)
+        assert np.array_equal(y, new_y1)
+        mtime = getmtime(filename)
+        new_X2, new_y2 = FeatureExtractor.LatentDirichletAllocation(X, y, filename)
+        assert getmtime(filename) == mtime
+        assert np.array_equal(new_X1, new_X2)
+        assert np.array_equal(new_y1, new_y2)
+    finally:
+        remove_and_check(filename)
 
 def test__get_vectorizer():
     pass
@@ -76,5 +99,14 @@ def test__get_vectorizer():
 def test_chunked_embed():
     pass
 
-def test__MDS():
-    pass
+def test_MDS():
+    X = np.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
+    y = np.asarray([0, 1, 2])
+    expected_new_X = np.asarray([[0.48395794, 5.12192566], [1.00066606, -0.1960522], [-1.484624, -4.92587346]])
+    new_X1, new_y1 = FeatureExtractor.MDS(X, y)
+    assert new_X1.shape == (X.shape[0], 2)
+    assert np.allclose(expected_new_X, new_X1)
+    assert np.array_equal(y, new_y1)
+    new_X2, new_y2 = FeatureExtractor.MDS(X, y)
+    assert np.array_equal(new_X1, new_X2)
+    assert np.array_equal(new_y1, new_y2)

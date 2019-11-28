@@ -6,6 +6,7 @@ from collections import Counter
 from flair.embeddings import DocumentPoolEmbeddings, Sentence, BertEmbeddings
 from nltk import download
 from nltk.corpus import stopwords
+from os.path import exists
 from sklearn.decomposition import LatentDirichletAllocation
 from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer, HashingVectorizer
 from sklearn.manifold import MDS
@@ -92,13 +93,12 @@ class FeatureExtractor:
         y = classifications
         if training_mode and self.vectorizer.__class__ not in [DocumentPoolEmbeddings]:
             pickle_manager.dump(self.vectorizer, self.vectorizer_file)
-        # TODO: Re-enable LDA and MDS after adding the ability to dump and load the model and use tranform() after it has been trained.
         if self.feature_reduction is None:
             return X, y
-        #elif self.feature_reduction == "LDA":
-        #    return FeatureExtractor._LatentDirichletAllocation(X, y)
-        #elif self.feature_reduction == "MDS":
-        #    return FeatureExtractor._MDS(X, y)
+        elif self.feature_reduction == "LDA":
+            return FeatureExtractor.LatentDirichletAllocation(X, y)
+        elif self.feature_reduction == "MDS":
+            return FeatureExtractor.MDS(X, y)
         else:
             raise ValueError("Invalid feature reduction technique: %s" % (self.feature_reduction))
 
@@ -116,16 +116,21 @@ class FeatureExtractor:
         return idxs_to_remove
 
     @staticmethod
-    def _LatentDirichletAllocation(X, y):
+    def LatentDirichletAllocation(X, y, filename='LatentDirichletAllocation.pkl'):
         logger.info("Running %s." % (LatentDirichletAllocation.__name__))
-        lda = LatentDirichletAllocation(n_components=10, doc_topic_prior=None,
+        if exists(filename):
+            lda = pickle_manager.load(filename)
+            X = lda.transform(X)
+        else:
+            lda = LatentDirichletAllocation(n_components=10, doc_topic_prior=None,
                     topic_word_prior=None, learning_method='batch', learning_decay=0.7,
                     learning_offset=10.0, max_iter=10, batch_size=128, evaluate_every=-1,
                     total_samples=1000000.0, perp_tol=0.1, mean_change_tol=0.001,
                     max_doc_update_iter=100, n_jobs=None, verbose=0, random_state=random_state,
                     n_topics=None)
-        logger.debug("%s configuration: %s" % (lda.__class__.__name__, lda.__dict__))
-        X = lda.fit_transform(X, y)
+            logger.debug("%s configuration: %s" % (lda.__class__.__name__, lda.__dict__))
+            X = lda.fit_transform(X, y)
+            pickle_manager.dump(lda, filename)
         return X, y
 
     @staticmethod
@@ -189,10 +194,12 @@ class FeatureExtractor:
             return FeatureExtractor.chunked_embed(corpus, embeddings, int(chunk_size / 2))
 
     @staticmethod
-    def _MDS(X, y):
+    def MDS(X, y):
         logger.info("Running %s." % (MDS.__name__))
         mds = MDS(n_components=2, metric=True, n_init=4, max_iter=300, verbose=0, eps=0.001,
                     n_jobs=None, random_state=random_state, dissimilarity='euclidean')
         logger.debug("%s configuration: %s" % (mds.__class__.__name__, mds.__dict__))
-        X = mds.fit_transform(X.toarray(), y)
+        if 'toarray' in dir(X):
+            X = X.toarray()
+        X = mds.fit_transform(X, y)
         return X, y
