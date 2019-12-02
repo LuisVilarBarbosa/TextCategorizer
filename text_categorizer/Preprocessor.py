@@ -41,7 +41,7 @@ class Preprocessor:
     def _nltk_process(self, text_data_field, preprocessed_data_file=None, docs=None):
         if self.store_data:
             self._set_signal_handlers()
-            #logger.info("Press CTRL+C to stop the preprocessing phase. (The preprocessed documents will be stored.)") # TODO: CTRL+C not being captured correctly.
+            logger.info("Press CTRL+C to stop the preprocessing phase. (The preprocessed documents will be stored.)")
         description = "Preprocessing"
         if docs is None:
             docs = get_documents(preprocessed_data_file, description=description)
