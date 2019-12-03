@@ -24,3 +24,9 @@ def test__load_class_weights():
 
 def test__load_feature_reduction():
     pass
+
+def test__load_nltk_stop_words_package():
+    pass
+
+def test__load_spell_checker_lang():
+    pass

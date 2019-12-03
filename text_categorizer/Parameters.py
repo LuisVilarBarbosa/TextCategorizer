@@ -2,6 +2,7 @@
 # coding=utf-8
 
 from configparser import ConfigParser
+from multiprocessing import cpu_count
 from flair.embeddings import DocumentPoolEmbeddings
 from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer, HashingVectorizer
 from text_categorizer import classifiers
@@ -19,7 +20,7 @@ class Parameters:
         self.stanfordnlp_use_gpu = config.getboolean("Preprocessing", "StanfordNLP use GPU")
         self.stanfordnlp_resources_dir = config.get("Preprocessing", "StanfordNLP resources directory")
         self.preprocessed_data_file = config.get("General", "Preprocessed data file")
-        self.preprocessed_data = config.getboolean("Preprocessing", "Preprocess data")
+        self.preprocess_data = config.getboolean("Preprocessing", "Preprocess data")
         self.document_adjustment_code = config.get("Feature extraction", "Document adjustment script")
         self._load_vectorizer(config)
         self._load_feature_reduction(config)
@@ -38,9 +39,12 @@ class Parameters:
     def _load_number_of_jobs(self, config):
         self.number_of_jobs = config.get("General", "Number of jobs")
         if self.number_of_jobs == "None":
-            self.number_of_jobs = None
+            self.number_of_jobs = 1
         else:
             self.number_of_jobs = int(self.number_of_jobs)
+        if self.number_of_jobs < 0:
+            self.number_of_jobs = cpu_count() + 1 + self.number_of_jobs
+        assert self.number_of_jobs != 0
     
     def _load_vectorizer(self, config):
         self.vectorizer = config.get("Feature extraction", "Vectorizer")

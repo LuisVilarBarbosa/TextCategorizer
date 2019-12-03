@@ -137,6 +137,7 @@ class Pipeline():
             except Exception as e:
                 logger.error("%s: %s | %ss" % (f.__name__, repr(e), (time() - t1)))
         dump_json(predictions, 'predictions.json')
+        return predictions
 
 def predict_proba_to_predict(clf_classes_, y_predict_proba, y_test=None, n_accepted_probs=1):
     assert (y_test is None and n_accepted_probs == 1) or (y_test is not None and n_accepted_probs >= 1)

@@ -1,16 +1,15 @@
 #!/usr/bin/python3
 # coding=utf-8
 
+import pandas as pd
 from copy import deepcopy
 from os.path import exists, isfile
-from pandas import DataFrame, read_excel
 #from profilehooks import profile
 from sklearn.datasets import fetch_20newsgroups
 from text_categorizer import classifiers
-from text_categorizer import pickle_manager
+from text_categorizer import functions, pickle_manager
 from text_categorizer.constants import random_state
 from text_categorizer.FeatureExtractor import FeatureExtractor
-from text_categorizer.functions import data_frame_to_document_list
 from text_categorizer.logger import logger
 from text_categorizer.Parameters import Parameters
 from text_categorizer.Preprocessor import Preprocessor
@@ -24,7 +23,7 @@ def load_20newsgroups(parameters):
     p.excel_column_with_classification_data = 'target'
     if not exists(p.excel_file) and not exists(p.preprocessed_data_file):
         bunch = fetch_20newsgroups(data_home='.', subset='all', categories=None, shuffle=False, random_state=random_state, remove=(), download_if_missing=True)
-        df = DataFrame()
+        df = pd.DataFrame()
         df[p.excel_column_with_text_data] = bunch.data
         df[p.excel_column_with_classification_data] = bunch.target
         df.to_excel(p.excel_file, engine='xlsxwriter')
@@ -46,20 +45,22 @@ def resample(resampling, X_train, y_train):
 
 #@profile
 def main(config_filename):
+    execution_info = pd.DataFrame()
+    execution_info['Start'] = [functions.get_local_time_str()]
     logger.debug("Starting execution.")
     parameters = Parameters(config_filename)
     if parameters.excel_file == '20newsgroups':
         parameters = load_20newsgroups(parameters)
-    if parameters.preprocessed_data:
+    if parameters.preprocess_data:
         if not isfile(parameters.excel_file) and not isfile(parameters.preprocessed_data_file):
             logger.error("Please, provide a valid Excel file or a valid preprocessed data file.")
             quit()
         if not isfile(parameters.preprocessed_data_file) and isfile(parameters.excel_file):
             logger.info("Loading Excel file.")
-            data_frame = read_excel(parameters.excel_file)
+            data_frame = pd.read_excel(parameters.excel_file)
             data_frame = data_frame.fillna("NaN")
             logger.info("Creating documents.")
-            docs = data_frame_to_document_list(data_frame)
+            docs = functions.data_frame_to_document_list(data_frame)
             logger.info("Storing generated documents.")
             pickle_manager.dump_documents(docs, parameters.preprocessed_data_file)
         logger.info("Preprocessing documents.")
@@ -81,5 +82,7 @@ def main(config_filename):
     logger.info("Running classifiers.")
     p = classifiers.Pipeline(parameters.classifiers)
     logger.info("Accuracies:")
-    p.start(X_train, y_train, X_test, y_test, parameters.number_of_jobs, parameters.set_num_accepted_probs, parameters.class_weights, parameters.generate_roc_plots)
+    predictions_dict = p.start(X_train, y_train, X_test, y_test, parameters.number_of_jobs, parameters.set_num_accepted_probs, parameters.class_weights, parameters.generate_roc_plots)
+    execution_info['End'] = [functions.get_local_time_str()]
     logger.debug("Execution completed.")
+    functions.generate_report(execution_info, parameters.__dict__, predictions_dict)

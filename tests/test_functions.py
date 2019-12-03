@@ -77,3 +77,12 @@ def test_predictions_to_data_frame():
     df = functions.predictions_to_data_frame(predictions_dict2)
     assert predictions_dict1 == predictions_dict2
     assert_frame_equal(df, expected_df)
+
+def test_parameters_to_data_frame():
+    pass
+
+def test_generate_report():
+    pass
+
+def test_get_local_time_str():
+    pass
