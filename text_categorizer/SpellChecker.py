@@ -10,9 +10,12 @@ class SpellChecker:
         self.substitutes = dict()
 
     def spell_check(self, tokenized_corpus_2d):
-        tokens = [t for iterable in tokenized_corpus_2d for t in iterable]
-        tokens = set(tokens) - self.substitutes.keys()
-        suggestions = self.hunspell.bulk_suggest(tokens)
+        tokens = {t for iterable in tokenized_corpus_2d for t in iterable}
+        new_tokens = tokens - self.substitutes.keys()
+        correct_tokens = {t for t in new_tokens if self.hunspell.spell(t)}
+        self.substitutes.update(map(lambda t: (t, t), correct_tokens))
+        tokens_to_check = new_tokens - correct_tokens
+        suggestions = self.hunspell.bulk_suggest(tokens_to_check)
         self.substitutes.update(map(lambda kv: (kv[0], kv[0]) if not kv[1] else (kv[0], kv[1][0]), suggestions.items()))
         new_corpus = [[self.substitutes[token] for token in iterable] for iterable in tokenized_corpus_2d]
         return new_corpus
