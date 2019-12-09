@@ -102,5 +102,7 @@ def generate_report(execution_info, parameters_dict, predictions_dict, excel_fil
     df1.to_excel(excel_file, index=False)
     return df1
 
-def get_local_time_str(time_tuple=time.localtime()):
+def get_local_time_str(time_tuple=None):
+    if time_tuple is None:
+        time_tuple = time.localtime()
     return time.strftime('%Y-%m-%d %H:%M:%S %z %Z', time_tuple)

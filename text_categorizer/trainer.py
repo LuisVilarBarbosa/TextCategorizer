@@ -46,7 +46,7 @@ def resample(resampling, X_train, y_train):
 #@profile
 def main(config_filename):
     execution_info = pd.DataFrame()
-    execution_info['Start'] = [functions.get_local_time_str()]
+    execution_info['Start date'] = [functions.get_local_time_str()]
     logger.debug("Starting execution.")
     parameters = Parameters(config_filename)
     if parameters.excel_file == '20newsgroups':
@@ -83,6 +83,6 @@ def main(config_filename):
     p = classifiers.Pipeline(parameters.classifiers)
     logger.info("Accuracies:")
     predictions_dict = p.start(X_train, y_train, X_test, y_test, parameters.number_of_jobs, parameters.set_num_accepted_probs, parameters.class_weights, parameters.generate_roc_plots)
-    execution_info['End'] = [functions.get_local_time_str()]
+    execution_info['End date'] = [functions.get_local_time_str()]
     logger.debug("Execution completed.")
     functions.generate_report(execution_info, parameters.__dict__, predictions_dict)
