@@ -1,8 +1,8 @@
 import json
 import numpy as np
 import pytest
+from itertools import zip_longest
 from os.path import exists
-from pandas import DataFrame
 from sklearn.datasets import load_digits
 from sklearn.exceptions import ConvergenceWarning
 from sklearn.metrics import accuracy_score
@@ -44,7 +44,17 @@ def test_Pipeline___init__():
 def test_Pipeline_start():
     pass
 
-def test_predict_proba_to_predict():
+def test_predict_proba_to_dicts():
+    X, y = load_digits(n_class=10, return_X_y=True)
+    clf = classifiers.LinearSVC(n_jobs=1, class_weight=None)
+    with pytest.warns(ConvergenceWarning):
+        clf.fit(X, y)
+    y_predict_proba = clf.predict_proba(X)
+    expected_dicts = [dict(zip_longest(clf.classes_, probs)) for probs in y_predict_proba]
+    dicts = classifiers.predict_proba_to_dicts(clf.classes_, y_predict_proba)
+    assert all([d1.items() == d2.items() for d1, d2 in zip_longest(dicts, expected_dicts)])
+
+def test_dicts_to_predict():
     n_class = 10
     X, y = load_digits(n_class=n_class, return_X_y=True)
     clf = classifiers.LinearSVC(n_jobs=1, class_weight=None)
@@ -52,14 +62,15 @@ def test_predict_proba_to_predict():
         clf.fit(X, y)
     y_pred1 = clf.predict(X)
     y_predict_proba = clf.predict_proba(X)
+    dicts = classifiers.predict_proba_to_dicts(clf.classes_, y_predict_proba)
     acc_at_1 = accuracy_score(y, y_pred1)
     for n_accepted_probs in range(1, n_class + 1):
-        for y_test in [None, y]:
+        for y_true in [None, y]:
             y_pred2 = None
             try:
-                y_pred2 = classifiers.predict_proba_to_predict(clf.classes_, y_predict_proba, y_test=y_test, n_accepted_probs=n_accepted_probs)
+                y_pred2 = classifiers.dicts_to_predict(dicts, y_true, n_accepted_probs)
             except AssertionError:
-                if y_test is None and 1 < n_accepted_probs <= n_class:
+                if y_true is None and 1 < n_accepted_probs <= n_class:
                     continue
                 else:
                     raise
@@ -73,23 +84,11 @@ def test_predict_proba_to_predict():
                 assert np.array_equal(y, y_pred2)
                 assert acc == 1
 
-def test_predict_proba_to_predict_classes():
-    X, y = load_digits(n_class=10, return_X_y=True)
-    clf = classifiers.LinearSVC(n_jobs=1, class_weight=None)
-    with pytest.warns(ConvergenceWarning):
-        clf.fit(X, y)
-    y_pred1 = clf.predict(X)
-    y_predict_proba = clf.predict_proba(X)
-    y_predict_classes = classifiers.predict_proba_to_predict_classes(clf.classes_, y_predict_proba)
-    y_pred2 = list(map(lambda l: l[0], y_predict_classes))
-    assert np.array_equal(y_pred1, y_pred2)
-
 def test_dump_json():
     d1 = {'test_random_values': [np.random.random()]}
-    df = DataFrame(d1)
     filename = generate_available_filename()
     try:
-        classifiers.dump_json(df, filename)
+        classifiers.dump_json(d1, filename)
         f = open(filename, 'r')
         d2 = json.load(f)
     finally:

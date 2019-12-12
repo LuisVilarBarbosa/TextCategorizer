@@ -59,7 +59,7 @@ def predict():
             clf = pickle_manager.load("%s.pkl" % classifier)
             _classifiers[classifier] = clf
         y_predict_proba = clf.predict_proba(X)
-        probabilities = dict(map(lambda k, v: (k, v), clf.classes_, y_predict_proba[0]))
+        probabilities = classifiers.predict_proba_to_dicts(clf.classes_, y_predict_proba)[0]
         feature_weights = get_feature_weights(clf, docs_lemmas[0])
         probabilities = DataFrame({'probabilities': probabilities}).to_dict('dict')
         return jsonify({**probabilities, **feature_weights})

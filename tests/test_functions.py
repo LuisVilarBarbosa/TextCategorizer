@@ -47,9 +47,11 @@ def test_load_module():
 
 def test_predictions_to_data_frame():
     predictions_dict1 = {
-        'y_true': [0, 1, 0, 1, 0],
-        'y_pred_RandomForestClassifier': [0, 0, 1, 1, 0],
-        'y_pred_LinearSVC': [0, 1, 0, 1, 1]
+        'y_true': ['0', '1', '0', '1', '0'],
+        'RandomForestClassifier': [{'0': 1., '1': 0.}, {'0': 1., '1': 0.}, \
+            {'0': 0., '1': 1.}, {'0': 0., '1': 1.}, {'0': 1., '1': 0.}],
+        'LinearSVC': [{'0': 1., '1': 0.}, {'0': 0., '1': 1.}, \
+            {'0': 1., '1': 0.}, {'0': 0., '1': 1.}, {'0': 0., '1': 1.}]
     }
     columns = [
         '%s %s %s' % (metric, clf, label)
@@ -57,7 +59,7 @@ def test_predictions_to_data_frame():
         for clf in ['LinearSVC', 'RandomForestClassifier']
         for label in [0, 1, 'macro avg', 'micro avg', 'weighted avg']
     ]
-    data = [
+    data1 = [
         0.8, 0.8, 0.8, 0.8000000000000002, 0.8,
         0.6666666666666666, 0.5, 0.5833333333333333, 0.6, 0.6,
         1.0, 0.6666666666666666, 0.8333333333333333, 0.8, 0.8666666666666666,
@@ -67,16 +69,21 @@ def test_predictions_to_data_frame():
         3, 2, 5, 5, 5,
         3, 2, 5, 5, 5
     ]
-    expected_df = DataFrame(data=[data], columns=columns)
+    data2 = data1.copy()
+    data2[0:30] = [1.] * 30
+    expected_df1 = DataFrame(data=[data1], columns=columns)
+    expected_df2 = DataFrame(data=[data2], columns=columns)
     path = create_temporary_file(content=None, text=True)
-    classifiers.dump_json(DataFrame(predictions_dict1), path)
+    classifiers.dump_json(predictions_dict1, path)
     f = open(path, 'r')
     predictions_dict2 = json.load(f)
     f.close()
     remove_and_check(path)
-    df = functions.predictions_to_data_frame(predictions_dict2)
+    df1 = functions.predictions_to_data_frame(predictions_dict2, 1)
+    df2 = functions.predictions_to_data_frame(predictions_dict2, 2)
     assert predictions_dict1 == predictions_dict2
-    assert_frame_equal(df, expected_df)
+    assert_frame_equal(df1, expected_df1)
+    assert_frame_equal(df2, expected_df2)
 
 def test_parameters_to_data_frame():
     pass

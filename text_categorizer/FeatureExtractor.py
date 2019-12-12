@@ -65,6 +65,7 @@ class FeatureExtractor:
             logger.warning("%s document(s) ignored." % num_ignored)
         if training_mode:
             idxs_to_remove.extend(FeatureExtractor._find_incompatible_data_indexes(corpus_str, classifications))
+        classifications = np.array(classifications, copy=False).tolist()
         return corpus_str, classifications, idxs_to_remove, corpus
 
     @staticmethod

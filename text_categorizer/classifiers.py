@@ -3,7 +3,7 @@
 
 import json
 from collections import Counter
-from pandas import DataFrame
+from itertools import zip_longest
 from sklearn.metrics import accuracy_score, confusion_matrix, classification_report
 from text_categorizer import pickle_manager
 from text_categorizer.constants import random_state
@@ -107,7 +107,7 @@ class Pipeline():
     
     def start(self, X_train, y_train, X_test, y_test, n_jobs=None, set_n_accepted_probs={1,2,3}, class_weight=None, generate_roc_plots=False):
         logger.debug("Number of training examples: %s" % (Counter(y_train)))
-        predictions = DataFrame({'y_true': y_test})
+        predictions = {'y_true': y_test}
         set_n_accepted_probs = set(set_n_accepted_probs)
         new_set_n_accepted_probs = set([elem for elem in set_n_accepted_probs if elem < len(set(y_train).union(y_test))])
         if len(new_set_n_accepted_probs) != len(set_n_accepted_probs):
@@ -120,16 +120,16 @@ class Pipeline():
             t1 = time()
             try:
                 clf_filename = "%s.pkl" % (f.__name__)
-                predictions_key = "y_pred_%s" % (f.__name__)
                 clf.fit(X_train, y_train)
                 pickle_manager.dump(clf, clf_filename)
                 y_predict_proba = clf.predict_proba(X_test)
+                dicts = predict_proba_to_dicts(clf.classes_, y_predict_proba)
+                predictions[f.__name__] = dicts
                 for n_accepted_probs in set_n_accepted_probs:
-                    y_predict = predict_proba_to_predict(clf.classes_, y_predict_proba, y_test, n_accepted_probs)
-                    if n_accepted_probs == 1:
-                        predictions[predictions_key] = y_predict
-                        if generate_roc_plots:
-                            generate_roc_plot(clf, X_test, y_test, 'ROC_%s.png' % (f.__name__))
+                    logger.debug("Accepted probabilities: any of the highest %s." % (n_accepted_probs))
+                    y_predict = dicts_to_predict(dicts, y_test, n_accepted_probs)
+                    if n_accepted_probs == 1 and generate_roc_plots:
+                        generate_roc_plot(clf, X_test, y_test, 'ROC_%s.png' % (f.__name__))
                     logger.debug("Confusion matrix:\n%s" % confusion_matrix(y_test, y_predict))
                     logger.debug("Classification report:\n%s" % classification_report(y_test, y_predict))
                     acc = accuracy_score(y_test, y_predict, normalize=True)
@@ -139,37 +139,27 @@ class Pipeline():
         dump_json(predictions, 'predictions.json')
         return predictions
 
-def predict_proba_to_predict(clf_classes_, y_predict_proba, y_test=None, n_accepted_probs=1):
-    assert (y_test is None and n_accepted_probs == 1) or (y_test is not None and n_accepted_probs >= 1)
-    ordered_classes = predict_proba_to_predict_classes(clf_classes_, y_predict_proba)
-    accepted_probs = min(n_accepted_probs, len(clf_classes_))
-    logger.debug("Accepted probabilities: any of the highest %s." % (accepted_probs))
-    y_predict = []
-    for i in range(len(ordered_classes)):
-        accepted_classes = ordered_classes[i][0:accepted_probs]
-        if y_test is not None and y_test[i] in accepted_classes:
-            y_predict.append(y_test[i])
-        else:
-            y_predict.append(accepted_classes[0])
-    return y_predict
+def predict_proba_to_dicts(clf_classes_, y_predict_proba):
+    assert len(clf_classes_) == y_predict_proba.shape[1]
+    my_clf_classes_ = clf_classes_.tolist()
+    my_y_predict_proba = y_predict_proba.tolist()
+    my_y_predict_proba = [dict(zip_longest(my_clf_classes_, probs)) for probs in my_y_predict_proba]
+    return my_y_predict_proba
 
-def predict_proba_to_predict_classes(clf_classes_, y_predict_proba):
-    from numpy import argsort, flip
-    assert y_predict_proba.ndim == 2
-    y_predict_classes = []
-    for i in range(len(y_predict_proba)):
-        ordered_classes = []
-        idxs_of_sorted_higher2lower = flip(argsort(y_predict_proba[i]))
-        for j in range(len(y_predict_proba[i])):
-            index = idxs_of_sorted_higher2lower[j]
-            classification = clf_classes_[index]
-            ordered_classes.append(classification)
-        y_predict_classes.append(ordered_classes)
-    return y_predict_classes
+def dicts_to_predict(dicts, y_true=None, n_accepted_probs=1):
+    assert (y_true is None and n_accepted_probs == 1) \
+        or (y_true is not None and n_accepted_probs >= 1 and len(dicts) == len(y_true))
+    sorted_probs = [sorted(d.items(), key=lambda item: -item[1]) for d in dicts]
+    accepted_classes = [[item[0] for item in l[0:n_accepted_probs]] for l in sorted_probs]
+    if y_true is None:
+        y_pred = [cs[0] for cs in accepted_classes]
+    else:
+        y_pred = [t if t in cs else cs[0] for cs, t in zip_longest(accepted_classes, y_true)]
+    return y_pred
 
-def dump_json(data_frame, filename):
+def dump_json(obj, filename):
     f = open(filename, 'w')
-    json.dump(data_frame.to_dict(orient='list'), f)
+    json.dump(obj, f)
     f.close()
 
 def generate_roc_plot(clf, X_test, y_test, filename):

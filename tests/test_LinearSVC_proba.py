@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 from sklearn.datasets import load_digits
 from sklearn.exceptions import ConvergenceWarning
-from text_categorizer.classifiers import predict_proba_to_predict
+from text_categorizer import classifiers
 from text_categorizer.LinearSVC_proba import LinearSVC_proba
 
 def test___platt_func():
@@ -21,5 +21,6 @@ def test_predict_proba():
             clf.fit(X, y)
             y_pred1 = clf.predict(X)
             y_predict_proba = clf.predict_proba(X)
-            y_pred2 = predict_proba_to_predict(clf.classes_, y_predict_proba, y_test=None, n_accepted_probs=1)
+            dicts = classifiers.predict_proba_to_dicts(clf.classes_, y_predict_proba)
+            y_pred2 = classifiers.dicts_to_predict(dicts, y_true=None, n_accepted_probs=1)
             assert np.array_equal(y_pred1, y_pred2)

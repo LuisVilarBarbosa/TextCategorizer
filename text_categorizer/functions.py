@@ -8,6 +8,7 @@ from os import path
 from pandas import DataFrame
 from sklearn.metrics import classification_report
 from sys import version
+from text_categorizer import classifiers
 from text_categorizer.Document import Document
 
 def get_python_version():
@@ -37,12 +38,12 @@ def load_module(filename):
     spec.loader.exec_module(module)
     return module
 
-def predictions_to_data_frame(predictions_dict):
+def predictions_to_data_frame(predictions_dict, n_accepted_probs):
     predictions = predictions_dict.copy()
     y_true = predictions.pop('y_true')
     data = dict()
-    for k, y_pred in predictions.items():
-        clf = k[len('y_pred_'):]
+    for clf, y_predict_proba in predictions.items():
+        y_pred = classifiers.dicts_to_predict(y_predict_proba, y_true, n_accepted_probs)
         report = classification_report(y_true, y_pred, output_dict=True)
         for label in report.keys():
             for metric in report[label].keys():
@@ -93,12 +94,15 @@ def generate_report(execution_info, parameters_dict, predictions_dict, excel_fil
     except FileNotFoundError:
         df1 = pd.DataFrame()
     p = parameters_dict.copy()
-    for accepted_probs in [1]: #parameters_dict['set_num_accepted_probs']:
-        p['set_num_accepted_probs'] = accepted_probs
+    for n_accepted_probs in parameters_dict['set_num_accepted_probs']:
+        p['set_num_accepted_probs'] = n_accepted_probs
         parameters_df = parameters_to_data_frame(p)
-        predictions_df = predictions_to_data_frame(predictions_dict)
-        df2 = pd.concat(objs=[execution_info, parameters_df, predictions_df], axis=1, join='outer', ignore_index=False, keys=None, levels=None, names=None, verify_integrity=False, sort=False, copy=True)
-        df1 = pd.concat(objs=[df1, df2], axis=0, join='outer', ignore_index=False, keys=None, levels=None, names=None, verify_integrity=False, sort=False, copy=True)
+        predictions_df = predictions_to_data_frame(predictions_dict, n_accepted_probs)
+        df2 = pd.concat(objs=[execution_info, parameters_df, predictions_df], axis=1, \
+            join='outer', ignore_index=False, keys=None, levels=None, names=None, \
+            verify_integrity=False, sort=False, copy=True)
+        df1 = pd.concat(objs=[df1, df2], axis=0, join='outer', ignore_index=False, keys=None, \
+            levels=None, names=None, verify_integrity=False, sort=False, copy=True)
     df1.to_excel(excel_file, index=False)
     return df1
 
