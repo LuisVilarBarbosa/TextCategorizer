@@ -17,7 +17,7 @@ dependencies:
   - tqdm==4.31.1
   - Flask==1.0.2
   - Flask-HTTPAuth==3.2.4 
-  - imblearn==0.0
+  - imbalanced-learn==0.4.3
   - flair==0.4.1
   - pytest-cov==2.7.1
   - xlsxwriter==1.2.1
