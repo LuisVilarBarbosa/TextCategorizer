@@ -3,8 +3,11 @@
 Text Categorizer is a tool that implements a configurable pipeline of methods used to train models that predict the categories of textual data.
 
 For training, it provides the ability to obtain information on the confidence of the trained models and train final models using the entire data set (to be implemented).
+The probabilities for each class for a given example of the test subset are stored in a JSON file, so that other insights can be obtained after creating the models, and several statistics are stored in an Excel file that can store the statistics of multiple executions.
+(For the Excel report, take into account that the f1-score micro avg is the same as the accuracy score.)
 
 For prediction, it provides a server that answers queries with the classification predicted by the models.
+The answer includes the probability given to each class for the given query and the weight given to each feature.
 
 ## Getting Started
 
@@ -22,6 +25,7 @@ The first one is the recommended one because it is more stable and the following
 ### Prerequisites
 
 - To execute natively, a machine with Anaconda3 64-bit or Miniconda3 64-bit installed is required.
+- To execute natively on Windows, it is also required to have Visual C++ Build tools installed.
 - To execute natively on Linux, it is also required to have g++ and libhunspell-dev installed.
 - To execute using Docker, only Docker is required and Docker Compose is recommended.
 
@@ -166,16 +170,14 @@ docker-compose logs -f # Shows the output. (Press CTRL+C to close.)
 
 # Development Notes
 
-- The code has been tested on Windows 10, MX Linux 18.2 (Debian stable based) and Docker images for Miniconda (Debian based).
-
-- In some situations, the tool may present a reference to a document with index X where X belongs to the interval [0, number of documents[. The number of the row of the document in the Excel file should be equal to the index plus 2.
+- The code has been tested on Windows 10, MX Linux 19 (Debian stable based) and Docker images for Miniconda (Debian based).
 
 - Pickle is used to dump and load data to and from files. This protocol is the fastest of the tested protocols, but is considered insecure. Please take this information into consideration.
-
-- The documents ignored during preprocessing are also ignored when preparing feature extraction, counting for the number of documents ignored when preparing feature extraction. The number of ignored documents is only shown if greater than zero.
 
 - Consulting the file "log.txt" is essential because it shows several more information than the console.
 
 - The code is relatively generic and can be used as a basis for other experiments, but should be tuned for practical applications.
 
 - The tool in this repository is based on the tool present in https://github.com/LuisVilarBarbosa/DISS.
+
+- The repository present in https://github.com/LuisVilarBarbosa/TextCategorizer-experiments contains side-projects that use a minimal version of the code necessary to categorize text to test different tools that could be added to Text Categorizer.
