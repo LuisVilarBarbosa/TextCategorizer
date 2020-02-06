@@ -1,6 +1,9 @@
 import nltk
 import pytest
 import signal
+from pandas import read_excel
+from tests import utils
+from text_categorizer import functions, pickle_manager
 from text_categorizer.Document import Document
 from text_categorizer.Preprocessor import Preprocessor
 
@@ -46,34 +49,8 @@ def test_preprocess(capsys):
     for spell_checker_lang, analyzed_sentences in [(None, analyzed_sentences1), ('en_US', analyzed_sentences2)]:
         doc = Document(index=index, fields=fields, analyzed_sentences=None)
         p = Preprocessor(spell_checker_lang=spell_checker_lang)
+        assert p.stop is False
         p.preprocess(text_field=text_field, preprocessed_data_file=None, docs=[doc] * 2)
-        assert doc.index == index
-        assert doc.fields == fields
-        assert doc.analyzed_sentences == analyzed_sentences
-        captured = capsys.readouterr()
-        assert captured.out == ''
-        assert captured.err[captured.err.rfind('\r')+1:].startswith('Preprocessing: 100%|')
-        assert captured.err.endswith('doc/s]\n') or captured.err.endswith('s/doc]\n')
-
-def test__nltk_process(capsys):
-    text_field = 'Test field'
-    index = -1
-    fields = {text_field: 'Teste value. ' * 2}
-    analyzed_sentences1 = [[
-        {'form': 'Teste', 'lemma': 'teste', 'upostag': None},
-        {'form': 'value', 'lemma': 'value', 'upostag': None},
-        {'form': '.', 'lemma': '.', 'upostag': 'PUNCT'}
-    ]] * 2
-    analyzed_sentences2 = [[
-        {'form': 'Test', 'lemma': 'test', 'upostag': None},
-        {'form': 'value', 'lemma': 'value', 'upostag': None},
-        {'form': '.', 'lemma': '.', 'upostag': 'PUNCT'}
-    ]] * 2
-    for spell_checker_lang, analyzed_sentences in [(None, analyzed_sentences1), ('en_US', analyzed_sentences2)]:
-        doc = Document(index=index, fields=fields, analyzed_sentences=None)
-        p = Preprocessor(spell_checker_lang=spell_checker_lang)
-        assert p.stop is False
-        p._nltk_process(text_data_field=text_field, preprocessed_data_file=None, docs=[doc] * 2)
         assert p.stop is False
         assert doc.index == index
         assert doc.fields == fields
@@ -82,7 +59,21 @@ def test__nltk_process(capsys):
         assert captured.out == ''
         assert captured.err[captured.err.rfind('\r')+1:].startswith('Preprocessing: 100%|')
         assert captured.err.endswith('doc/s]\n') or captured.err.endswith('s/doc]\n')
-    pass
+        p.stop = True
+        with pytest.raises(SystemExit):
+            p.preprocess(text_field=text_field, preprocessed_data_file=None, docs=[doc] * 2)
+    docs = [Document(index=index, fields=fields, analyzed_sentences=None) for index in range(2)]
+    preprocessed_data_file = utils.generate_available_filename()
+    try:
+        pickle_manager.dump_documents(docs, preprocessed_data_file)
+        pickle_manager.check_data(preprocessed_data_file)
+        p = Preprocessor(store_data=True)
+        assert all([doc.analyzed_sentences is None for doc in pickle_manager.get_documents(preprocessed_data_file)])
+        p.preprocess(text_field, preprocessed_data_file, None)
+        assert all([doc.analyzed_sentences == analyzed_sentences1 for doc in pickle_manager.get_documents(preprocessed_data_file)])
+        pickle_manager.check_data(preprocessed_data_file)
+    finally:
+        utils.remove_and_check(preprocessed_data_file)
 
 def test__signal_handler():
     p = Preprocessor()
