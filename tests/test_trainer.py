@@ -1,12 +1,13 @@
+import json
 import numpy as np
 import pytest
 from sklearn.datasets import load_digits
-from tests.utils import config_file
+from tests import utils
 from text_categorizer import trainer
 from text_categorizer.Parameters import Parameters
 
 def test_load_20newsgroups():
-    p1 = Parameters(config_file)
+    p1 = Parameters(utils.config_file)
     p1.excel_file = '20newsgroups'
     p2 = trainer.load_20newsgroups(p1)
     assert p1 is not p2
@@ -40,6 +41,18 @@ def test_resample():
     except ValueError as e:
         assert len(e.args) == 1
         assert e.args[0] == 'Invalid resampling method.'
+
+def test_dump_json():
+    d1 = {'test_random_values': [np.random.random()]}
+    filename = utils.generate_available_filename()
+    try:
+        trainer.dump_json(d1, filename)
+        f = open(filename, 'r')
+        d2 = json.load(f)
+    finally:
+        f.close()
+        utils.remove_and_check(filename)
+    assert d1 == d2
 
 def test_main():
     pass

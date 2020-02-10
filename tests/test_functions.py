@@ -8,7 +8,7 @@ from multiprocessing import cpu_count
 from os.path import exists
 from sys import modules
 from tests import utils
-from text_categorizer import classifiers, functions
+from text_categorizer import functions, trainer
 from text_categorizer.Parameters import Parameters
 
 def test_get_python_version():
@@ -78,7 +78,7 @@ def test_predictions_to_data_frame():
     expected_df2 = pd.DataFrame(data=[data2], columns=columns)
     try:
         path = utils.create_temporary_file(content=None, text=True)
-        classifiers.dump_json(predictions_dict1, path)
+        trainer.dump_json(predictions_dict1, path)
         f = open(path, 'r')
         predictions_dict2 = json.load(f)
         f.close()

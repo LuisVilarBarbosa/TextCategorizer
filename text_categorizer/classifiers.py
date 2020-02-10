@@ -1,7 +1,6 @@
 #!/usr/bin/python3
 # coding=utf-8
 
-import json
 from collections import Counter
 from itertools import zip_longest
 from sklearn.metrics import accuracy_score, confusion_matrix, classification_report
@@ -136,7 +135,6 @@ class Pipeline():
                     logger.info("%s: %s | %ss" % (f.__name__, acc, (time() - t1)))
             except Exception as e:
                 logger.error("%s: %s | %ss" % (f.__name__, repr(e), (time() - t1)))
-        dump_json(predictions, 'predictions.json')
         return predictions
 
 def predict_proba_to_dicts(clf_classes_, y_predict_proba):
@@ -156,11 +154,6 @@ def dicts_to_predict(dicts, y_true=None, n_accepted_probs=1):
     else:
         y_pred = [t if t in cs else cs[0] for cs, t in zip_longest(accepted_classes, y_true)]
     return y_pred
-
-def dump_json(obj, filename):
-    f = open(filename, 'w')
-    json.dump(obj, f)
-    f.close()
 
 def generate_roc_plot(clf, X_test, y_test, filename):
     logger.debug("Generating ROC (Receiver Operating Characteristic) plot.")

@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 # coding=utf-8
 
+import json
 import pandas as pd
 from copy import deepcopy
 from os.path import exists, isfile
@@ -43,6 +44,11 @@ def resample(resampling, X_train, y_train):
         logger.error(error_msg)
         raise ValueError(error_msg)
 
+def dump_json(obj, filename):
+    f = open(filename, 'w')
+    json.dump(obj, f)
+    f.close()
+
 #@profile
 def main(config_filename):
     execution_info = pd.DataFrame()
@@ -83,6 +89,7 @@ def main(config_filename):
     p = classifiers.Pipeline(parameters.classifiers)
     logger.info("Accuracies:")
     predictions_dict = p.start(X_train, y_train, X_test, y_test, parameters.number_of_jobs, parameters.set_num_accepted_probs, parameters.class_weights, parameters.generate_roc_plots)
+    dump_json(predictions, 'predictions.json')
     execution_info['End date'] = [functions.get_local_time_str()]
     logger.debug("Execution completed.")
     functions.generate_report(execution_info, parameters.__dict__, predictions_dict)
