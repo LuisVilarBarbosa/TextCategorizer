@@ -1,12 +1,15 @@
 import json
 import numpy as np
+import pandas as pd
 import pytest
+import time
 from itertools import zip_longest
-from pandas import DataFrame, read_excel
-from pandas.util.testing import assert_frame_equal
+from multiprocessing import cpu_count
+from os.path import exists
 from sys import modules
-from tests.utils import create_temporary_file, example_excel_file, remove_and_check
+from tests import utils
 from text_categorizer import classifiers, functions
+from text_categorizer.Parameters import Parameters
 
 def test_get_python_version():
     from sys import version
@@ -20,7 +23,7 @@ def test_get_python_version():
 
 def test_append_to_data_frame():
     array_2d = np.random.rand(10, 15).astype('str')
-    df1 = DataFrame()
+    df1 = pd.DataFrame()
     column_name = 'New column'
     df2 = functions.append_to_data_frame(array_2d, df1, column_name)
     with pytest.raises(KeyError):
@@ -31,7 +34,7 @@ def test_append_to_data_frame():
         functions.append_to_data_frame(array_2d, df2, column_name)
 
 def test_data_frame_to_document_list():
-    df = read_excel(example_excel_file)
+    df = pd.read_excel(utils.example_excel_file)
     docs = functions.data_frame_to_document_list(df)
     assert len(docs) == len(df)
     for i in range(len(docs)):
@@ -71,25 +74,87 @@ def test_predictions_to_data_frame():
     ]
     data2 = data1.copy()
     data2[0:30] = [1.] * 30
-    expected_df1 = DataFrame(data=[data1], columns=columns)
-    expected_df2 = DataFrame(data=[data2], columns=columns)
-    path = create_temporary_file(content=None, text=True)
-    classifiers.dump_json(predictions_dict1, path)
-    f = open(path, 'r')
-    predictions_dict2 = json.load(f)
-    f.close()
-    remove_and_check(path)
+    expected_df1 = pd.DataFrame(data=[data1], columns=columns)
+    expected_df2 = pd.DataFrame(data=[data2], columns=columns)
+    try:
+        path = utils.create_temporary_file(content=None, text=True)
+        classifiers.dump_json(predictions_dict1, path)
+        f = open(path, 'r')
+        predictions_dict2 = json.load(f)
+        f.close()
+    finally:
+        utils.remove_and_check(path)
     df1 = functions.predictions_to_data_frame(predictions_dict2, 1)
     df2 = functions.predictions_to_data_frame(predictions_dict2, 2)
     assert predictions_dict1 == predictions_dict2
-    assert_frame_equal(df1, expected_df1)
-    assert_frame_equal(df2, expected_df2)
+    pd.util.testing.assert_frame_equal(df1, expected_df1)
+    pd.util.testing.assert_frame_equal(df2, expected_df2)
 
 def test_parameters_to_data_frame():
-    pass
+    expected_dict = {
+        'Excel file': 'example_excel_file.xlsx',
+        'Text column': 'Example column',
+        'Label column': 'Classification column',
+        'n_jobs': cpu_count(),
+        'Preprocessed data file': 'preprocessed_data-example.pkl',
+        'Preprocess data': True,
+        'StanfordNLP language package': 'en',
+        'StanfordNLP use gpu': False,
+        'StanfordNLP resources dir': './stanfordnlp_resources',
+        'Spell checker language': 'None',
+        'NLTK stop words package': 'english',
+        'Document adjustment code': 'text_categorizer/document_updater.py',
+        'Vectorizer': 'TfidfVectorizer',
+        'Feature reduction': 'None',
+        'Remove adjectives': False,
+        'Synonyms file': 'None',
+        'Vectorizer file': 'vectorizer.pkl',
+        'Accepted probabilities': {1,2,3},
+        'Test size': 0.3,
+        'Force subsets regeneration': False,
+        'Resampling': 'None',
+        'Class weights': 'None',
+        'Generate ROC plots': False,
+    }
+    p = Parameters(utils.config_file)
+    df = functions.parameters_to_data_frame(p.__dict__)
+    assert df.shape == (1, 23)
+    assert df.iloc[0].to_dict() == expected_dict
 
 def test_generate_report():
-    pass
+    execution_info = pd.DataFrame.from_dict({
+        'Start': [functions.get_local_time_str()],
+        'End': [functions.get_local_time_str()],
+    })
+    parameters_dict = Parameters(utils.config_file).__dict__
+    predictions_dict = {
+        'y_true': ['label1'],
+        'classifier_key': [{'label1': 0.0, 'label2': 1.0}],
+    }
+    parameters_dict['set_num_accepted_probs'] = 1
+    expected_df_row0 = pd.concat([
+        execution_info,
+        functions.parameters_to_data_frame(parameters_dict),
+        functions.predictions_to_data_frame(predictions_dict, 1),
+    ], axis=1)
+    parameters_dict['set_num_accepted_probs'] = {1}
+    excel_file1 = utils.generate_available_filename(ext='.xlsx')
+    excel_file2 = utils.generate_available_filename(ext='.xlsx')
+    expected_df = pd.DataFrame()
+    try:
+        for i, file_exists in enumerate([False, True]):
+            assert exists(excel_file1) is file_exists
+            df = functions.generate_report(execution_info, parameters_dict, predictions_dict, excel_file1)
+            df.to_excel(excel_file2, index=False)
+            assert df.shape == (i + 1, 45)
+            expected_df = pd.concat([expected_df, expected_df_row0])
+            pd.util.testing.assert_frame_equal(df, expected_df)
+            pd.util.testing.assert_frame_equal(pd.read_excel(excel_file1), pd.read_excel(excel_file2))
+    finally:
+        utils.remove_and_check(excel_file1)
+        utils.remove_and_check(excel_file2)
 
 def test_get_local_time_str():
-    pass
+    str_format = '%Y-%m-%d %H:%M:%S %z %Z'
+    assert functions.get_local_time_str(time.localtime(5)) == time.strftime(str_format, time.localtime(5))
+    assert pytest.approx(time.mktime(time.strptime(functions.get_local_time_str(), str_format))) == pytest.approx(time.time())

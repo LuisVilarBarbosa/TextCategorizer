@@ -23,8 +23,8 @@ def remove_and_check(path):
     unlink(path)
     assert not exists(path)
 
-def generate_available_filename():
+def generate_available_filename(ext=''):
 	while True:
-	    filename = str(uuid4())
+	    filename = ''.join([str(uuid4()), ext])
 	    if not exists(filename):
 	        return filename
