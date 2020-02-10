@@ -23,6 +23,13 @@ clfs = [
     classifiers.BaggingClassifier,
 ]
 
+class FailClassifier:
+    def __init__(self, **kwargs):
+        pass
+
+    def fit(self, **kwargs):
+        raise Exception()
+
 def test_classifiers():
     for n_jobs in range(-1, 2):
         for class_weight in [None, 'balanced']:
@@ -116,6 +123,7 @@ def test_Pipeline_start():
                 assert clf.class_weights == 'balanced'
         p.start(X, y, X, y, -1, {1, 2, 2, 4}, None, True)
         assert all([exists(roc_file) for roc_file in roc_files])
+        classifiers.Pipeline([FailClassifier]).start(X, y, X, y)
     finally:
         for clf_file in clfs_files:
             remove_and_check(clf_file)
