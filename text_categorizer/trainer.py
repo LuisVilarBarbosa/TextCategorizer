@@ -86,7 +86,7 @@ def main(config_filename):
     p = classifiers.Pipeline(parameters.classifiers)
     logger.info("Accuracies:")
     predictions_dict = p.start(X_train, y_train, X_test, y_test, parameters.number_of_jobs, parameters.set_num_accepted_probs, parameters.class_weights, parameters.generate_roc_plots)
-    dump_json(predictions, 'predictions.json')
+    dump_json(predictions_dict, 'predictions.json')
     execution_info['End date'] = [functions.get_local_time_str()]
     logger.debug("Execution completed.")
     functions.generate_report(execution_info, parameters.__dict__, predictions_dict)
