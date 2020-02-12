@@ -34,10 +34,12 @@ class FeatureExtractor:
         if synonyms_file is None:
             logger.info("The substitution of synonyms is disabled.")
             self.synonyms = None
-        else:
+        elif synonyms_file == 'contopt_0.1_r2_c0.0.txt':
             logger.info("The substitution of synonyms is enabled.")
             contoPTParser = ContoPTParser(synonyms_file)
             self.synonyms = contoPTParser.synonyms
+        else:
+            raise ValueError('The synonyms file is invalid: %s' % (synonyms_file))
 
     def prepare(self, class_field, preprocessed_data_file=None, docs=None, training_mode=True):
         description = "Preparing to create classification"
@@ -166,7 +168,7 @@ class FeatureExtractor:
         elif vectorizer == DocumentPoolEmbeddings.__name__:
             v = DocumentPoolEmbeddings([BertEmbeddings('bert-base-multilingual-uncased')])
         else:
-            raise "Invalid vectorizer."
+            raise ValueError("Invalid vectorizer: %s" % (vectorizer))
         return v
 
     @staticmethod

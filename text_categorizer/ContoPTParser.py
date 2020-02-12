@@ -1,13 +1,24 @@
 #!/usr/bin/python3
 # coding=utf-8
 
-from re import compile
+import io
+import re
+import requests
+from os.path import exists
+from zipfile import ZipFile
 
 class ContoPTParser:
-    pattern1 = compile(r'\d+ : \w+ : (?:.+\(\d+\.\d+\);)+')
-    pattern2 = compile(r'\s?(.+)\(\d+\.\d+\)')
+    pattern1 = re.compile(r'\d+ : \w+ : (?:.+\(\d+\.\d+\);)+')
+    pattern2 = re.compile(r'\s?(.+)\(\d+\.\d+\)')
     
     def __init__(self, filename):
+        if not exists(filename):
+            r = requests.get(url='http://ontopt.dei.uc.pt/recursos/CONTO.PT.01.zip', stream=True)
+            with ZipFile(io.BytesIO(r.content)) as archive:
+                data = archive.read('contopt_0.1_r2_c0.0.txt')
+                f = open(filename, 'wb')
+                f.write(data)
+                f.close()
         self.synonyms = ContoPTParser._load_synonyms(filename)
 
     @staticmethod

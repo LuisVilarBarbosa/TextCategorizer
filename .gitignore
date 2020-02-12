@@ -152,3 +152,6 @@ log.txt
 
 # Hunspell data
 hunspell/
+
+# CONTO.PT synsets
+contopt_0.1_r2_c0.0.txt
