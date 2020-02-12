@@ -1,6 +1,3 @@
-#!/usr/bin/python3
-# coding=utf-8
-
 from collections import Counter
 from numpy import arange, delete, setdiff1d
 from sklearn.model_selection import train_test_split as sk_train_test_split

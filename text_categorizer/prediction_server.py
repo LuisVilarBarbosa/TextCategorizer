@@ -1,6 +1,3 @@
-#!/usr/bin/python3
-# coding=utf-8
-
 from flask import Flask, jsonify, make_response, request, abort
 from flask_httpauth import HTTPBasicAuth
 from os.path import basename

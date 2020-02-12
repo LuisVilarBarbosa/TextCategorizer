@@ -1,6 +1,3 @@
-#!/usr/bin/python3
-# coding=utf-8
-
 import pickle
 import os
 from text_categorizer.Document import Document

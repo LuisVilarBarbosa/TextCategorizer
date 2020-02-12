@@ -1,6 +1,3 @@
-#!/usr/bin/python3
-# coding=utf-8
-
 from imblearn.over_sampling import RandomOverSampler
 from imblearn.under_sampling import RandomUnderSampler
 from text_categorizer.constants import random_state

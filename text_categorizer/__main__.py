@@ -1,6 +1,3 @@
-#!/usr/bin/python3
-# coding=utf-8
-
 import sys
 from text_categorizer import prediction_server, trainer
 from text_categorizer.ui import verify_python_version

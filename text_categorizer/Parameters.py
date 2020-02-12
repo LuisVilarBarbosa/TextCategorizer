@@ -1,6 +1,3 @@
-#!/usr/bin/python3
-# coding=utf-8
-
 from configparser import ConfigParser
 from multiprocessing import cpu_count
 from flair.embeddings import DocumentPoolEmbeddings

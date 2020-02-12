@@ -1,6 +1,3 @@
-#!/usr/bin/python3
-# coding=utf-8
-
 import pandas as pd
 import time
 from importlib.util import spec_from_file_location, module_from_spec

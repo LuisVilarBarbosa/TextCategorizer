@@ -1,6 +1,3 @@
-#!/usr/bin/python3
-# coding=utf-8
-
 from collections import Counter
 from itertools import zip_longest
 from sklearn.metrics import accuracy_score, confusion_matrix, classification_report

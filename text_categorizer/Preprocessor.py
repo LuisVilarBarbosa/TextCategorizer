@@ -1,6 +1,3 @@
-#!/usr/bin/python3
-# coding=utf-8
-
 import nltk
 import signal
 from text_categorizer import pickle_manager

@@ -1,6 +1,3 @@
-#!/usr/bin/python3
-# coding=utf-8
-
 from text_categorizer import functions, pickle_manager
 from text_categorizer.logger import logger
 from tqdm.autonotebook import tqdm
