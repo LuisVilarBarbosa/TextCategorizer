@@ -3,15 +3,15 @@ from base64 import b64encode
 from numpy import float64, int32, int64
 from pandas import read_excel
 from tests.test_classifiers import clfs
-from tests.utils import create_temporary_file, decode, example_excel_file, generate_available_filename, remove_and_check
+from tests import utils
 from text_categorizer import prediction_server
 from text_categorizer.FeatureExtractor import FeatureExtractor
 from text_categorizer.functions import data_frame_to_document_list
 from text_categorizer.pickle_manager import dump
 from text_categorizer.Preprocessor import Preprocessor
 
-valid_headers = {'Authorization': 'Basic {0}'.format(decode(b64encode(b'admin:admin')))}
-invalid_headers = {'Authorization': 'Basic {0}'.format(decode(b64encode(b'username:password')))}
+valid_headers = {'Authorization': 'Basic {0}'.format(utils.decode(b64encode(b'admin:admin')))}
+invalid_headers = {'Authorization': 'Basic {0}'.format(utils.decode(b64encode(b'username:password')))}
 
 @pytest.fixture
 def client():
@@ -34,13 +34,13 @@ def test_unauthorized(client):
     assert res.json == {'error': 'Unauthorized access'}
 
 def test_predict(client):
-    df = read_excel(example_excel_file)
+    df = read_excel(utils.example_excel_file)
     docs = data_frame_to_document_list(df)
     prediction_server._text_field = 'Example column'
     prediction_server._class_field = 'Classification column'
     clfs_filenames = []
     try:
-        vectorizer_path = create_temporary_file(content=None, text=False)
+        vectorizer_path = utils.create_temporary_file(content=None, text=False)
         p = Preprocessor()
         p.preprocess(text_field=prediction_server._text_field, preprocessed_data_file=None, docs=docs)
         ft = FeatureExtractor(training_mode=True, vectorizer_file=vectorizer_path)
@@ -52,18 +52,18 @@ def test_predict(client):
         assert res.status_code == prediction_server.BAD_REQUEST
         res = client.post('/', json={'text': 1, 'classifier': 'LinearSVC'}, headers=valid_headers)
         assert res.status_code == prediction_server.BAD_REQUEST
-        assert decode(res.data).endswith('<p>Invalid text</p>\n')
+        assert utils.decode(res.data).endswith('<p>Invalid text</p>\n')
         res = client.post('/', json={'text': 'Test text.', 'classifier': 1}, headers=valid_headers)
         assert res.status_code == prediction_server.BAD_REQUEST
-        assert decode(res.data).endswith('<p>Invalid classifier</p>\n')
+        assert utils.decode(res.data).endswith('<p>Invalid classifier</p>\n')
         res = client.post('/', json={'text': 'Test text.', 'classifier': '../LinearSVC'}, headers=valid_headers)
         assert res.status_code == prediction_server.BAD_REQUEST
-        assert decode(res.data).endswith('<p>Invalid classifier</p>\n')
+        assert utils.decode(res.data).endswith('<p>Invalid classifier</p>\n')
         res = client.post('/', json={'text': 'Test text.', 'classifier': 'LinearSVC'}, headers=valid_headers)
         assert res.status_code == prediction_server.BAD_REQUEST
-        assert decode(res.data).endswith('<p>Invalid classifier model</p>\n')
+        assert utils.decode(res.data).endswith('<p>Invalid classifier model</p>\n')
         for f in clfs:
-            clf_filename_base = generate_available_filename()
+            clf_filename_base = utils.generate_available_filename()
             clf_filename = '%s.pkl' % (clf_filename_base)
             clfs_filenames.append(clf_filename)
             clf = f(n_jobs=1, class_weight=None)
@@ -77,9 +77,9 @@ def test_predict(client):
                 {'feature_weights': {}, 'probabilities': {'I': 0, 'II': 0, 'III': 0}}
             ]
     finally:
-        remove_and_check(vectorizer_path)
+        utils.remove_and_check(vectorizer_path)
         for clf_filename in clfs_filenames:
-            remove_and_check(clf_filename)
+            utils.remove_and_check(clf_filename)
         prediction_server._text_field = None
         prediction_server._class_field = None
         prediction_server._preprocessor = None
@@ -185,8 +185,29 @@ def test_load_feature_weights():
             prediction_server._feature_extractor = fe_tfidf
             assert replace_tuples_values(prediction_server.load_feature_weights(clf), value=value) == expected_values[clf_name]
 
-def test_main():
-    pass
+def test_main(monkeypatch):
+    with pytest.raises(SystemExit):
+        prediction_server.main(utils.config_file, 1024)
+    with monkeypatch.context() as m:
+        m.setattr("text_categorizer.prediction_server.app.run", lambda host, port, debug: None)
+        try:
+            vectorizer_file = 'vectorizer.pkl'
+            dump(FeatureExtractor(vectorizer_name='TfidfVectorizer').vectorizer, vectorizer_file)
+            assert not prediction_server.logger.disabled
+            prediction_server.main(utils.config_file, 1025)
+            assert prediction_server.logger.disabled
+            assert prediction_server._text_field == 'Example column'
+            assert prediction_server._class_field == 'Classification column'
+            assert prediction_server._preprocessor.language == 'en'
+            assert prediction_server._preprocessor.store_data is False
+            assert prediction_server._preprocessor.spell_checker is None
+            assert len(prediction_server._feature_extractor.stop_words) > 0
+            assert prediction_server._feature_extractor.feature_reduction is None
+            assert prediction_server._feature_extractor.document_adjustment_code.__file__ == 'text_categorizer/document_updater.py'
+            assert prediction_server._feature_extractor.synonyms is None
+            assert prediction_server._feature_extractor.vectorizer_file == vectorizer_file
+        finally:
+            utils.remove_and_check(vectorizer_file)
 
 def replace_tuples_values(obj, value):
     t = type(obj)
