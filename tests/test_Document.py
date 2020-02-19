@@ -38,7 +38,7 @@ def test_copy():
         vars1 = doc1.__dict__
         vars2 = doc2.__dict__
         assert vars1 == vars2
-        assert all([var is not int or doc1.__dict__[var] is not doc2.__dict__[var] for var in vars1])
+        assert all([type(var) is not int or doc1.__dict__[var] is not doc2.__dict__[var] for var in vars1])
 
 def test___repr__():
     doc = Document(index=-1, fields=[], analyzed_sentences=None)
