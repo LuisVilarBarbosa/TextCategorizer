@@ -46,9 +46,9 @@ def predict():
         abort(BAD_REQUEST, 'Invalid classifier')
     if basename(classifier) != classifier:
         abort(BAD_REQUEST, 'Invalid classifier')
-    doc = Document(index=-1, fields=dict({_text_field: text, _class_field: None}), analyzed_sentences=None)
+    doc = Document(index=-1, fields=dict({_text_field: text, _class_field: None}), analyzed_sentences=dict())
     _preprocessor.preprocess(text_field=_text_field, docs=[doc])
-    corpus, classifications, _idxs_to_remove, docs_lemmas = _feature_extractor.prepare(class_field=_class_field, docs=[doc], training_mode=False)
+    corpus, classifications, _idxs_to_remove, docs_lemmas = _feature_extractor.prepare(text_field=_text_field, class_field=_class_field, docs=[doc], training_mode=False)
     X, _y = _feature_extractor.generate_X_y(corpus, classifications, training_mode=False)
     try:
         clf = _classifiers.get(classifier)

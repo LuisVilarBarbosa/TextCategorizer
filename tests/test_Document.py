@@ -7,7 +7,7 @@ from text_categorizer.Document import Document
 def test___init__():
     index = -1
     fields = dict()
-    analyzed_sentences = None
+    analyzed_sentences = dict()
     doc = Document(index, fields, analyzed_sentences)
     assert doc.index == index
     assert doc.fields == fields
@@ -26,7 +26,7 @@ def test_from_data_frame():
     assert doc.index == index
     assert sorted(doc.fields.keys()) == sorted(df.columns)
     assert str(doc.fields) == str(df.to_dict('records')[index])
-    assert doc.analyzed_sentences is None
+    assert doc.analyzed_sentences == dict()
 
 def test_copy():
     test_dict = {'test_field': 'test_value'}
@@ -41,5 +41,5 @@ def test_copy():
         assert all([type(var) is not int or doc1.__dict__[var] is not doc2.__dict__[var] for var in vars1])
 
 def test___repr__():
-    doc = Document(index=-1, fields=[], analyzed_sentences=None)
-    assert repr(doc) == "Document: {'index': -1, 'fields': [], 'analyzed_sentences': None}"
+    doc = Document(index=-1, fields=dict(), analyzed_sentences=dict())
+    assert repr(doc) == "Document: {'index': -1, 'fields': {}, 'analyzed_sentences': {}}"

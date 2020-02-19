@@ -38,7 +38,7 @@ class FeatureExtractor:
         else:
             raise ValueError('The synonyms file is invalid: %s' % (synonyms_file))
 
-    def prepare(self, class_field, preprocessed_data_file=None, docs=None, training_mode=True):
+    def prepare(self, text_field, class_field, preprocessed_data_file=None, docs=None, training_mode=True):
         description = "Preparing to create classification"
         if docs is None:
             docs = get_documents(preprocessed_data_file, description=description)
@@ -53,7 +53,7 @@ class FeatureExtractor:
             if doc.analyzed_sentences is None:
                 num_ignored = num_ignored + 1
                 idxs_to_remove.append(doc.index)
-            lemmas = FeatureExtractor._filter(doc, self.upostags_to_ignore)
+            lemmas = FeatureExtractor._filter(doc, text_field, self.upostags_to_ignore)
             if self.synonyms is not None:
                 lemmas = list(map(lambda l: l if self.synonyms.get(l) is None else self.synonyms.get(l), lemmas))
             lemmas = list(filter(lambda l: l not in self.stop_words, lemmas))
@@ -68,10 +68,10 @@ class FeatureExtractor:
         return corpus_str, classifications, idxs_to_remove, corpus
 
     @staticmethod
-    def _filter(doc, upostags_to_ignore):
+    def _filter(doc, text_field, upostags_to_ignore):
         lemmas = []
         if doc.analyzed_sentences is not None:
-            for sentence in doc.analyzed_sentences:
+            for sentence in doc.analyzed_sentences[text_field]:
                 lemmas.extend([word['lemma'] for word in sentence if word['upostag'] not in upostags_to_ignore])
         return lemmas
 

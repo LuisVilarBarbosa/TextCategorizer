@@ -54,20 +54,22 @@ def test___init__():
         FeatureExtractor(synonyms_file='invalid_file.txt')
 
 def test_prepare(capsys):
+    text_field = 'text field'
+    class_field = 'class field'
     quantity = 2
-    fields = {'text field': 'Teste value.', 'class field': 'c1'}
-    analyzed_sentences = [[
+    fields = {text_field: 'Teste value.', class_field: 'c1'}
+    analyzed_sentences = {text_field: [[
         {'form': 'Teste', 'lemma': 'teste', 'upostag': None},
         {'form': 'value', 'lemma': 'value', 'upostag': None},
         {'form': '.', 'lemma': '.', 'upostag': 'PUNCT'}
-    ]] * quantity
+    ]] * quantity}
     docs1 = [
         Document(index=0, fields=fields, analyzed_sentences=analyzed_sentences),
         Document(index=1, fields=fields, analyzed_sentences=None),
     ]
     synonyms_files = [None, 'contopt_0.1_r2_c0.0.txt']
     expected_corpus_str = [[' '.join(['teste value'] * quantity), ''], [' '.join(['prova value'] * quantity), '']]
-    expected_classifications = [[fields['class field']] * quantity] * len(synonyms_files)
+    expected_classifications = [[fields[class_field]] * quantity] * len(synonyms_files)
     expected_idxs_to_remove = [[1]] * len(synonyms_files)
     expected_corpus = [[['teste', 'value'] * quantity, []], [['prova', 'value'] * quantity, []]]
     try:
@@ -76,8 +78,8 @@ def test_prepare(capsys):
         for i, synonyms_file in enumerate(synonyms_files):
             ft = FeatureExtractor(synonyms_file=synonyms_file)
             for training_mode in [True, False]:
-                corpus_str1, classifications1, idxs_to_remove1, corpus1 = ft.prepare('class field', None, docs1, training_mode)
-                corpus_str2, classifications2, idxs_to_remove2, corpus2 = ft.prepare('class field', filename, None, training_mode)
+                corpus_str1, classifications1, idxs_to_remove1, corpus1 = ft.prepare(text_field, class_field, None, docs1, training_mode)
+                corpus_str2, classifications2, idxs_to_remove2, corpus2 = ft.prepare(text_field, class_field, filename, None, training_mode)
                 assert (corpus_str1, classifications1, idxs_to_remove1, corpus1) == (corpus_str2, classifications2, idxs_to_remove2, corpus2)
                 assert corpus_str1 == expected_corpus_str[i]
                 assert classifications1 == expected_classifications[i]
@@ -91,17 +93,19 @@ def test_prepare(capsys):
         remove_and_check(filename)
 
 def test__filter():
-    doc = Document(index=-1, fields={}, analyzed_sentences=None)
+    text_field = 'text field'
+    fields = {text_field: 'Teste value.', 'class field': 'c1'}
+    doc = Document(index=-1, fields=fields, analyzed_sentences=None)
     upostags_to_ignore = ['PUNCT']
-    assert FeatureExtractor._filter(doc, upostags_to_ignore) == []
-    doc.analyzed_sentences = [[
+    assert FeatureExtractor._filter(doc, text_field, upostags_to_ignore) == []
+    doc.analyzed_sentences = {text_field: [[
         {'form': 'Test', 'lemma': 'test', 'upostag': None},
         {'form': 'value', 'lemma': 'value', 'upostag': None},
         {'form': '.', 'lemma': '.', 'upostag': 'PUNCT'}
-    ]] * 2
-    assert FeatureExtractor._filter(doc, upostags_to_ignore) == ['test', 'value'] * 2
+    ]] * 2}
+    assert FeatureExtractor._filter(doc, text_field, upostags_to_ignore) == ['test', 'value'] * 2
     upostags_to_ignore.clear()
-    assert FeatureExtractor._filter(doc, upostags_to_ignore) == ['test', 'value', '.'] * 2
+    assert FeatureExtractor._filter(doc, text_field, upostags_to_ignore) == ['test', 'value', '.'] * 2
 
 def test__generate_corpus():
     lemmas = ['lemma1', 'lemma2']

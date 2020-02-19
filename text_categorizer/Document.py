@@ -15,7 +15,7 @@ class Document:
         columns = data_frame.columns
         for i in range(len(columns)):
             fields[columns[i]] = data_frame.iloc[index, i]
-        return Document(index=index, fields=fields, analyzed_sentences=None)
+        return Document(index=index, fields=fields, analyzed_sentences=dict())
 
     def copy(self):
         if self.analyzed_sentences is None:

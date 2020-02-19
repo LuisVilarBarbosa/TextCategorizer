@@ -5,12 +5,16 @@ from tests.utils import example_excel_file, generate_available_filename, remove_
 from text_categorizer import pickle_manager, train_test_split
 from text_categorizer.FeatureExtractor import FeatureExtractor
 from text_categorizer.functions import data_frame_to_document_list
+from text_categorizer.Preprocessor import Preprocessor
 
 def test_train_test_split():
+    text_field = 'Example column'
     df = read_excel(example_excel_file)
     docs = data_frame_to_document_list(df)
+    preprocessor = Preprocessor()
+    preprocessor.preprocess(text_field, None, docs)
     ft = FeatureExtractor()
-    corpus, classifications, _, _ = ft.prepare(class_field='Classification column', preprocessed_data_file=None, docs=docs, training_mode=False)
+    corpus, classifications, _, _ = ft.prepare(text_field=text_field, class_field='Classification column', preprocessed_data_file=None, docs=docs, training_mode=False)
     test_size = 0.3
     preprocessed_data_file = generate_available_filename()
     force = False

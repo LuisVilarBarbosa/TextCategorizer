@@ -44,7 +44,7 @@ def test_predict(client):
         p = Preprocessor()
         p.preprocess(text_field=prediction_server._text_field, preprocessed_data_file=None, docs=docs)
         ft = FeatureExtractor(training_mode=True, vectorizer_file=vectorizer_path)
-        corpus, classifications, _, _ = ft.prepare(class_field=prediction_server._class_field, preprocessed_data_file=None, docs=docs, training_mode=True)
+        corpus, classifications, _, _ = ft.prepare(text_field=prediction_server._text_field, class_field=prediction_server._class_field, preprocessed_data_file=None, docs=docs, training_mode=True)
         X, y = ft.generate_X_y(corpus, classifications, training_mode=True)
         prediction_server._preprocessor = Preprocessor()
         prediction_server._feature_extractor = FeatureExtractor(training_mode=False, vectorizer_file=vectorizer_path)

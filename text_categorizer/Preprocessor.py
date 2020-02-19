@@ -49,7 +49,7 @@ class Preprocessor:
             pda = pickle_manager.PickleDumpAppend(metadata=metadata, filename=preprocessed_data_file)
         token_to_lemma = dict()
         for doc in docs:
-            if not self.stop and doc.analyzed_sentences is None:
+            if not self.stop and doc.analyzed_sentences.get(text_data_field) is None:
                 text = doc.fields[text_data_field]
                 sentences = nltk.sent_tokenize(text)
                 sentences = [nltk.word_tokenize(sent) for sent in sentences]
@@ -71,7 +71,7 @@ class Preprocessor:
                         }
                         tokens.append(token)
                     analyzed_sentences.append(tokens)
-                doc.analyzed_sentences = analyzed_sentences
+                doc.analyzed_sentences[text_data_field] = analyzed_sentences
             if self.store_data:
                 pda.dump_append(doc)
         if self.store_data:
