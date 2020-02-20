@@ -32,6 +32,7 @@ class Parameters:
         self._load_class_weights(config)
         self.generate_roc_plots = config.getboolean("Classification", "Generate ROC plots")
         self._load_spell_checker_lang(config)
+        self.final_training = config.getboolean("General", "Final training")
     
     def _load_number_of_jobs(self, config):
         self.number_of_jobs = config.get("General", "Number of jobs")

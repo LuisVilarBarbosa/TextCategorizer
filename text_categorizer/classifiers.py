@@ -1,3 +1,4 @@
+import numpy as np
 from collections import Counter
 from itertools import zip_longest
 from sklearn.metrics import accuracy_score, confusion_matrix, classification_report
@@ -101,7 +102,8 @@ class Pipeline():
     def __init__(self, classifiers):
         self.classifiers = classifiers
     
-    def start(self, X_train, y_train, X_test, y_test, n_jobs=None, set_n_accepted_probs={1,2,3}, class_weight=None, generate_roc_plots=False):
+    def start(self, X_train, y_train, X_test=np.array([]), y_test=[], n_jobs=None, set_n_accepted_probs={1,2,3}, class_weight=None, generate_roc_plots=False):
+        assert (X_test.shape[0] > 0 and y_test) or (X_test.shape[0] == 0 and not y_test) 
         logger.debug("Number of training examples: %s" % (Counter(y_train)))
         predictions = {'y_true': y_test}
         set_n_accepted_probs = set(set_n_accepted_probs)
@@ -118,18 +120,21 @@ class Pipeline():
                 clf_filename = "%s.pkl" % (f.__name__)
                 clf.fit(X_train, y_train)
                 pickle_manager.dump(clf, clf_filename)
-                y_predict_proba = clf.predict_proba(X_test)
-                dicts = predict_proba_to_dicts(clf.classes_, y_predict_proba)
-                predictions[f.__name__] = dicts
-                for n_accepted_probs in set_n_accepted_probs:
-                    logger.debug("Accepted probabilities: any of the highest %s." % (n_accepted_probs))
-                    y_predict = dicts_to_predict(dicts, y_test, n_accepted_probs)
-                    if n_accepted_probs == 1 and generate_roc_plots:
-                        generate_roc_plot(clf, X_test, y_test, 'ROC_%s.png' % (f.__name__))
-                    logger.debug("Confusion matrix:\n%s" % confusion_matrix(y_test, y_predict))
-                    logger.debug("Classification report:\n%s" % classification_report(y_test, y_predict))
-                    acc = accuracy_score(y_test, y_predict, normalize=True)
-                    logger.info("%s: %s | %ss" % (f.__name__, acc, (time() - t1)))
+                if X_test.shape[0] > 0 and y_test:
+                    y_predict_proba = clf.predict_proba(X_test)
+                    dicts = predict_proba_to_dicts(clf.classes_, y_predict_proba)
+                    predictions[f.__name__] = dicts
+                    for n_accepted_probs in set_n_accepted_probs:
+                        logger.debug("Accepted probabilities: any of the highest %s." % (n_accepted_probs))
+                        y_predict = dicts_to_predict(dicts, y_test, n_accepted_probs)
+                        if n_accepted_probs == 1 and generate_roc_plots:
+                            generate_roc_plot(clf, X_test, y_test, 'ROC_%s.png' % (f.__name__))
+                        logger.debug("Confusion matrix:\n%s" % confusion_matrix(y_test, y_predict))
+                        logger.debug("Classification report:\n%s" % classification_report(y_test, y_predict))
+                        acc = accuracy_score(y_test, y_predict, normalize=True)
+                        logger.info("%s: %s | %ss" % (f.__name__, acc, (time() - t1)))
+                else:
+                    logger.info("%s: %s | %ss" % (f.__name__, 'Finished', (time() - t1)))
             except Exception as e:
                 logger.error("%s: %s | %ss" % (f.__name__, repr(e), (time() - t1)))
         return predictions

@@ -2,7 +2,7 @@
 
 Text Categorizer is a tool that implements a configurable pipeline of methods used to train models that predict the categories of textual data.
 
-For training, it provides the ability to obtain information on the confidence of the trained models and train final models using the entire data set (to be implemented).
+For training, it provides the ability to obtain information on the confidence of the trained models and train final models using the entire data set.
 The probabilities for each class for a given example of the test subset are stored in a JSON file, so that other insights can be obtained after creating the models, and several statistics are stored in an Excel file that can store the statistics of multiple executions.
 (For the Excel report, take into account that the f1-score micro avg is the same as the accuracy score.)
 

@@ -100,7 +100,6 @@ def test_Pipeline_start():
     clfs_files = ['%s.pkl' % (clf_name) for clf_name in clfs_names]
     roc_files = ['ROC_%s.png' % (clf_name) for clf_name in clfs_names]
     X, y = load_digits(n_class=3, return_X_y=True)
-    X = X.tolist()
     y = y.tolist()
     assert all([not exists(clf_name) for clf_name in clfs_names])
     try:
@@ -124,6 +123,10 @@ def test_Pipeline_start():
         p.start(X, y, X, y, -1, {1, 2, 2, 4}, None, True)
         assert all([exists(roc_file) for roc_file in roc_files])
         classifiers.Pipeline([FailClassifier]).start(X, y, X, y)
+        predictions = p.start(X, y)
+        assert predictions == {'y_true': []}
+        with pytest.raises(AssertionError):
+            p.start(X, y, X, [])
     finally:
         for clf_file in clfs_files:
             remove_and_check(clf_file)

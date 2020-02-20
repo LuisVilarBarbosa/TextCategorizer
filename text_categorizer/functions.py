@@ -60,6 +60,7 @@ def parameters_to_data_frame(parameters_dict):
         ['Label column', 'excel_column_with_classification_data'],
         ['n_jobs', 'number_of_jobs'],
         ['Preprocessed data file', 'preprocessed_data_file'],
+        ['Final training', 'final_training'],
         ['Preprocess data', 'preprocess_data'],
         ['StanfordNLP language package', 'stanfordnlp_language_package'],
         ['StanfordNLP use gpu', 'stanfordnlp_use_gpu'],
@@ -77,7 +78,7 @@ def parameters_to_data_frame(parameters_dict):
         ['Force subsets regeneration', 'force_subsets_regeneration'],
         ['Resampling', 'resampling'],
         ['Class weights', 'class_weights'],
-        ['Generate ROC plots', 'generate_roc_plots']
+        ['Generate ROC plots', 'generate_roc_plots'],
     ]
     assert len(p) - 1 == len(col_param)
     columns = list(map(lambda item: item[0], col_param))

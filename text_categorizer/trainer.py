@@ -78,15 +78,22 @@ def main(config_filename):
     logger.info("Extracting features and splitting dataset into training and test subsets.")
     feature_extractor = FeatureExtractor(nltk_stop_words_package=parameters.nltk_stop_words_package, vectorizer_name=parameters.vectorizer, training_mode=True, feature_reduction=parameters.feature_reduction, document_adjustment_code=parameters.document_adjustment_code, remove_adjectives=parameters.remove_adjectives, synonyms_file=parameters.synonyms_file, vectorizer_file=parameters.vectorizer_file, n_jobs=parameters.number_of_jobs)
     corpus, classifications, idxs_to_remove, _docs_lemmas = feature_extractor.prepare(text_field=parameters.excel_column_with_text_data, class_field=parameters.excel_column_with_classification_data, preprocessed_data_file=parameters.preprocessed_data_file)
-    corpus_train, corpus_test, classifications_train, classifications_test = train_test_split(corpus, classifications, parameters.test_subset_size, parameters.preprocessed_data_file, parameters.force_subsets_regeneration, idxs_to_remove)
-    X_train, y_train = feature_extractor.generate_X_y(corpus_train, classifications_train, training_mode=True)
-    X_test, y_test = feature_extractor.generate_X_y(corpus_test, classifications_test, training_mode=False)
+    if parameters.final_training:
+        X_train, y_train = feature_extractor.generate_X_y(corpus, classifications, training_mode=True)
+    else:
+        corpus_train, corpus_test, classifications_train, classifications_test = train_test_split(corpus, classifications, parameters.test_subset_size, parameters.preprocessed_data_file, parameters.force_subsets_regeneration, idxs_to_remove)
+        X_train, y_train = feature_extractor.generate_X_y(corpus_train, classifications_train, training_mode=True)
+        X_test, y_test = feature_extractor.generate_X_y(corpus_test, classifications_test, training_mode=False)
     X_train, y_train = resample(parameters.resampling, X_train, y_train)
     logger.info("Running classifiers.")
     p = classifiers.Pipeline(parameters.classifiers)
     logger.info("Accuracies:")
-    predictions_dict = p.start(X_train, y_train, X_test, y_test, parameters.number_of_jobs, parameters.set_num_accepted_probs, parameters.class_weights, parameters.generate_roc_plots)
-    dump_json(predictions_dict, 'predictions.json')
+    if parameters.final_training:
+        p.start(X_train, y_train, n_jobs=parameters.number_of_jobs, set_n_accepted_probs=parameters.set_num_accepted_probs, class_weight=parameters.class_weights, generate_roc_plots=parameters.generate_roc_plots)
+    else:
+        predictions_dict = p.start(X_train, y_train, X_test, y_test, parameters.number_of_jobs, parameters.set_num_accepted_probs, parameters.class_weights, parameters.generate_roc_plots)
+        dump_json(predictions_dict, 'predictions.json')
     execution_info['End date'] = [functions.get_local_time_str()]
     logger.debug("Execution completed.")
-    functions.generate_report(execution_info, parameters.__dict__, predictions_dict)
+    if not parameters.final_training:
+        functions.generate_report(execution_info, parameters.__dict__, predictions_dict)
