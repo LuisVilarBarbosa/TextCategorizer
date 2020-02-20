@@ -23,6 +23,7 @@ def test___init__():
     assert 'initial_code_to_run_on_document' in dir(ft1.document_adjustment_code)
     assert ft1.upostags_to_ignore == ['PUNCT']
     assert ft1.synonyms is None
+    assert ft1.n_jobs == 1
     ft2 = FeatureExtractor(nltk_stop_words_package='english')
     assert ft2.stop_words == set(nltk.corpus.stopwords.words('english'))
     for vectorizer_name in ['CountVectorizer', 'HashingVectorizer', 'TfidfVectorizer']:
@@ -52,6 +53,8 @@ def test___init__():
     assert ft4.synonyms == contoPTParser.synonyms
     with pytest.raises(ValueError):
         FeatureExtractor(synonyms_file='invalid_file.txt')
+    ft5 = FeatureExtractor(n_jobs=2)
+    assert ft5.n_jobs == 2
 
 def test_prepare(capsys):
     text_field = 'text field'

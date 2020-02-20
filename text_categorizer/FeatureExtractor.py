@@ -15,7 +15,7 @@ from text_categorizer.logger import logger
 from text_categorizer.ui import get_documents, progress
 
 class FeatureExtractor:
-    def __init__(self, nltk_stop_words_package=None, vectorizer_name="TfidfVectorizer", training_mode=True, feature_reduction=None, document_adjustment_code="text_categorizer/document_updater.py", remove_adjectives=False, synonyms_file=None, vectorizer_file="vectorizer.pkl"):
+    def __init__(self, nltk_stop_words_package=None, vectorizer_name="TfidfVectorizer", training_mode=True, feature_reduction=None, document_adjustment_code="text_categorizer/document_updater.py", remove_adjectives=False, synonyms_file=None, vectorizer_file="vectorizer.pkl", n_jobs=1):
         download(info_or_id='stopwords', quiet=True)
         self.stop_words = set() if nltk_stop_words_package is None else set(stopwords.words(nltk_stop_words_package))
         self.vectorizer_file = vectorizer_file
@@ -37,6 +37,7 @@ class FeatureExtractor:
             self.synonyms = contoPTParser.synonyms
         else:
             raise ValueError('The synonyms file is invalid: %s' % (synonyms_file))
+        self.n_jobs = n_jobs
 
     def prepare(self, text_field, class_field, preprocessed_data_file=None, docs=None, training_mode=True):
         description = "Preparing to create classification"
@@ -96,9 +97,9 @@ class FeatureExtractor:
         if self.feature_reduction is None:
             return X, y
         elif self.feature_reduction == "LDA":
-            return FeatureExtractor.LatentDirichletAllocation(X, y)
+            return FeatureExtractor.LatentDirichletAllocation(X, y, n_jobs=self.n_jobs)
         elif self.feature_reduction == "MDS":
-            return FeatureExtractor.MDS(X, y)
+            return FeatureExtractor.MDS(X, y, n_jobs=self.n_jobs)
         else:
             raise ValueError("Invalid feature reduction technique: %s" % (self.feature_reduction))
 
@@ -116,7 +117,7 @@ class FeatureExtractor:
         return idxs_to_remove
 
     @staticmethod
-    def LatentDirichletAllocation(X, y, filename='LatentDirichletAllocation.pkl'):
+    def LatentDirichletAllocation(X, y, filename='LatentDirichletAllocation.pkl', n_jobs=1):
         logger.info("Running %s." % (LatentDirichletAllocation.__name__))
         if exists(filename):
             lda = pickle_manager.load(filename)
@@ -126,7 +127,7 @@ class FeatureExtractor:
                     topic_word_prior=None, learning_method='batch', learning_decay=0.7,
                     learning_offset=10.0, max_iter=10, batch_size=128, evaluate_every=-1,
                     total_samples=1000000.0, perp_tol=0.1, mean_change_tol=0.001,
-                    max_doc_update_iter=100, n_jobs=None, verbose=0, random_state=random_state,
+                    max_doc_update_iter=100, n_jobs=n_jobs, verbose=0, random_state=random_state,
                     n_topics=None)
             logger.debug("%s configuration: %s" % (lda.__class__.__name__, lda.__dict__))
             X = lda.fit_transform(X, y)
@@ -194,10 +195,10 @@ class FeatureExtractor:
             return FeatureExtractor.chunked_embed(corpus, embeddings, int(chunk_size / 2))
 
     @staticmethod
-    def MDS(X, y):
+    def MDS(X, y, n_jobs=1):
         logger.info("Running %s." % (MDS.__name__))
         mds = MDS(n_components=2, metric=True, n_init=4, max_iter=300, verbose=0, eps=0.001,
-                    n_jobs=None, random_state=random_state, dissimilarity='euclidean')
+                    n_jobs=n_jobs, random_state=random_state, dissimilarity='euclidean')
         logger.debug("%s configuration: %s" % (mds.__class__.__name__, mds.__dict__))
         if 'toarray' in dir(X):
             X = X.toarray()

@@ -31,6 +31,9 @@ def test___init__():
     assert p2.store_data is True
     p3 = Preprocessor(spell_checker_lang='en_US')
     assert p3.spell_checker.hunspell.lang == 'en_US'
+    assert p3.spell_checker.hunspell.max_threads == 1
+    p4 = Preprocessor(spell_checker_lang='en_US', n_jobs=2)
+    assert p4.spell_checker.hunspell.max_threads == 2
 
 def test_preprocess(capsys):
     text_field = 'Test field'

@@ -1,5 +1,6 @@
 import pytest
-from base64 import b64encode 
+from base64 import b64encode
+from multiprocessing import cpu_count
 from numpy import float64, int32, int64
 from pandas import read_excel
 from tests.test_classifiers import clfs
@@ -201,11 +202,13 @@ def test_main(monkeypatch):
             assert prediction_server._preprocessor.language == 'en'
             assert prediction_server._preprocessor.store_data is False
             assert prediction_server._preprocessor.spell_checker is None
+            #assert prediction_server._preprocessor.spell_checker.hunspell.max_threads == cpu_count()
             assert len(prediction_server._feature_extractor.stop_words) > 0
             assert prediction_server._feature_extractor.feature_reduction is None
             assert prediction_server._feature_extractor.document_adjustment_code.__file__ == 'text_categorizer/document_updater.py'
             assert prediction_server._feature_extractor.synonyms is None
             assert prediction_server._feature_extractor.vectorizer_file == vectorizer_file
+            assert prediction_server._feature_extractor.n_jobs == cpu_count()
         finally:
             utils.remove_and_check(vectorizer_file)
 

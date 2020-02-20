@@ -14,7 +14,7 @@ class Preprocessor:
         signal.SIGTERM,     # SIGTERM is sent by Docker on CTRL-C or on a call to 'docker stop'.
     ]
 
-    def __init__(self, stanfordnlp_language_package="en", stanfordnlp_use_gpu=False, stanfordnlp_resources_dir="./stanfordnlp_resources", store_data=False, spell_checker_lang=None):
+    def __init__(self, stanfordnlp_language_package="en", stanfordnlp_use_gpu=False, stanfordnlp_resources_dir="./stanfordnlp_resources", store_data=False, spell_checker_lang=None, n_jobs=1):
         quiet = True
         nltk.download('wordnet', quiet=quiet)
         nltk.download('punkt', quiet=quiet)
@@ -29,7 +29,7 @@ class Preprocessor:
             self.spell_checker = None
         else:
             logger.info("The spell checker is enabled for %s." % (spell_checker_lang))
-            self.spell_checker = SpellChecker(language=spell_checker_lang)
+            self.spell_checker = SpellChecker(language=spell_checker_lang, n_jobs=n_jobs)
 
     def preprocess(self, text_field, preprocessed_data_file=None, docs=None):
         return self._nltk_process(text_data_field=text_field, preprocessed_data_file=preprocessed_data_file, docs=docs)
