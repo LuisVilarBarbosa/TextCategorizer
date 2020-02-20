@@ -1,6 +1,7 @@
 from configparser import ConfigParser
 from multiprocessing import cpu_count
 from flair.embeddings import DocumentPoolEmbeddings
+from os.path import abspath
 from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer, HashingVectorizer
 from text_categorizer import classifiers
 
@@ -8,17 +9,17 @@ class Parameters:
     def __init__(self, config_filename):
         config = ConfigParser()
         config.read(config_filename)
-        self.excel_file = config.get("Preprocessing", "Excel file")
+        self.excel_file = abspath(config.get("Preprocessing", "Excel file"))
         self.excel_column_with_text_data = config.get("General", "Excel column with text data")
         self.excel_column_with_classification_data = config.get("General", "Excel column with classification data")
         self._load_nltk_stop_words_package(config)
         self._load_number_of_jobs(config)
         self.stanfordnlp_language_package = config.get("Preprocessing", "StanfordNLP language package")
         self.stanfordnlp_use_gpu = config.getboolean("Preprocessing", "StanfordNLP use GPU")
-        self.stanfordnlp_resources_dir = config.get("Preprocessing", "StanfordNLP resources directory")
-        self.preprocessed_data_file = config.get("General", "Preprocessed data file")
+        self.stanfordnlp_resources_dir = abspath(config.get("Preprocessing", "StanfordNLP resources directory"))
+        self.preprocessed_data_file = abspath(config.get("General", "Preprocessed data file"))
         self.preprocess_data = config.getboolean("Preprocessing", "Preprocess data")
-        self.document_adjustment_code = config.get("Feature extraction", "Document adjustment script")
+        self.document_adjustment_code = abspath(config.get("Feature extraction", "Document adjustment script"))
         self._load_vectorizer(config)
         self._load_feature_reduction(config)
         self._load_accepted_probs(config)
@@ -28,11 +29,11 @@ class Parameters:
         self.remove_adjectives = config.getboolean("Feature extraction", "Remove adjectives")
         self._load_synonyms_file(config)
         self._load_resampling(config)
-        self.vectorizer_file = config.get("Feature extraction", "Vectorizer file")
         self._load_class_weights(config)
         self.generate_roc_plots = config.getboolean("Classification", "Generate ROC plots")
         self._load_spell_checker_lang(config)
         self.final_training = config.getboolean("General", "Final training")
+        self.data_dir = abspath(config.get("General", "Data directory"))
     
     def _load_number_of_jobs(self, config):
         self.number_of_jobs = config.get("General", "Number of jobs")
@@ -82,6 +83,8 @@ class Parameters:
         self.synonyms_file = config.get("Feature extraction", "Synonyms file")
         if self.synonyms_file == "None":
             self.synonyms_file = None
+        else:
+            self.synonyms_file = abspath(self.synonyms_file)
     
     def _load_resampling(self, config):
         self.resampling = config.get("Classification", "Resampling")

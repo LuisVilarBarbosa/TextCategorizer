@@ -111,16 +111,15 @@ def load_feature_weights(clf):
                     feature_weights[i] = set(zip(features, values[i]))
     return feature_weights
 
-def main(config_filename, port):
+def main(parameters, port):
     global _text_field, _class_field, _preprocessor, _feature_extractor
     limit_port = 1024
     if port <= limit_port:
         print("Please, indicate a port higher than %s." % (limit_port))
         quit()
     logger.disabled = True
-    parameters = Parameters(config_filename)
     _text_field = parameters.excel_column_with_text_data
     _class_field = parameters.excel_column_with_classification_data
     _preprocessor = Preprocessor(stanfordnlp_language_package=parameters.stanfordnlp_language_package, stanfordnlp_use_gpu=parameters.stanfordnlp_use_gpu, stanfordnlp_resources_dir=parameters.stanfordnlp_resources_dir, store_data=False, spell_checker_lang=parameters.spell_checker_lang, n_jobs=parameters.number_of_jobs)
-    _feature_extractor = FeatureExtractor(nltk_stop_words_package=parameters.nltk_stop_words_package, vectorizer_name=parameters.vectorizer, training_mode=False, feature_reduction=parameters.feature_reduction, document_adjustment_code=parameters.document_adjustment_code, remove_adjectives=parameters.remove_adjectives, synonyms_file=parameters.synonyms_file, vectorizer_file=parameters.vectorizer_file, n_jobs=parameters.number_of_jobs)
+    _feature_extractor = FeatureExtractor(nltk_stop_words_package=parameters.nltk_stop_words_package, vectorizer_name=parameters.vectorizer, training_mode=False, feature_reduction=parameters.feature_reduction, document_adjustment_code=parameters.document_adjustment_code, remove_adjectives=parameters.remove_adjectives, synonyms_file=parameters.synonyms_file, n_jobs=parameters.number_of_jobs)
     app.run(host='0.0.0.0', port=port, debug=False) # host='0.0.0.0' allows access from any network.

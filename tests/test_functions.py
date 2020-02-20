@@ -5,7 +5,7 @@ import pytest
 import time
 from itertools import zip_longest
 from multiprocessing import cpu_count
-from os.path import exists
+from os.path import abspath, exists
 from sys import modules
 from tests import utils
 from text_categorizer import functions, trainer
@@ -92,24 +92,24 @@ def test_predictions_to_data_frame():
 
 def test_parameters_to_data_frame():
     expected_dict = {
-        'Excel file': 'example_excel_file.xlsx',
+        'Excel file': abspath('example_excel_file.xlsx'),
         'Text column': 'Example column',
         'Label column': 'Classification column',
         'n_jobs': cpu_count(),
-        'Preprocessed data file': 'preprocessed_data-example.pkl',
+        'Preprocessed data file': abspath('./data/preprocessed_data.pkl'),
+        'Data directory': abspath('./data'),
         'Final training': False,
         'Preprocess data': True,
         'StanfordNLP language package': 'en',
         'StanfordNLP use gpu': False,
-        'StanfordNLP resources dir': './stanfordnlp_resources',
+        'StanfordNLP resources dir': abspath('./stanfordnlp_resources'),
         'Spell checker language': 'None',
         'NLTK stop words package': 'english',
-        'Document adjustment code': 'text_categorizer/document_updater.py',
+        'Document adjustment code': abspath('text_categorizer/document_updater.py'),
         'Vectorizer': 'TfidfVectorizer',
         'Feature reduction': 'None',
         'Remove adjectives': False,
         'Synonyms file': 'None',
-        'Vectorizer file': 'vectorizer.pkl',
         'Accepted probabilities': {1,2,3},
         'Test size': 0.3,
         'Force subsets regeneration': False,

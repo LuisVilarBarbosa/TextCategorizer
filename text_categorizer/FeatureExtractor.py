@@ -3,7 +3,7 @@ from collections import Counter
 from flair.embeddings import DocumentPoolEmbeddings, Sentence, BertEmbeddings
 from nltk import download
 from nltk.corpus import stopwords
-from os.path import exists
+from os.path import basename, exists
 from sklearn.decomposition import LatentDirichletAllocation
 from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer, HashingVectorizer
 from sklearn.manifold import MDS
@@ -31,7 +31,7 @@ class FeatureExtractor:
         if synonyms_file is None:
             logger.info("The substitution of synonyms is disabled.")
             self.synonyms = None
-        elif synonyms_file == 'contopt_0.1_r2_c0.0.txt':
+        elif basename(synonyms_file) == 'contopt_0.1_r2_c0.0.txt':
             logger.info("The substitution of synonyms is enabled.")
             contoPTParser = ContoPTParser(synonyms_file)
             self.synonyms = contoPTParser.synonyms

@@ -16,10 +16,10 @@ def test_main(monkeypatch, capsys):
     with monkeypatch.context() as m:
         trainer_main_code = trainer.main.__code__
         prediction_server_main_code = prediction_server.main.__code__
-        assert trainer_main_code.co_varnames[0:trainer_main_code.co_argcount] == ('config_filename',)
-        assert prediction_server_main_code.co_varnames[0:prediction_server_main_code.co_argcount] == ('config_filename', 'port',)
-        m.setattr("text_categorizer.trainer.main", lambda config_filename: None)
-        m.setattr("text_categorizer.prediction_server.main", lambda config_filename, port: None)
+        assert trainer_main_code.co_varnames[0:trainer_main_code.co_argcount] == ('parameters',)
+        assert prediction_server_main_code.co_varnames[0:prediction_server_main_code.co_argcount] == ('parameters', 'port',)
+        m.setattr("text_categorizer.trainer.main", lambda parameters: None)
+        m.setattr("text_categorizer.prediction_server.main", lambda parameters, port: None)
         for i in range(len(all_args)):
             argv = all_args[i]
             __main__.main(argv)

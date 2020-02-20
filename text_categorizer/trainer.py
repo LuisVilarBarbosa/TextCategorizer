@@ -47,11 +47,10 @@ def dump_json(obj, filename):
     f.close()
 
 #@profile
-def main(config_filename):
+def main(parameters):
     execution_info = pd.DataFrame()
     execution_info['Start date'] = [functions.get_local_time_str()]
     logger.debug("Starting execution.")
-    parameters = Parameters(config_filename)
     if parameters.excel_file == '20newsgroups':
         parameters = load_20newsgroups(parameters)
     if parameters.preprocess_data:
@@ -76,7 +75,7 @@ def main(config_filename):
             logger.error("The indicated preprocessed data file does not exist.")
             quit()
     logger.info("Extracting features and splitting dataset into training and test subsets.")
-    feature_extractor = FeatureExtractor(nltk_stop_words_package=parameters.nltk_stop_words_package, vectorizer_name=parameters.vectorizer, training_mode=True, feature_reduction=parameters.feature_reduction, document_adjustment_code=parameters.document_adjustment_code, remove_adjectives=parameters.remove_adjectives, synonyms_file=parameters.synonyms_file, vectorizer_file=parameters.vectorizer_file, n_jobs=parameters.number_of_jobs)
+    feature_extractor = FeatureExtractor(nltk_stop_words_package=parameters.nltk_stop_words_package, vectorizer_name=parameters.vectorizer, training_mode=True, feature_reduction=parameters.feature_reduction, document_adjustment_code=parameters.document_adjustment_code, remove_adjectives=parameters.remove_adjectives, synonyms_file=parameters.synonyms_file, n_jobs=parameters.number_of_jobs)
     corpus, classifications, idxs_to_remove, _docs_lemmas = feature_extractor.prepare(text_field=parameters.excel_column_with_text_data, class_field=parameters.excel_column_with_classification_data, preprocessed_data_file=parameters.preprocessed_data_file)
     if parameters.final_training:
         X_train, y_train = feature_extractor.generate_X_y(corpus, classifications, training_mode=True)

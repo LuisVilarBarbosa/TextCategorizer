@@ -2,12 +2,14 @@ import pytest
 from base64 import b64encode
 from multiprocessing import cpu_count
 from numpy import float64, int32, int64
+from os.path import abspath
 from pandas import read_excel
 from tests.test_classifiers import clfs
 from tests import utils
 from text_categorizer import prediction_server
 from text_categorizer.FeatureExtractor import FeatureExtractor
 from text_categorizer.functions import data_frame_to_document_list
+from text_categorizer.Parameters import Parameters
 from text_categorizer.pickle_manager import dump
 from text_categorizer.Preprocessor import Preprocessor
 
@@ -187,15 +189,16 @@ def test_load_feature_weights():
             assert replace_tuples_values(prediction_server.load_feature_weights(clf), value=value) == expected_values[clf_name]
 
 def test_main(monkeypatch):
+    parameters = Parameters(utils.config_file)
     with pytest.raises(SystemExit):
-        prediction_server.main(utils.config_file, 1024)
+        prediction_server.main(parameters, 1024)
     with monkeypatch.context() as m:
         m.setattr("text_categorizer.prediction_server.app.run", lambda host, port, debug: None)
         try:
             vectorizer_file = 'vectorizer.pkl'
             dump(FeatureExtractor(vectorizer_name='TfidfVectorizer').vectorizer, vectorizer_file)
             assert not prediction_server.logger.disabled
-            prediction_server.main(utils.config_file, 1025)
+            prediction_server.main(parameters, 1025)
             assert prediction_server.logger.disabled
             assert prediction_server._text_field == 'Example column'
             assert prediction_server._class_field == 'Classification column'
@@ -205,7 +208,7 @@ def test_main(monkeypatch):
             #assert prediction_server._preprocessor.spell_checker.hunspell.max_threads == cpu_count()
             assert len(prediction_server._feature_extractor.stop_words) > 0
             assert prediction_server._feature_extractor.feature_reduction is None
-            assert prediction_server._feature_extractor.document_adjustment_code.__file__ == 'text_categorizer/document_updater.py'
+            assert prediction_server._feature_extractor.document_adjustment_code.__file__ == abspath('text_categorizer/document_updater.py')
             assert prediction_server._feature_extractor.synonyms is None
             assert prediction_server._feature_extractor.vectorizer_file == vectorizer_file
             assert prediction_server._feature_extractor.n_jobs == cpu_count()
