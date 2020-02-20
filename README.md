@@ -22,6 +22,8 @@ The first one is the recommended one because it is more stable and the following
 - The order of the output can be wrong because our output is sent using a logger, but the output of other packages is not.
 - The debug mode on the prediction server doesn't work because the listener of file changes doesn't detect correctly the location of the files.
 
+**Important:** The configuration file used for the training mode must not be changed if used for the prediction mode unless you know how the changes will be reflected in the execution of the program.
+
 ### Prerequisites
 
 - To execute natively, a machine with Anaconda3 64-bit or Miniconda3 64-bit installed is required.
