@@ -27,7 +27,7 @@ class FailClassifier:
     def __init__(self, **kwargs):
         pass
 
-    def fit(self, **kwargs):
+    def fit(self, *args):
         raise Exception()
 
 def test_classifiers():
