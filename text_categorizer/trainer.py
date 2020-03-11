@@ -19,7 +19,7 @@ def load_20newsgroups(parameters):
     p.excel_file = ''.join([p.excel_file, '.xlsx'])
     p.excel_column_with_text_data = 'data'
     p.excel_column_with_classification_data = 'target'
-    if not exists(p.excel_file) and not exists(p.preprocessed_data_file):
+    if not exists(p.excel_file):
         bunch = fetch_20newsgroups(data_home='.', subset='all', categories=None, shuffle=False, random_state=random_state, remove=(), download_if_missing=True)
         df = pd.DataFrame()
         df[p.excel_column_with_text_data] = bunch.data
