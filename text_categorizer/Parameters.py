@@ -12,52 +12,62 @@ class Parameters:
         self.excel_file = abspath(config.get("Preprocessing", "Excel file"))
         self.excel_column_with_text_data = config.get("General", "Excel column with text data")
         self.excel_column_with_classification_data = config.get("General", "Excel column with classification data")
-        self._load_nltk_stop_words_package(config)
-        self._load_number_of_jobs(config)
+        self.nltk_stop_words_package = Parameters._parse_None(config.get("Feature extraction", "NLTK stop words package"))
+        self.number_of_jobs = Parameters._parse_number_of_jobs(config.get("General", "Number of jobs"))
         self.stanfordnlp_language_package = config.get("Preprocessing", "StanfordNLP language package")
         self.stanfordnlp_use_gpu = config.getboolean("Preprocessing", "StanfordNLP use GPU")
         self.stanfordnlp_resources_dir = abspath(config.get("Preprocessing", "StanfordNLP resources directory"))
         self.preprocessed_data_file = abspath(config.get("General", "Preprocessed data file"))
         self.preprocess_data = config.getboolean("Preprocessing", "Preprocess data")
         self.document_adjustment_code = abspath(config.get("Feature extraction", "Document adjustment script"))
-        self._load_vectorizer(config)
-        self._load_feature_reduction(config)
-        self._load_accepted_probs(config)
-        self._load_classifiers(config)
+        self.vectorizer = Parameters._parse_vectorizer(config.get("Feature extraction", "Vectorizer"))
+        self.feature_reduction = Parameters._parse_feature_reduction(config.get("Feature extraction", "Feature reduction"))
+        self.set_num_accepted_probs = Parameters._parse_accepted_probs(config.get("Classification", "Number of probabilities accepted"))
+        self.classifiers = Parameters._parse_classifiers(config.get("Classification", "Classifiers"))
         self.test_subset_size = config.getfloat("Classification", "Test subset size")
         self.force_subsets_regeneration = config.getboolean("Classification", "Force regeneration of training and test subsets")
         self.remove_adjectives = config.getboolean("Feature extraction", "Remove adjectives")
-        self._load_synonyms_file(config)
-        self._load_resampling(config)
-        self._load_class_weights(config)
+        self.synonyms_file = Parameters._parse_synonyms_file(config.get("Feature extraction", "Synonyms file"))
+        self.resampling = Parameters._parse_resampling(config.get("Classification", "Resampling"))
+        self.class_weights = Parameters._parse_class_weights(config.get("Classification", "Class weights"))
         self.generate_roc_plots = config.getboolean("Classification", "Generate ROC plots")
-        self._load_spell_checker_lang(config)
+        self.spell_checker_lang = Parameters._parse_None(config.get("Preprocessing", "Spell checker language"))
         self.final_training = config.getboolean("General", "Final training")
         self.data_dir = abspath(config.get("General", "Data directory"))
     
-    def _load_number_of_jobs(self, config):
-        self.number_of_jobs = config.get("General", "Number of jobs")
-        if self.number_of_jobs == "None":
-            self.number_of_jobs = 1
+    @staticmethod
+    def _parse_number_of_jobs(number_of_jobs):
+        my_number_of_jobs = Parameters._parse_None(number_of_jobs)
+        if my_number_of_jobs is None:
+            my_number_of_jobs = 1
         else:
-            self.number_of_jobs = int(self.number_of_jobs)
-        if self.number_of_jobs < 0:
-            self.number_of_jobs = cpu_count() + 1 + self.number_of_jobs
-        assert self.number_of_jobs != 0
+            my_number_of_jobs = int(my_number_of_jobs)
+        if my_number_of_jobs < 0:
+            my_number_of_jobs = cpu_count() + 1 + my_number_of_jobs
+        assert my_number_of_jobs != 0
+        return my_number_of_jobs
     
-    def _load_vectorizer(self, config):
-        self.vectorizer = config.get("Feature extraction", "Vectorizer")
-        assert self.vectorizer in [TfidfVectorizer.__name__, CountVectorizer.__name__, HashingVectorizer.__name__, DocumentPoolEmbeddings.__name__]
+    @staticmethod
+    def _parse_vectorizer(vectorizer):
+        accepted_vectorizers = [
+            TfidfVectorizer.__name__,
+            CountVectorizer.__name__,
+            HashingVectorizer.__name__,
+            DocumentPoolEmbeddings.__name__,
+        ]
+        assert vectorizer in accepted_vectorizers
+        return vectorizer
     
-    def _load_accepted_probs(self, config):
-        n_accepted_probs = config.get("Classification", "Number of probabilities accepted").split(",")
-        self.set_num_accepted_probs = set(map(lambda v: int(v), n_accepted_probs))
-        assert len(self.set_num_accepted_probs) > 0
-        for v in self.set_num_accepted_probs:
+    @staticmethod
+    def _parse_accepted_probs(n_accepted_probs):
+        set_num_accepted_probs = set(map(lambda v: int(v), n_accepted_probs.split(",")))
+        for v in set_num_accepted_probs:
             assert v >= 1
+        return set_num_accepted_probs
     
-    def _load_classifiers(self, config):
-        clfs = [
+    @staticmethod
+    def _parse_classifiers(clfs):
+        accepted_clfs = [
             classifiers.RandomForestClassifier,
             classifiers.BernoulliNB,
             classifiers.MultinomialNB,
@@ -71,45 +81,40 @@ class Parameters:
             classifiers.SGDClassifier,
             classifiers.BaggingClassifier,
         ]
-        clfs_names = config.get("Classification", "Classifiers").split(",")
-        self.classifiers = []
-        for clf in clfs:
+        clfs_names = clfs.split(",")
+        my_classifiers = []
+        for clf in accepted_clfs:
             if clf.__name__ in clfs_names:
-                self.classifiers.append(clf)
-        assert len(self.classifiers) > 0
-        assert len(self.classifiers) == len(clfs_names)
+                my_classifiers.append(clf)
+        assert len(my_classifiers) > 0
+        assert len(my_classifiers) == len(clfs_names)
+        return my_classifiers
     
-    def _load_synonyms_file(self, config):
-        self.synonyms_file = config.get("Feature extraction", "Synonyms file")
-        if self.synonyms_file == "None":
-            self.synonyms_file = None
+    @staticmethod
+    def _parse_synonyms_file(synonyms_file):
+        my_synonyms_file = Parameters._parse_None(synonyms_file)
+        if my_synonyms_file is None:
+            return my_synonyms_file
         else:
-            self.synonyms_file = abspath(self.synonyms_file)
+            return abspath(my_synonyms_file)
     
-    def _load_resampling(self, config):
-        self.resampling = config.get("Classification", "Resampling")
-        assert self.resampling in ["None", "RandomOverSample", "RandomUnderSample"]
-        if self.resampling == "None":
-            self.resampling = None
+    @staticmethod
+    def _parse_resampling(resampling):
+        assert resampling in ["None", "RandomOverSample", "RandomUnderSample"]
+        return Parameters._parse_None(resampling)
     
-    def _load_class_weights(self, config):
-        self.class_weights = config.get("Classification", "Class weights")
-        assert self.class_weights in ["None", "balanced"]
-        if self.class_weights == "None":
-            self.class_weights = None
+    @staticmethod
+    def _parse_class_weights(class_weights):
+        assert class_weights in ["None", "balanced"]
+        return Parameters._parse_None(class_weights)
 
-    def _load_feature_reduction(self, config):
-        self.feature_reduction = config.get("Feature extraction", "Feature reduction")
-        assert self.feature_reduction in ["None", "LDA", "MDS"]
-        if self.feature_reduction == "None":
-            self.feature_reduction = None
+    @staticmethod
+    def _parse_feature_reduction(feature_reduction):
+        assert feature_reduction in ["None", "LDA", "MDS"]
+        return Parameters._parse_None(feature_reduction)
 
-    def _load_nltk_stop_words_package(self, config):
-        self.nltk_stop_words_package = config.get("Feature extraction", "NLTK stop words package")
-        if self.nltk_stop_words_package == "None":
-            self.nltk_stop_words_package = None
-
-    def _load_spell_checker_lang(self, config):
-        self.spell_checker_lang = config.get("Preprocessing", "Spell checker language")
-        if self.spell_checker_lang == "None":
-            self.spell_checker_lang = None
+    @staticmethod
+    def _parse_None(value):
+        if value == "None":
+            return None
+        return value
