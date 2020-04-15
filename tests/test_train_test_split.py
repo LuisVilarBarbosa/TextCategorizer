@@ -37,8 +37,12 @@ def test_train_test_split():
             pickle_manager.set_docs_metadata(m, preprocessed_data_file)
             train_test_split.train_test_split(corpus, classifications, test_size, preprocessed_data_file, force, idxs_to_remove)
             np.testing.assert_equal(pickle_manager.get_docs_metadata(preprocessed_data_file), desired)
-        train_test_split.train_test_split(corpus, classifications, test_size, preprocessed_data_file, force, idxs_to_remove)
-        np.testing.assert_equal(pickle_manager.get_docs_metadata(preprocessed_data_file), desired)
+        for key, value in [('test_size', 0.2), ('training_set_indexes', np.array([1, 0, 2, 8, 3]))]:
+            m = desired.copy()
+            m[key] = value
+            pickle_manager.set_docs_metadata(m, preprocessed_data_file)
+            train_test_split.train_test_split(corpus, classifications, test_size, preprocessed_data_file, force, idxs_to_remove)
+            np.testing.assert_equal(pickle_manager.get_docs_metadata(preprocessed_data_file), m)
     finally:
         remove_and_check(preprocessed_data_file)
     pass
