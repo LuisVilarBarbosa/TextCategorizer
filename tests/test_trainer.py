@@ -66,4 +66,31 @@ def test_dump_json():
     assert d1 == d2
 
 def test_main():
-    pass
+    parameters = Parameters(utils.config_file)
+    parameters.excel_file = "invalid_excel_file"
+    parameters.preprocessed_data_file = "invalid_data_file"
+    with pytest.raises(SystemExit):
+        trainer.main(parameters)
+    parameters = Parameters(utils.config_file)
+    assert not os.path.exists(parameters.preprocessed_data_file)
+    try:
+        trainer.main(parameters)
+        assert os.path.exists(parameters.preprocessed_data_file)
+        assert os.path.exists("predictions.json")
+        assert os.path.exists("report.xlsx")
+    finally:
+        utils.remove_and_check(parameters.preprocessed_data_file)
+        utils.remove_and_check("predictions.json")
+        utils.remove_and_check("report.xlsx")
+    parameters.excel_file = "20newsgroups"
+    parameters.preprocess_data = False
+    with pytest.raises(SystemExit):
+        trainer.main(parameters)
+    parameters = Parameters(utils.config_file)
+    parameters.final_training = True
+    try:
+        trainer.main(parameters)
+    finally:
+        assert not os.path.exists("predictions.json")
+        assert not os.path.exists("report.xlsx")
+        utils.remove_and_check(parameters.preprocessed_data_file)
