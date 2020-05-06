@@ -100,9 +100,7 @@ def test_parameters_to_data_frame():
         'Data directory': abspath('./data'),
         'Final training': False,
         'Preprocess data': True,
-        'StanfordNLP language package': 'en',
-        'StanfordNLP use gpu': False,
-        'StanfordNLP resources dir': abspath('./stanfordnlp_resources'),
+        'MosesTokenizer language code': 'en',
         'Spell checker language': 'None',
         'NLTK stop words package': 'english',
         'Document adjustment code': abspath('text_categorizer/document_updater.py'),
@@ -119,7 +117,7 @@ def test_parameters_to_data_frame():
     }
     p = Parameters(utils.config_file)
     df = functions.parameters_to_data_frame(p.__dict__)
-    assert df.shape == (1, 24)
+    assert df.shape == (1, 22)
     assert df.iloc[0].to_dict() == expected_dict
 
 def test_generate_report():
@@ -147,7 +145,7 @@ def test_generate_report():
             assert exists(excel_file1) is file_exists
             df = functions.generate_report(execution_info, parameters_dict, predictions_dict, excel_file1)
             df.to_excel(excel_file2, index=False)
-            assert df.shape == (i + 1, 46)
+            assert df.shape == (i + 1, 44)
             expected_df = pd.concat([expected_df, expected_df_row0])
             pd.util.testing.assert_frame_equal(df, expected_df)
             pd.util.testing.assert_frame_equal(pd.read_excel(excel_file1), pd.read_excel(excel_file2))

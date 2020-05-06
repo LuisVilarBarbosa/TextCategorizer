@@ -202,7 +202,7 @@ def test_main(monkeypatch):
             assert prediction_server.logger.disabled
             assert prediction_server._text_field == 'Example column'
             assert prediction_server._class_field == 'Classification column'
-            assert prediction_server._preprocessor.language == 'en'
+            assert prediction_server._preprocessor.mosestokenizer_language_code == 'en'
             assert prediction_server._preprocessor.store_data is False
             assert prediction_server._preprocessor.spell_checker is None
             #assert prediction_server._preprocessor.spell_checker.hunspell.max_threads == cpu_count()

@@ -158,7 +158,7 @@ docker-compose logs -f # Shows the output. (Press CTRL+C to close.)
 
 ## Built With
 
-* [StanfordNLP](https://stanfordnlp.github.io/stanfordnlp/) - Used for preprocessing.
+* [MosesTokenizer](https://github.com/luismsgomes/mosestokenizer/) - Used for preprocessing.
 * [NLTK](http://www.nltk.org/) - Used for preprocessing.
 * [scikit-learn](https://scikit-learn.org/stable/) - Used to extract features and train/use the predictive models.
 

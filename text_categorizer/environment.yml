@@ -6,6 +6,7 @@ dependencies:
 - torchvision==0.2.2
 - cudatoolkit==10.0.130
 - pip==19.1.1
+- perl==5.26.2.*
 - pip:
   - pandas==0.24.1
   - xlrd==1.2.0
@@ -13,7 +14,6 @@ dependencies:
   - profilehooks==1.10.0
   - numpy==1.16.1
   - scikit-learn==0.20.3
-  - stanfordnlp==0.1.2
   - tqdm==4.31.1
   - Flask==1.0.2
   - Flask-HTTPAuth==3.2.4 
@@ -22,3 +22,4 @@ dependencies:
   - pytest-cov==2.7.1
   - xlsxwriter==1.2.1
   - https://github.com/MSeal/cython_hunspell/archive/0ac159ff3bfde05d4920e89ac7fba3f8b1b989da.zip
+  - mosestokenizer==1.1.0

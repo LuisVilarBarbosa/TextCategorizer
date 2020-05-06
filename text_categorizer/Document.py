@@ -1,5 +1,4 @@
 import pandas
-import stanfordnlp
 
 class Document:
     def __init__(self, index, fields, analyzed_sentences):

@@ -1,6 +1,5 @@
 import pytest
 from pandas import DataFrame, read_excel
-from stanfordnlp.pipeline.doc import Document as SNLPDoc
 from tests.utils import example_excel_file
 from text_categorizer.Document import Document
 

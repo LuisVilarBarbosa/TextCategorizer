@@ -9,7 +9,6 @@ from text_categorizer.Preprocessor import Preprocessor
 
 def test_stop_signals():
     assert Preprocessor.stop_signals == [
-        signal.SIGINT,      # SIGINT is sent by CTRL-C.
         signal.SIGTERM,     # SIGTERM is sent by Docker on CTRL-C or on a call to 'docker stop'.
     ]
 
@@ -17,12 +16,9 @@ def test___init__():
     p1 = Preprocessor()
     try:
         nltk.data.find('corpora/wordnet')
-        nltk.data.find('tokenizers/punkt')
-        nltk.data.find('taggers/averaged_perceptron_tagger')
-        nltk.data.find('taggers/universal_tagset')
     except LookupError:
         pytest.fail()
-    assert p1.language == 'en'
+    assert p1.mosestokenizer_language_code == 'en'
     assert type(p1.lemmatizer) is nltk.stem.WordNetLemmatizer
     assert p1.stop is False
     assert p1.store_data is False
@@ -80,7 +76,7 @@ def test_preprocess(capsys):
 
 def test__signal_handler():
     p = Preprocessor()
-    assert Preprocessor.stop_signals == [signal.SIGINT, signal.SIGTERM]
+    assert Preprocessor.stop_signals == [signal.SIGTERM]
     assert p.stop is False
     for sig in Preprocessor.stop_signals:
         p._signal_handler(sig=sig, frame=None)
@@ -98,14 +94,14 @@ def test__set_signal_handlers():
     p = Preprocessor()
     assert 'old_handlers' not in dir(p)
     p._set_signal_handlers()
-    assert len(p.old_handlers) == 2
+    assert len(p.old_handlers) == 1
     assert not p.stop
 
 def test__reset_signal_handlers():
     p = Preprocessor()
     assert 'old_handlers' not in dir(p)
     p._set_signal_handlers()
-    assert len(p.old_handlers) == 2
+    assert len(p.old_handlers) == 1
     p._reset_signal_handlers()
     assert len(p.old_handlers) == 0
     assert not p.stop

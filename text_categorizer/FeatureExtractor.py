@@ -16,7 +16,7 @@ from text_categorizer.ui import get_documents, progress
 
 class FeatureExtractor:
     def __init__(self, nltk_stop_words_package=None, vectorizer_name="TfidfVectorizer", training_mode=True, feature_reduction=None, document_adjustment_code="text_categorizer/document_updater.py", remove_adjectives=False, synonyms_file=None, vectorizer_file="vectorizer.pkl", n_jobs=1):
-        download(info_or_id='stopwords', quiet=True)
+        download(info_or_id='stopwords', quiet=False)
         self.stop_words = set() if nltk_stop_words_package is None else set(stopwords.words(nltk_stop_words_package))
         self.vectorizer_file = vectorizer_file
         self.vectorizer = FeatureExtractor._get_vectorizer(vectorizer_name, training_mode, vectorizer_file=self.vectorizer_file)
