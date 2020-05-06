@@ -2,4 +2,4 @@
 *
 
 # Un-exclude only necessary files:
-!text_categorizer/environment.yml
+!environment.yml
