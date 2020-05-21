@@ -46,7 +46,7 @@ class Preprocessor:
         for doc in docs:
             if not self.stop and doc.analyzed_sentences.get(text_field) is None:
                 text = doc.fields[text_field]
-                text = pattern.sub("", text)
+                text = pattern.sub(" ", text)
                 sentences = self.splitsents([text])
                 sentences = [self.tokenize(sent) for sent in sentences]
                 if self.spell_checker is not None:

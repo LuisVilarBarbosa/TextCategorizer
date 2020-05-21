@@ -34,15 +34,23 @@ def test___init__():
 def test_preprocess(capsys):
     text_field = 'Test field'
     index = -1
-    fields = {text_field: 'Teste value. ' * 2}
+    fields = {text_field: 'Teste\r\nvalue with\ra\nfew tikens. ' * 2}
     analyzed_sentences1 = {text_field: [[
         {'form': 'Teste', 'lemma': 'teste', 'upostag': None},
         {'form': 'value', 'lemma': 'value', 'upostag': None},
+        {'form': 'with', 'lemma': 'with', 'upostag': None},
+        {'form': 'a', 'lemma': 'a', 'upostag': None},
+        {'form': 'few', 'lemma': 'few', 'upostag': None},
+        {'form': 'tikens', 'lemma': 'tikens', 'upostag': None},
         {'form': '.', 'lemma': '.', 'upostag': 'PUNCT'}
     ]] * 2}
     analyzed_sentences2 = {text_field: [[
         {'form': 'Test', 'lemma': 'test', 'upostag': None},
         {'form': 'value', 'lemma': 'value', 'upostag': None},
+        {'form': 'with', 'lemma': 'with', 'upostag': None},
+        {'form': 'a', 'lemma': 'a', 'upostag': None},
+        {'form': 'few', 'lemma': 'few', 'upostag': None},
+        {'form': 'tokens', 'lemma': 'token', 'upostag': None},
         {'form': '.', 'lemma': '.', 'upostag': 'PUNCT'}
     ]] * 2}
     for spell_checker_lang, analyzed_sentences in [(None, analyzed_sentences1), ('en_US', analyzed_sentences2)]:
