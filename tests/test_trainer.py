@@ -11,11 +11,9 @@ from text_categorizer.Parameters import Parameters
 def test_load_20newsgroups():
     p1 = Parameters(utils.config_file)
     p1.excel_file = '20newsgroups'
-    excel_file = f'{p1.excel_file}.xlsx'
-    if os.path.exists(excel_file):
-        utils.remove_and_check(excel_file)
+    excel_file = utils.generate_available_filename('.xlsx')
     try:
-        p2 = trainer.load_20newsgroups(p1)
+        p2 = trainer.load_20newsgroups(p1, excel_file)
         assert p1 is not p2
         assert p1 != p2
         assert p2.excel_column_with_text_data == 'data'
@@ -82,10 +80,17 @@ def test_main():
         utils.remove_and_check(parameters.preprocessed_data_file)
         utils.remove_and_check("predictions.json")
         utils.remove_and_check("report.xlsx")
-    parameters.excel_file = "20newsgroups"
+    parameters.excel_file = os.path.abspath("20newsgroups")
     parameters.preprocess_data = False
-    with pytest.raises(SystemExit):
+    excel_file_20newsgroups = "20newsgroups.xlsx"
+    assert not os.path.exists(excel_file_20newsgroups)
+    try:
         trainer.main(parameters)
+        pytest.fail()
+    except SystemExit:
+        assert os.path.exists(excel_file_20newsgroups)
+    finally:
+        utils.remove_and_check(excel_file_20newsgroups)
     parameters = Parameters(utils.config_file)
     parameters.final_training = True
     try:

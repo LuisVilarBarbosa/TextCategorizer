@@ -1,7 +1,7 @@
 import json
 import pandas as pd
 from copy import deepcopy
-from os.path import exists, isfile
+from os.path import basename, exists, isfile
 #from profilehooks import profile
 from sklearn.datasets import fetch_20newsgroups
 from text_categorizer import classifiers
@@ -14,9 +14,9 @@ from text_categorizer.Preprocessor import Preprocessor
 from text_categorizer.resampling import RandomOverSample, RandomUnderSample
 from text_categorizer.train_test_split import train_test_split
 
-def load_20newsgroups(parameters):
+def load_20newsgroups(parameters, filename='20newsgroups.xlsx'):
     p = deepcopy(parameters)
-    p.excel_file = ''.join([p.excel_file, '.xlsx'])
+    p.excel_file = filename
     p.excel_column_with_text_data = 'data'
     p.excel_column_with_classification_data = 'target'
     if not exists(p.excel_file):
@@ -51,7 +51,7 @@ def main(parameters):
     execution_info = pd.DataFrame()
     execution_info['Start date'] = [functions.get_local_time_str()]
     logger.debug("Starting execution.")
-    if parameters.excel_file == '20newsgroups':
+    if basename(parameters.excel_file) == '20newsgroups':
         parameters = load_20newsgroups(parameters)
     if parameters.preprocess_data:
         if not isfile(parameters.excel_file) and not isfile(parameters.preprocessed_data_file):
