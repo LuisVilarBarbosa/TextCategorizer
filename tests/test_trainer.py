@@ -22,6 +22,10 @@ def test_load_20newsgroups():
         df = pd.read_excel(excel_file)
         assert df.shape == (18846, 3)
         assert list(df.keys()) == ['Unnamed: 0', 'data', 'target']
+        expected_mtime = os.path.getmtime(excel_file)
+        p3 = trainer.load_20newsgroups(p1, excel_file)
+        assert os.path.getmtime(excel_file) == expected_mtime
+        assert p3.__dict__ == p2.__dict__
     finally:
         utils.remove_and_check(excel_file)
 
