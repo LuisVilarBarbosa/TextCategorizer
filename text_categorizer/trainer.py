@@ -1,5 +1,6 @@
 import json
 import pandas as pd
+import re
 from copy import deepcopy
 from os.path import basename, exists, isfile
 #from profilehooks import profile
@@ -22,9 +23,11 @@ def load_20newsgroups(parameters, filename='20newsgroups.xlsx'):
     if not exists(p.excel_file):
         bunch = fetch_20newsgroups(data_home='.', subset='all', categories=None, shuffle=False, random_state=random_state, remove=(), download_if_missing=True)
         df = pd.DataFrame()
-        df[p.excel_column_with_text_data] = bunch.data
-        df[p.excel_column_with_classification_data] = bunch.target
-        df.to_excel(p.excel_file, engine='xlsxwriter')
+        df[p.excel_column_with_text_data] = bunch[p.excel_column_with_text_data]
+        df[p.excel_column_with_classification_data] = bunch[p.excel_column_with_classification_data]
+        ILLEGAL_CHARACTERS_RE = re.compile(r'[\000-\010]|[\013-\014]|[\016-\037]')
+        df = df.applymap(lambda v: ILLEGAL_CHARACTERS_RE.sub(' ', v) if isinstance(v, str) else v)
+        df.to_excel(p.excel_file)
     return p
 
 def resample(resampling, X_train, y_train):
