@@ -3,14 +3,9 @@ import pytest
 import signal
 from pandas import read_excel
 from tests import utils
-from text_categorizer import functions, pickle_manager
+from text_categorizer import constants, functions, pickle_manager
 from text_categorizer.Document import Document
 from text_categorizer.Preprocessor import Preprocessor
-
-def test_stop_signals():
-    assert Preprocessor.stop_signals == [
-        signal.SIGTERM,     # SIGTERM is sent by Docker on CTRL-C or on a call to 'docker stop'.
-    ]
 
 def test___init__():
     p1 = Preprocessor()
@@ -84,17 +79,17 @@ def test_preprocess(capsys):
 
 def test__signal_handler():
     p = Preprocessor()
-    assert Preprocessor.stop_signals == [signal.SIGTERM]
     assert p.stop is False
-    for sig in Preprocessor.stop_signals:
+    for sig in constants.stop_signals:
         p._signal_handler(sig=sig, frame=None)
         assert p.stop is True
         p.stop = False
-    for sig in Preprocessor.stop_signals * 2:
+    for sig in constants.stop_signals * 2:
         p._signal_handler(sig=sig, frame=None)
         assert p.stop is True
     p.stop = False
     for sig in [signal.SIGILL]:
+        assert sig not in constants.stop_signals
         p._signal_handler(sig=sig, frame=None)
         assert p.stop is False
 

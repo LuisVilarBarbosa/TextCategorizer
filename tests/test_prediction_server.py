@@ -1,12 +1,14 @@
 import pytest
+import signal
 from base64 import b64encode
 from multiprocessing import cpu_count
 from numpy import float64, int32, int64
+from gevent.pywsgi import WSGIServer
 from os.path import abspath
 from pandas import read_excel
 from tests.test_classifiers import clfs
 from tests import utils
-from text_categorizer import prediction_server
+from text_categorizer import constants, prediction_server
 from text_categorizer.FeatureExtractor import FeatureExtractor
 from text_categorizer.functions import data_frame_to_document_list
 from text_categorizer.Parameters import Parameters
@@ -188,18 +190,32 @@ def test_load_feature_weights():
             prediction_server._feature_extractor = fe_tfidf
             assert replace_tuples_values(prediction_server.load_feature_weights(clf), value=value) == expected_values[clf_name]
 
+def test__set_signal_handlers():
+    assert prediction_server._old_handlers == dict()
+    prediction_server._set_signal_handlers()
+    assert len(prediction_server._old_handlers) == 1
+    prediction_server._old_handlers.clear()
+
+def test__reset_signal_handlers():
+    assert prediction_server._old_handlers == dict()
+    prediction_server._set_signal_handlers()
+    assert len(prediction_server._old_handlers) == 1
+    prediction_server._reset_signal_handlers()
+    assert len(prediction_server._old_handlers) == 0
+
 def test_main(monkeypatch):
     parameters = Parameters(utils.config_file)
     with pytest.raises(SystemExit):
         prediction_server.main(parameters, 1024)
     with monkeypatch.context() as m:
-        m.setattr("text_categorizer.prediction_server.app.run", lambda host, port, debug: None)
+        m.setattr("gevent.pywsgi.WSGIServer.serve_forever", lambda stop_timeout: None)
         try:
             vectorizer_file = 'vectorizer.pkl'
             dump(FeatureExtractor(vectorizer_name='TfidfVectorizer').vectorizer, vectorizer_file)
-            assert not prediction_server.logger.disabled
+            assert prediction_server._old_handlers == dict()
+            assert prediction_server.logger.disabled is False
             prediction_server.main(parameters, 1025)
-            assert prediction_server.logger.disabled
+            assert prediction_server.logger.disabled is True
             assert prediction_server._text_field == 'Example column'
             assert prediction_server._class_field == 'Classification column'
             assert prediction_server._preprocessor.mosestokenizer_language_code == 'en'
@@ -212,6 +228,30 @@ def test_main(monkeypatch):
             assert prediction_server._feature_extractor.synonyms is None
             assert prediction_server._feature_extractor.vectorizer_file == vectorizer_file
             assert prediction_server._feature_extractor.n_jobs == cpu_count()
+            assert prediction_server._old_handlers == dict()
+            m.setattr("text_categorizer.prediction_server._reset_signal_handlers", lambda: None)
+            prediction_server.main(parameters, 1025)
+            assert len(prediction_server._old_handlers) == 1
+            prediction_server._old_handlers.clear()
+            assert type(prediction_server.app.wsgi_app) is WSGIServer
+            assert prediction_server.app.wsgi_app.started is False
+            assert prediction_server.app.wsgi_app.closed is True
+            for sig in constants.stop_signals:
+                prediction_server.app.wsgi_app.start()
+                assert prediction_server.app.wsgi_app.started is True
+                prediction_server._signal_handler(sig=sig, frame=None)
+                assert prediction_server.app.wsgi_app.closed is True
+            for sig in constants.stop_signals * 2:
+                prediction_server.app.wsgi_app.start()
+                assert prediction_server.app.wsgi_app.started is True
+                prediction_server._signal_handler(sig=sig, frame=None)
+                assert prediction_server.app.wsgi_app.closed is True
+            for sig in [signal.SIGILL]:
+                assert sig not in constants.stop_signals
+                prediction_server.app.wsgi_app.start()
+                assert prediction_server.app.wsgi_app.started is True
+                prediction_server._signal_handler(sig=sig, frame=None)
+                assert prediction_server.app.wsgi_app.closed is False
         finally:
             utils.remove_and_check(vectorizer_file)
 

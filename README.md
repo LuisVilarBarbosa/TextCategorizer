@@ -6,7 +6,7 @@ For training, it provides the ability to obtain information on the confidence of
 The probabilities for each class for a given example of the test subset are stored in a JSON file, so that other insights can be obtained after creating the models, and several statistics are stored in an Excel file that can store the statistics of multiple executions.
 (For the Excel report, take into account that the f1-score micro avg is the same as the accuracy score.)
 
-For prediction, it provides a server that answers queries with the classification predicted by the models.
+For prediction, it provides a production server that answers queries with the classification predicted by the models.
 The answer includes the probability given to each class for the given query and the weight given to each feature.
 
 ## Getting Started
@@ -17,10 +17,8 @@ There are two supported manners of using this tool.
 The first one is to use it natively.
 The other one is to use Docker.
 The first one is the recommended one because it is more stable and the following problems can occur using Docker:
-- Progress bars (that are generated using tqdm) are not shown.
-- When using the prediction server, CTRL+C (used to stop the service) which generates SIGINT is translated to SIGTERM, not being detected by Flask. (Flask is simply killed.)
+- Progress bars (that are generated using tqdm) are not shown immediately. They appear only after processing is complete.
 - The order of the output can be wrong because our output is sent using a logger, but the output of other packages is not.
-- The debug mode on the prediction server doesn't work because the listener of file changes doesn't detect correctly the location of the files.
 
 **Important:** The configuration file used for the training mode must not be changed if used for the prediction mode unless you know how the changes will be reflected in the execution of the program.
 

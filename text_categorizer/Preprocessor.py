@@ -3,17 +3,13 @@ import re
 import signal
 from mosestokenizer import MosesSentenceSplitter, MosesTokenizer
 from string import punctuation
-from text_categorizer import pickle_manager
+from text_categorizer import constants, pickle_manager
 from text_categorizer.logger import logger
 from text_categorizer.SpellChecker import SpellChecker
 from text_categorizer.ui import get_documents, progress
 from traceback import format_exc
 
 class Preprocessor:
-    stop_signals = [
-        signal.SIGTERM,     # SIGTERM is sent by Docker on CTRL-C or on a call to 'docker stop'.
-    ]
-
     def __init__(self, mosestokenizer_language_code="en", store_data=False, spell_checker_lang=None, n_jobs=1):
         self.mosestokenizer_language_code = mosestokenizer_language_code
         self.splitsents = MosesSentenceSplitter(self.mosestokenizer_language_code)
@@ -77,7 +73,7 @@ class Preprocessor:
             exit(0)
 
     def _signal_handler(self, sig, frame):
-        if sig in Preprocessor.stop_signals:
+        if sig in constants.stop_signals:
             if not self.stop:
                 print()
                 logger.info("Stopping the preprocessing phase.")
@@ -85,7 +81,7 @@ class Preprocessor:
     
     def _set_signal_handlers(self):
         self.old_handlers = dict()
-        for sig in Preprocessor.stop_signals:
+        for sig in constants.stop_signals:
             self.old_handlers[sig] = signal.signal(sig, self._signal_handler)
     
     def _reset_signal_handlers(self):

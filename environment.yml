@@ -24,3 +24,4 @@ dependencies:
   - openpyxl==3.0.3
   - https://github.com/MSeal/cython_hunspell/archive/0ac159ff3bfde05d4920e89ac7fba3f8b1b989da.zip
   - mosestokenizer==1.1.0
+  - gevent==20.5.0

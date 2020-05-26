@@ -1,9 +1,11 @@
+import signal
 from flask import Flask, jsonify, make_response, request, abort
 from flask_httpauth import HTTPBasicAuth
+from gevent.pool import Pool
+from gevent.pywsgi import WSGIServer
 from os.path import basename
 from pandas import DataFrame
-from text_categorizer import classifiers
-from text_categorizer import pickle_manager
+from text_categorizer import classifiers, constants, pickle_manager
 from text_categorizer.Document import Document
 from text_categorizer.FeatureExtractor import FeatureExtractor
 from text_categorizer.logger import logger
@@ -21,6 +23,7 @@ _preprocessor = None
 _feature_extractor = None
 _feature_weights = dict()
 _classifiers = dict()
+_old_handlers = dict()
 
 @auth.get_password
 def get_password(username):
@@ -111,6 +114,19 @@ def load_feature_weights(clf):
                     feature_weights[i] = set(zip(features, values[i]))
     return feature_weights
 
+def _signal_handler(sig, frame):
+    if sig in constants.stop_signals:
+        app.wsgi_app.stop()
+
+def _set_signal_handlers():
+    for sig in constants.stop_signals:
+        _old_handlers[sig] = signal.signal(sig, _signal_handler)
+    
+def _reset_signal_handlers():
+    for sig, old_handler in _old_handlers.items():
+        signal.signal(sig, old_handler)
+    _old_handlers.clear()
+
 def main(parameters, port):
     global _text_field, _class_field, _preprocessor, _feature_extractor
     limit_port = 1024
@@ -122,4 +138,7 @@ def main(parameters, port):
     _class_field = parameters.excel_column_with_classification_data
     _preprocessor = Preprocessor(mosestokenizer_language_code=parameters.mosestokenizer_language_code, store_data=False, spell_checker_lang=parameters.spell_checker_lang, n_jobs=parameters.number_of_jobs)
     _feature_extractor = FeatureExtractor(nltk_stop_words_package=parameters.nltk_stop_words_package, vectorizer_name=parameters.vectorizer, training_mode=False, feature_reduction=parameters.feature_reduction, document_adjustment_code=parameters.document_adjustment_code, remove_adjectives=parameters.remove_adjectives, synonyms_file=parameters.synonyms_file, n_jobs=parameters.number_of_jobs)
-    app.run(host='0.0.0.0', port=port, debug=False) # host='0.0.0.0' allows access from any network.
+    app.wsgi_app = WSGIServer(('0.0.0.0', port), app.wsgi_app, spawn=Pool(size=None)) # '0.0.0.0' allows access from any network.
+    _set_signal_handlers()
+    app.wsgi_app.serve_forever()
+    _reset_signal_handlers()
