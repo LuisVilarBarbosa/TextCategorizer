@@ -3,7 +3,9 @@ import numpy as np
 import os
 import pandas as pd
 import pytest
+from copy import deepcopy
 from sklearn.datasets import load_digits
+from shutil import rmtree
 from tests import utils
 from text_categorizer import trainer
 from text_categorizer.Parameters import Parameters
@@ -27,6 +29,7 @@ def test_load_20newsgroups():
         assert os.path.getmtime(excel_file) == expected_mtime
         assert p3.__dict__ == p2.__dict__
     finally:
+        utils.remove_and_check('20news-bydate_py3.pkz')
         utils.remove_and_check(excel_file)
 
 def test_resample():
@@ -68,38 +71,48 @@ def test_dump_json():
     assert d1 == d2
 
 def test_main():
-    parameters = Parameters(utils.config_file)
-    parameters.excel_file = "invalid_excel_file"
-    parameters.preprocessed_data_file = "invalid_data_file"
-    with pytest.raises(SystemExit):
-        trainer.main(parameters)
-    parameters = Parameters(utils.config_file)
-    assert not os.path.exists(parameters.preprocessed_data_file)
+    old_dir = os.getcwd()
+    new_dir = utils.generate_available_filename()
+    base_parameters = Parameters(utils.config_file)
+    base_parameters.preprocessed_data_file = os.path.basename(base_parameters.preprocessed_data_file)
     try:
-        trainer.main(parameters)
-        assert os.path.exists(parameters.preprocessed_data_file)
-        assert os.path.exists("predictions.json")
-        assert os.path.exists("report.xlsx")
+        os.makedirs(new_dir, exist_ok=False)
+        os.chdir(new_dir)
+        parameters = deepcopy(base_parameters)
+        parameters.excel_file = "invalid_excel_file"
+        parameters.preprocessed_data_file = "invalid_data_file"
+        with pytest.raises(SystemExit):
+            trainer.main(parameters)
+        parameters = deepcopy(base_parameters)
+        assert not os.path.exists(parameters.preprocessed_data_file)
+        try:
+            trainer.main(parameters)
+            assert os.path.exists(parameters.preprocessed_data_file)
+            assert os.path.exists("predictions.json")
+            assert os.path.exists("report.xlsx")
+        finally:
+            utils.remove_and_check(parameters.preprocessed_data_file)
+            utils.remove_and_check("predictions.json")
+            utils.remove_and_check("report.xlsx")
+        parameters.excel_file = os.path.abspath("20newsgroups")
+        parameters.preprocess_data = False
+        excel_file_20newsgroups = "20newsgroups.xlsx"
+        assert not os.path.exists(excel_file_20newsgroups)
+        try:
+            trainer.main(parameters)
+            pytest.fail()
+        except SystemExit:
+            assert os.path.exists(excel_file_20newsgroups)
+        finally:
+            utils.remove_and_check(excel_file_20newsgroups)
+        parameters = deepcopy(base_parameters)
+        parameters.final_training = True
+        try:
+            trainer.main(parameters)
+        finally:
+            assert not os.path.exists("predictions.json")
+            assert not os.path.exists("report.xlsx")
+            utils.remove_and_check(parameters.preprocessed_data_file)
     finally:
-        utils.remove_and_check(parameters.preprocessed_data_file)
-        utils.remove_and_check("predictions.json")
-        utils.remove_and_check("report.xlsx")
-    parameters.excel_file = os.path.abspath("20newsgroups")
-    parameters.preprocess_data = False
-    excel_file_20newsgroups = "20newsgroups.xlsx"
-    assert not os.path.exists(excel_file_20newsgroups)
-    try:
-        trainer.main(parameters)
-        pytest.fail()
-    except SystemExit:
-        assert os.path.exists(excel_file_20newsgroups)
-    finally:
-        utils.remove_and_check(excel_file_20newsgroups)
-    parameters = Parameters(utils.config_file)
-    parameters.final_training = True
-    try:
-        trainer.main(parameters)
-    finally:
-        assert not os.path.exists("predictions.json")
-        assert not os.path.exists("report.xlsx")
-        utils.remove_and_check(parameters.preprocessed_data_file)
+        os.chdir(old_dir)
+        rmtree(new_dir)

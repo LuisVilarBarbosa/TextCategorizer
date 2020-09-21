@@ -3,6 +3,7 @@ import numpy as np
 import pytest
 from flair.embeddings import DocumentPoolEmbeddings
 from os.path import exists, getmtime
+from scipy.sparse import csr_matrix
 from sklearn import datasets, feature_extraction
 from tests.utils import create_temporary_file, generate_available_filename, remove_and_check
 from text_categorizer import constants, pickle_manager
@@ -48,9 +49,15 @@ def test___init__():
         FeatureExtractor(vectorizer_name='invalid_vectorizer', training_mode=True)
     ft3 = FeatureExtractor(remove_adjectives=True)
     assert ft3.upostags_to_ignore == ['PUNCT', 'ADJ']
-    ft4 = FeatureExtractor(synonyms_file='contopt_0.1_r2_c0.0.txt')
-    contoPTParser = ContoPTParser(path)
-    assert ft4.synonyms == contoPTParser.synonyms
+    synonyms_file = 'contopt_0.1_r2_c0.0.txt'
+    filename = generate_available_filename()
+    try:
+        ft4 = FeatureExtractor(synonyms_file=synonyms_file)
+        contoPTParser = ContoPTParser(filename)
+        assert ft4.synonyms == contoPTParser.synonyms
+    finally:
+        remove_and_check(synonyms_file)
+        remove_and_check(filename)
     with pytest.raises(ValueError):
         FeatureExtractor(synonyms_file='invalid_file.txt')
     ft5 = FeatureExtractor(n_jobs=2)
@@ -92,6 +99,8 @@ def test_prepare(capsys):
                 assert captured.out == ''
                 assert captured.err[captured.err.rfind('\r')+1:].startswith('Preparing to create classification: 100%|')
                 assert captured.err.endswith('doc/s]\n') or captured.err.endswith('s/doc]\n')
+            if synonyms_file is not None:
+                remove_and_check(synonyms_file)
     finally:
         remove_and_check(filename)
 
@@ -186,7 +195,7 @@ def test_LatentDirichletAllocation():
         remove_and_check(filename)
 
 def test_MDS():
-    X = np.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
+    X = csr_matrix(np.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]]))
     y = np.asarray([0, 1, 2])
     expected_new_X = np.asarray([[0.48395794, 5.12192566], [1.00066606, -0.1960522], [-1.484624, -4.92587346]])
     new_X1, new_y1 = FeatureExtractor.MDS(X, y)

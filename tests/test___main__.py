@@ -1,6 +1,9 @@
+from os.path import exists
+from shutil import rmtree
 from subprocess import run
 from tests.utils import config_file, decode
 from text_categorizer import __main__, trainer, prediction_server
+from text_categorizer.Parameters import Parameters
 
 _expected_usage = 'Usage: python3 -m text_categorizer --trainer <configuration file>\n       python3 -m text_categorizer --prediction_server <configuration file> <port>\n'
 
@@ -13,6 +16,9 @@ def test_main(monkeypatch, capsys):
         ['text_categorizer', '--trainer', config_file],
         ['text_categorizer', '--prediction_server', config_file, '5000']
     ]
+    parameters = Parameters(config_file)
+    data_dir = parameters.data_dir
+    data_dir_already_existed = exists(data_dir)
     with monkeypatch.context() as m:
         trainer_main_code = trainer.main.__code__
         prediction_server_main_code = prediction_server.main.__code__
@@ -26,6 +32,9 @@ def test_main(monkeypatch, capsys):
             captured = capsys.readouterr()
             assert captured.out == (_expected_usage if i < len(all_args) - 2 else '')
             assert captured.err == ''
+    assert exists(data_dir)
+    if not data_dir_already_existed:
+        rmtree(data_dir)
 
 def test___main__():
     cp = run(args=['python', '-m', 'text_categorizer'], capture_output=True)

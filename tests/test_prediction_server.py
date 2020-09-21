@@ -91,6 +91,7 @@ def test_predict(client):
         prediction_server._feature_extractor = None
         prediction_server._feature_weights = dict()
         prediction_server._classifiers = dict()
+        prediction_server._old_handlers = dict()
 
 def test_not_found(client):
     res = client.post('/invalid_target', headers=invalid_headers)

@@ -2,6 +2,7 @@ import nltk
 import pytest
 import signal
 from pandas import read_excel
+from shutil import rmtree
 from tests import utils
 from text_categorizer import constants, functions, pickle_manager
 from text_categorizer.Document import Document
@@ -20,11 +21,16 @@ def test___init__():
     assert p1.spell_checker is None
     p2 = Preprocessor(store_data=True)
     assert p2.store_data is True
-    p3 = Preprocessor(spell_checker_lang='en_US')
-    assert p3.spell_checker.hunspell.lang == 'en_US'
-    assert p3.spell_checker.hunspell.max_threads == 1
-    p4 = Preprocessor(spell_checker_lang='en_US', n_jobs=2)
-    assert p4.spell_checker.hunspell.max_threads == 2
+    try:
+        p3 = Preprocessor(spell_checker_lang='en_US')
+        assert p3.spell_checker.hunspell.lang == 'en_US'
+        assert p3.spell_checker.hunspell.max_threads == 1
+        del(p3)
+        p4 = Preprocessor(spell_checker_lang='en_US', n_jobs=2)
+        assert p4.spell_checker.hunspell.max_threads == 2
+        del(p4)
+    finally:
+        rmtree('./hunspell')
 
 def test_preprocess(capsys):
     text_field = 'Test field'
@@ -64,6 +70,9 @@ def test_preprocess(capsys):
         p.stop = True
         with pytest.raises(SystemExit):
             p.preprocess(text_field=text_field, preprocessed_data_file=None, docs=[doc] * 2)
+        del(p)
+        if spell_checker_lang is not None:
+            rmtree('./hunspell')
     docs = [Document(index=index, fields=fields, analyzed_sentences=dict()) for index in range(2)]
     preprocessed_data_file = utils.generate_available_filename()
     try:
