@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from itertools import cycle
 from matplotlib._color_data import XKCD_COLORS
-from scipy import interp
+from numpy import interp
 from sklearn.metrics import roc_curve, auc
 from sklearn.preprocessing import label_binarize
 

@@ -120,6 +120,7 @@ def test_parameters_to_data_frame():
     assert df.shape == (1, 22)
     assert df.iloc[0].to_dict() == expected_dict
 
+@pytest.mark.filterwarnings("ignore::sklearn.exceptions.UndefinedMetricWarning")
 def test_generate_report():
     execution_info = pd.DataFrame.from_dict({
         'Start': [functions.get_local_time_str()],

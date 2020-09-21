@@ -70,6 +70,7 @@ def test_dump_json():
         utils.remove_and_check(filename)
     assert d1 == d2
 
+@pytest.mark.filterwarnings("ignore::sklearn.exceptions.UndefinedMetricWarning")
 def test_main():
     old_dir = os.getcwd()
     new_dir = utils.generate_available_filename()
