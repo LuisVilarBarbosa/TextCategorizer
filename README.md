@@ -33,12 +33,18 @@ The first one is the recommended one because it is more stable and the following
 
 Here are presented the instructions on how to install/update all the dependencies necessary to execute the tool in different environments.
 
-* \<path-to-TextCategorizer\> is the path of folder "TextCategorizer".
+* \<path-to-TextCategorizer\> is the path of the folder "TextCategorizer".
 
-To install/update natively, open a shell (an Anaconda prompt is recommended on Windows and Bash is recommended on Linux) and type the following commands:
+To install natively, open a shell (an Anaconda prompt is recommended on Windows and Bash is recommended on Linux) and type the following commands:
 ```
 cd <path-to-TextCategorizer>
-conda env update -f text_categorizer/environment.yml
+conda env create --file environment.yml
+```
+
+To update natively, open a shell (an Anaconda prompt is recommended on Windows and Bash is recommended on Linux) and type the following commands:
+```
+cd <path-to-TextCategorizer>
+conda env create --file environment.yml --force
 ```
 
 To install/update using Docker, open a shell and type the following commands:
@@ -51,7 +57,7 @@ docker-compose build
 
 Here are presented the instructions on how to execute the tool in different environments.
 
-* \<path-to-TextCategorizer\> is the path of folder "TextCategorizer".
+* \<path-to-TextCategorizer\> is the path of the folder "TextCategorizer".
 
 * \<configuration file\> is the path of the configuration file used. ("config.ini" is provided as example.)
 
@@ -90,14 +96,14 @@ To execute natively on Windows, open a shell (an Anaconda prompt is recommended)
 ```
 cd <path-to-TextCategorizer>
 conda activate text-categorizer
-python -m text_categorizer --prediction_server <configuration file> <port>
+python -m text_categorizer --prediction_server <configuration file> <port> # (Press CTRL+C to stop.)
 ```
 
 To execute natively on Linux, open a shell (Bash is recommended) and type the following commands:
 ```
 cd <path-to-TextCategorizer>
 source activate text-categorizer
-python3 -m text_categorizer --prediction_server <configuration file> <port>
+python3 -m text_categorizer --prediction_server <configuration file> <port> # (Press CTRL+C to stop.)
 ```
 
 To execute using Docker, open a shell and type the following commands:
@@ -117,11 +123,17 @@ To send a REST request to the prediction server, perform the following operation
 1. Train a classifier (generating a model).
 2. Start the prediction server.
 3. Open a REST client or prepare corresponding code.
-4. Set the "Content-Type" header as "application/json".
-5. Set the authentication credentials (the default is "admin" both as username and password).
-6. Create a JSON body with a dictionary that contains two keys, "text" and "classifier", where the value for "text" is the text to give to the classifier and the value for "classifier" is the name of one of the trained classifiers. Examples of bodies:
+4. Set the method as POST.
+5. Set the "Content-Type" header as "application/json".
+6. Set the authentication credentials (the default is "admin" both as username and password).
+7. Create a JSON body with a dictionary that contains two keys, "text" and "classifier", where the value for "text" is the text to give to the classifier and the value for "classifier" is the name of one of the trained classifiers. Examples of bodies:
     - {"text": "Example text...", "classifier": "RandomForestClassifier"}
     - {"text": "Example text...", "classifier": "LinearSVC"}
+
+Example using cURL to send a request to the localhost:
+```
+curl --data '{"text": "Example text...", "classifier": "LinearSVC"}' --header 'Content-Type: application/json' --user admin:admin http://localhost:5000/
+```
 
 ## Testing
 
@@ -131,7 +143,7 @@ The pytest-cov plugin is used to perform the tests and generate a coverage repor
 
 It is recommended to perform the final tests using Docker because it ensures that the entire pipeline is working correctly and that no invalid cross-device renaming is occurring.
 
-* \<path-to-TextCategorizer\> is the path of folder "TextCategorizer".
+* \<path-to-TextCategorizer\> is the path of the folder "TextCategorizer".
 
 To test natively on Windows, open a shell (an Anaconda prompt is recommended) and type the following commands:
 ```
